@@ -82,7 +82,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         patterns,
         newsSentiment,
         prediction,
-        timestamp: new Date().toISOString()
+        timestamp: new Date() // Use Date object directly
       };
 
       const savedAnalysis = await storage.createAnalysis(result);
@@ -113,7 +113,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name,
         notes: notes || "",
         result,
-        timestamp: new Date().toISOString()
+        timestamp: new Date()
       });
 
       return res.status(200).json(savedResult);

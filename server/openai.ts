@@ -155,8 +155,9 @@ export async function analyzeChartImage(base64Image: string) {
 
     return patterns;
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error("Error analyzing chart image:", error);
-    throw new Error(`Failed to analyze chart image: ${error.message}`);
+    throw new Error(`Failed to analyze chart image: ${errorMessage}`);
   }
 }
 
@@ -221,8 +222,9 @@ export async function analyzeNewsSentiment(asset: string, newsArticles: any[]) {
       articles: enrichedArticles
     };
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error("Error analyzing news sentiment:", error);
-    throw new Error(`Failed to analyze news sentiment: ${error.message}`);
+    throw new Error(`Failed to analyze news sentiment: ${errorMessage}`);
   }
 }
 
@@ -260,7 +262,8 @@ export async function generateCombinedPrediction(patterns: any[], sentiment: any
 
     return prediction;
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error("Error generating combined prediction:", error);
-    throw new Error(`Failed to generate prediction: ${error.message}`);
+    throw new Error(`Failed to generate prediction: ${errorMessage}`);
   }
 }
