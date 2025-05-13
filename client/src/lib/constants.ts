@@ -63,12 +63,20 @@ export const CHART_PATTERNS = [
 
 export const ASSETS = {
   forex: [
-    { value: 'EUR/USD', label: 'EUR/USD' },
-    { value: 'GBP/USD', label: 'GBP/USD' },
-    { value: 'USD/JPY', label: 'USD/JPY' },
-    { value: 'AUD/USD', label: 'AUD/USD' },
-    { value: 'USD/CAD', label: 'USD/CAD' },
-    { value: 'USD/CHF', label: 'USD/CHF' }
+    { value: 'EUR/USD', label: 'EUR/USD - Euro' },
+    { value: 'GBP/USD', label: 'GBP/USD - British Pound' },
+    { value: 'USD/JPY', label: 'USD/JPY - Japanese Yen' },
+    { value: 'AUD/USD', label: 'AUD/USD - Australian Dollar' },
+    { value: 'USD/CAD', label: 'USD/CAD - Canadian Dollar' },
+    { value: 'USD/CHF', label: 'USD/CHF - Swiss Franc' },
+    { value: 'NZD/USD', label: 'NZD/USD - New Zealand Dollar' },
+    { value: 'EUR/GBP', label: 'EUR/GBP - Euro/Pound' },
+    { value: 'EUR/JPY', label: 'EUR/JPY - Euro/Yen' },
+    { value: 'GBP/JPY', label: 'GBP/JPY - Pound/Yen' },
+    { value: 'XAU/USD', label: 'XAU/USD - Gold' },
+    { value: 'XAG/USD', label: 'XAG/USD - Silver' },
+    { value: 'USD/CNH', label: 'USD/CNH - Chinese Yuan' },
+    { value: 'USD/HKD', label: 'USD/HKD - Hong Kong Dollar' }
   ],
   stocks: [
     { value: 'AAPL', label: 'Apple (AAPL)' },
@@ -77,13 +85,31 @@ export const ASSETS = {
     { value: 'AMZN', label: 'Amazon (AMZN)' },
     { value: 'TSLA', label: 'Tesla (TSLA)' },
     { value: 'META', label: 'Meta (META)' },
-    { value: 'NVDA', label: 'NVIDIA (NVDA)' }
+    { value: 'NVDA', label: 'NVIDIA (NVDA)' },
+    { value: 'JPM', label: 'JPMorgan Chase (JPM)' },
+    { value: 'BAC', label: 'Bank of America (BAC)' },
+    { value: 'WMT', label: 'Walmart (WMT)' },
+    { value: 'NFLX', label: 'Netflix (NFLX)' },
+    { value: 'DIS', label: 'Disney (DIS)' },
+    { value: 'INTC', label: 'Intel (INTC)' },
+    { value: 'AMD', label: 'AMD (AMD)' },
+    { value: 'PYPL', label: 'PayPal (PYPL)' },
+    { value: 'UBER', label: 'Uber (UBER)' },
+    { value: 'ABNB', label: 'Airbnb (ABNB)' },
+    { value: 'SBUX', label: 'Starbucks (SBUX)' },
+    { value: 'KO', label: 'Coca-Cola (KO)' },
+    { value: 'PEP', label: 'PepsiCo (PEP)' }
   ],
   crypto: [
     { value: 'BTC/USD', label: 'Bitcoin (BTC/USD)' },
     { value: 'ETH/USD', label: 'Ethereum (ETH/USD)' },
     { value: 'SOL/USD', label: 'Solana (SOL/USD)' },
     { value: 'BNB/USD', label: 'Binance Coin (BNB/USD)' },
-    { value: 'ADA/USD', label: 'Cardano (ADA/USD)' }
+    { value: 'ADA/USD', label: 'Cardano (ADA/USD)' },
+    { value: 'XRP/USD', label: 'Ripple (XRP/USD)' },
+    { value: 'DOT/USD', label: 'Polkadot (DOT/USD)' },
+    { value: 'DOGE/USD', label: 'Dogecoin (DOGE/USD)' },
+    { value: 'AVAX/USD', label: 'Avalanche (AVAX/USD)' },
+    { value: 'MATIC/USD', label: 'Polygon (MATIC/USD)' }
   ]
 };

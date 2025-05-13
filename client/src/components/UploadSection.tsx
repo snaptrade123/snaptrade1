@@ -98,7 +98,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onUpload, isLoading }) =>
           <SelectTrigger id="market-select" className="w-full">
             <SelectValue placeholder="Select an asset" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="max-h-[300px]">
             <SelectGroup>
               <SelectLabel>Forex</SelectLabel>
               {ASSETS.forex.map((item) => (

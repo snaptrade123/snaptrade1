@@ -25,10 +25,10 @@ const Header = () => {
     <header className="border-b border-border">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <Link href="/">
-          <a className="flex items-center">
+          <div className="flex items-center cursor-pointer">
             <ChartLine className="h-6 w-6 text-primary mr-2" />
             <h1 className="text-2xl font-bold text-foreground">SnapTrade</h1>
-          </a>
+          </div>
         </Link>
         <div className="flex items-center space-x-4">
           <Button 
