@@ -162,9 +162,23 @@ export async function analyzeChartImage(base64Image: string) {
 
 export async function analyzeNewsSentiment(asset: string, newsArticles: any[]) {
   try {
-    const articlesText = newsArticles.map(article => 
-      `Title: ${article.title}\nSummary: ${article.summary || article.description}\nSource: ${article.source.name || article.source}\n`
-    ).join("\n---\n");
+    // If no news articles, return default neutral sentiment
+    if (!newsArticles || newsArticles.length === 0) {
+      console.log(`No news articles available for ${asset}, returning neutral sentiment`);
+      return {
+        score: 0,
+        articles: []
+      };
+    }
+    
+    // Process the available articles
+    const articlesText = newsArticles.map(article => {
+      const title = article.title || "No title available";
+      const summary = article.summary || article.description || "No summary available";
+      const source = article.source ? (article.source.name || article.source) : "Unknown source";
+      
+      return `Title: ${title}\nSummary: ${summary}\nSource: ${source}\n`;
+    }).join("\n---\n");
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",

@@ -30,17 +30,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Convert asset name to a search query
       const searchQuery = asset.replace('/', ' ').replace('-', ' ');
       
-      const newsResponse = await axios.get(`https://newsapi.org/v2/everything`, {
-        params: {
-          q: searchQuery,
-          sortBy: 'publishedAt',
-          language: 'en',
-          pageSize: 10,
-          apiKey: newsApiKey
-        }
-      });
+      let newsArticles = [];
+      try {
+        const newsResponse = await axios.get(`https://newsapi.org/v2/everything`, {
+          params: {
+            q: searchQuery,
+            sortBy: 'publishedAt',
+            language: 'en',
+            pageSize: 10,
+            apiKey: newsApiKey
+          }
+        });
 
-      const newsArticles = newsResponse.data.articles || [];
+        newsArticles = newsResponse.data.articles || [];
+        
+        // Ensure we have at least one article
+        if (newsArticles.length === 0) {
+          console.log(`No news articles found for ${searchQuery}. Trying broader search...`);
+          
+          // Try a more general search - extract the first part of the asset name
+          const broadSearchTerm = searchQuery.split(' ')[0];
+          const broadNewsResponse = await axios.get(`https://newsapi.org/v2/everything`, {
+            params: {
+              q: broadSearchTerm,
+              sortBy: 'publishedAt',
+              language: 'en',
+              pageSize: 5,
+              apiKey: newsApiKey
+            }
+          });
+          
+          newsArticles = broadNewsResponse.data.articles || [];
+        }
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error("Error fetching news:", errorMessage);
+        // Continue without news data if there's an error
+        newsArticles = [];
+      }
 
       // 3. Analyze sentiment of news articles
       const newsSentiment = await analyzeNewsSentiment(asset, newsArticles);
