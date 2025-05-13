@@ -1,0 +1,71 @@
+import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import UploadSection from "@/components/UploadSection";
+import PatternInfo from "@/components/PatternInfo";
+import AnalysisResults from "@/components/AnalysisResults";
+import AdditionalFeatures from "@/components/AdditionalFeatures";
+import { AnalysisResult } from "@/lib/api";
+import { analyzeChart } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
+
+const Home = () => {
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const { toast } = useToast();
+  
+  const analyzeChartMutation = useMutation({
+    mutationFn: async ({ file, asset }: { file: File, asset: string }) => {
+      const result = await analyzeChart(file, asset);
+      return result;
+    },
+    onSuccess: (data) => {
+      setAnalysisResult(data);
+      toast({
+        title: "Analysis complete",
+        description: "Your chart has been successfully analyzed",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Analysis failed",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleUpload = async (file: File, asset: string) => {
+    analyzeChartMutation.mutate({ file, asset });
+  };
+
+  return (
+    <div className="container mx-auto px-4 py-6">
+      <div className="mb-8">
+        <h2 className="text-2xl font-semibold mb-2">Chart Pattern Analysis</h2>
+        <p className="text-muted-foreground">Upload a financial chart to analyze patterns and get market predictions</p>
+      </div>
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Upload and Asset Selection */}
+        <div className="lg:col-span-1">
+          <UploadSection 
+            onUpload={handleUpload} 
+            isLoading={analyzeChartMutation.isPending}
+          />
+          <PatternInfo />
+        </div>
+
+        {/* Middle and Right Columns - Analysis Results */}
+        <div className="lg:col-span-2">
+          <AnalysisResults 
+            result={analysisResult} 
+            isLoading={analyzeChartMutation.isPending}
+          />
+          <AdditionalFeatures />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Home;

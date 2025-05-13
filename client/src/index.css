@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 222 47% 7%;
+  --foreground: 0 0% 88%;
+  --muted: 223 15% 20%;
+  --muted-foreground: 215 20% 65%;
+  --popover: 222 47% 7%;
+  --popover-foreground: 0 0% 88%;
+  --card: 222 25% 12%;
+  --card-foreground: 0 0% 88%;
+  --border: 223 14% 20%;
+  --input: 223 14% 20%;
+  --primary: 210 90% 65%;
+  --primary-foreground: 211 100% 99%;
+  --secondary: 223 14% 11%;
+  --secondary-foreground: 215 20% 80%;
+  --accent: 223 14% 11%;
+  --accent-foreground: 215 20% 80%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 60 9.1% 97.8%;
+  --ring: 210 90% 65%;
+  --radius: 0.5rem;
+  
+  /* Chart colors */
+  --chart-1: 210 90% 65%;
+  --chart-2: 150 64% 46%;
+  --chart-3: 358 84% 60%;
+  --chart-4: 39 100% 50%;
+  --chart-5: 265 83% 58%;
+  
+  /* Sentiment colors */
+  --bullish: 150 64% 46%;
+  --bearish: 358 84% 60%;
+  --neutral: 39 100% 50%;
+}
+
+.dark {
+  --background: 222 47% 7%;
+  --foreground: 0 0% 88%;
+  --muted: 223 15% 20%;
+  --muted-foreground: 215 20% 65%;
+  --popover: 222 47% 7%;
+  --popover-foreground: 0 0% 88%;
+  --card: 222 25% 12%;
+  --card-foreground: 0 0% 88%;
+  --border: 223 14% 20%;
+  --input: 223 14% 20%;
+  --primary: 210 90% 65%;
+  --primary-foreground: 211 100% 99%;
+  --secondary: 223 14% 11%;
+  --secondary-foreground: 215 20% 80%;
+  --accent: 223 14% 11%;
+  --accent-foreground: 215 20% 80%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 60 9.1% 97.8%;
+  --ring: 210 90% 65%;
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+.gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-500;
+}
+
+.upload-zone {
+  @apply border-2 border-dashed border-border rounded-lg p-8 mb-4 text-center cursor-pointer transition duration-200 hover:border-primary;
+}
+
+.upload-zone-active {
+  @apply border-primary;
+}
+
+.bullish {
+  @apply text-emerald-500;
+}
+
+.bearish {
+  @apply text-red-500;
+}
+
+.neutral {
+  @apply text-amber-500;
+}
+
+/* Confidence indicator styles */
+.confidence-bar-bg {
+  @apply w-full bg-secondary rounded-full h-2 mb-1;
+}
+
+.confidence-bar {
+  @apply rounded-full h-2;
+}
+
+.confidence-bar-bullish {
+  @apply bg-emerald-500;
+}
+
+.confidence-bar-bearish {
+  @apply bg-red-500;
+}
+
+.confidence-bar-neutral {
+  @apply bg-amber-500;
+}
