@@ -114,3 +114,20 @@
 .confidence-bar-neutral {
   @apply bg-amber-500;
 }
+
+/* Trading recommendation styles */
+.trading-level {
+  @apply px-3 py-2 rounded-md text-center relative;
+}
+
+.trading-level-entry {
+  @apply bg-primary/20 border border-primary;
+}
+
+.trading-level-tp {
+  @apply bg-emerald-500/20 border border-emerald-500;
+}
+
+.trading-level-sl {
+  @apply bg-red-500/20 border border-red-500;
+}

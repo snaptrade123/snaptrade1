@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowUpIcon, ArrowDownIcon, CheckCircle2 } from "lucide-react";
 import { AnalysisResult, PatternDetection, NewsArticle } from "@/lib/api";
+import TradingLevelsChart from "./TradingLevelsChart";
 
 type AnalysisResultsProps = {
   result: AnalysisResult | null;
@@ -185,6 +186,82 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, isLoading }) 
                   <span className="text-sm">{result.prediction.weights.news}%</span>
                 </div>
               </div>
+              
+              {/* Trading Recommendations Section */}
+              {result.prediction.tradingRecommendation && (
+                <div className="mt-4 pt-4 border-t border-border">
+                  <h4 className="text-sm font-medium mb-3">Trading Recommendations</h4>
+                  
+                  {/* Entry Condition */}
+                  {result.prediction.tradingRecommendation.entryCondition && (
+                    <div className="bg-secondary/30 p-3 rounded-md mb-3">
+                      <p className="text-sm">{result.prediction.tradingRecommendation.entryCondition}</p>
+                    </div>
+                  )}
+                  
+                  {/* Visual Trading Levels Chart */}
+                  {result.prediction.tradingRecommendation.entryPrice !== undefined && 
+                   result.prediction.tradingRecommendation.stopLoss !== undefined && 
+                   result.prediction.tradingRecommendation.takeProfit !== undefined && (
+                    <TradingLevelsChart 
+                      tradingRecommendation={result.prediction.tradingRecommendation}
+                      direction={result.prediction.direction}
+                    />
+                  )}
+                  
+                  {/* Price Levels Grid */}
+                  <div className="grid grid-cols-3 gap-3 mb-3">
+                    {/* Entry Price */}
+                    {result.prediction.tradingRecommendation.entryPrice !== undefined && (
+                      <div className="bg-secondary/30 p-3 rounded-md">
+                        <p className="text-xs text-muted-foreground mb-1">Entry Price</p>
+                        <p className={`text-lg font-medium ${result.prediction.direction === 'bullish' ? 'text-emerald-500' : 'text-red-500'}`}>
+                          {result.prediction.tradingRecommendation.entryPrice?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 }) || 'N/A'}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Stop Loss */}
+                    {result.prediction.tradingRecommendation.stopLoss !== undefined && (
+                      <div className="bg-secondary/30 p-3 rounded-md">
+                        <p className="text-xs text-muted-foreground mb-1">Stop Loss</p>
+                        <p className="text-lg font-medium text-red-500">
+                          {result.prediction.tradingRecommendation.stopLoss?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 }) || 'N/A'}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Take Profit */}
+                    {result.prediction.tradingRecommendation.takeProfit !== undefined && (
+                      <div className="bg-secondary/30 p-3 rounded-md">
+                        <p className="text-xs text-muted-foreground mb-1">Take Profit</p>
+                        <p className="text-lg font-medium text-emerald-500">
+                          {result.prediction.tradingRecommendation.takeProfit?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 }) || 'N/A'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Additional Info */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Timeframe */}
+                    {result.prediction.tradingRecommendation.timeframe && (
+                      <div className="bg-secondary/30 p-3 rounded-md">
+                        <p className="text-xs text-muted-foreground mb-1">Timeframe</p>
+                        <p className="text-sm">{result.prediction.tradingRecommendation.timeframe}</p>
+                      </div>
+                    )}
+                    
+                    {/* Risk-Reward Ratio */}
+                    {result.prediction.tradingRecommendation.riskRewardRatio !== undefined && (
+                      <div className="bg-secondary/30 p-3 rounded-md">
+                        <p className="text-xs text-muted-foreground mb-1">Risk:Reward Ratio</p>
+                        <p className="text-sm">1:{result.prediction.tradingRecommendation.riskRewardRatio?.toFixed(1) || 'N/A'}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </>
           ) : null}
         </div>
