@@ -30,23 +30,39 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
-  // Use the session store from storage.ts
+  // Use the session store from storage.ts with more secure settings
   const sessionSettings: session.SessionOptions = {
-    secret: "snaptrade-session-secret-key",
-    resave: false,
-    saveUninitialized: false,
+    secret: process.env.SESSION_SECRET || "snaptrade-session-secret-key-" + Math.random().toString(36).substring(2),
+    resave: true,
+    saveUninitialized: true,
     store: storage.sessionStore,
     cookie: {
-      secure: false,
+      secure: false, // set to true in production with HTTPS
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
-      httpOnly: true
+      httpOnly: true,
+      path: '/'
     }
   };
 
   app.set("trust proxy", 1);
+  
+  // Set up session middleware
   app.use(session(sessionSettings));
+  
+  // Initialize Passport and restore authentication state from session
   app.use(passport.initialize());
   app.use(passport.session());
+  
+  // Debug middleware to log session and auth state on each request
+  app.use((req, res, next) => {
+    console.log(`Request: ${req.method} ${req.path}`);
+    console.log(`Session ID: ${req.sessionID || 'none'}`);
+    console.log(`Is Authenticated: ${req.isAuthenticated()}`);
+    if (req.user) {
+      console.log(`User ID: ${req.user.id}`);
+    }
+    next();
+  });
 
   passport.use(
     new LocalStrategy(async (username, password, done) => {
@@ -156,13 +172,32 @@ export function setupAuth(app: Express) {
 
   // Login endpoint
   app.post("/api/login", (req, res, next) => {
+    console.log("Login attempt for username:", req.body.username);
+    
     passport.authenticate("local", (err, user, info) => {
-      if (err) return next(err);
+      if (err) {
+        console.error("Login error:", err);
+        return next(err);
+      }
+      
       if (!user) {
+        console.log("Authentication failed:", info?.message);
         return res.status(401).json({ error: info?.message || "Authentication failed" });
       }
+      
+      console.log("User authenticated, establishing session for user ID:", user.id);
+      
       req.login(user, (err) => {
-        if (err) return next(err);
+        if (err) {
+          console.error("Session establishment error:", err);
+          return next(err);
+        }
+        
+        console.log("Session established successfully, user logged in");
+        console.log("Session ID:", req.sessionID);
+        console.log("Is authenticated:", req.isAuthenticated());
+        console.log("User in session:", req.user);
+        
         return res.json(user);
       });
     })(req, res, next);

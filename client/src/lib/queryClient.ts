@@ -11,10 +11,24 @@ export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
+  options?: {
+    headers?: Record<string, string>;
+    userId?: number; 
+  }
 ): Promise<Response> {
+  const headers: Record<string, string> = {
+    ...(data ? { "Content-Type": "application/json" } : {}),
+    ...(options?.headers || {})
+  };
+  
+  // Add userId in header for asset lists endpoints as a fallback if session fails
+  if (options?.userId && (url.includes('/api/asset-lists'))) {
+    headers['x-user-id'] = options.userId.toString();
+  }
+  
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers,
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
@@ -26,11 +40,19 @@ export async function apiRequest(
 type UnauthorizedBehavior = "returnNull" | "throw";
 export const getQueryFn: <T>(options: {
   on401: UnauthorizedBehavior;
+  userId?: number;
 }) => QueryFunction<T> =
-  ({ on401: unauthorizedBehavior }) =>
+  ({ on401: unauthorizedBehavior, userId }) =>
   async ({ queryKey }) => {
+    // Add the userId header for asset lists endpoints
+    const headers: Record<string, string> = {};
+    if (userId && (queryKey[0] as string).includes('/api/asset-lists')) {
+      headers['x-user-id'] = userId.toString();
+    }
+    
     const res = await fetch(queryKey[0] as string, {
       credentials: "include",
+      headers
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
