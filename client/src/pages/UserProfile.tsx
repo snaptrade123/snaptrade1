@@ -218,7 +218,7 @@ export default function UserProfile() {
                             </div>
                             <Button 
                               size="sm" 
-                              className="bg-emerald-600 hover:bg-emerald-700 text-white w-full md:w-auto"
+                              className="bg-primary hover:bg-primary/90 text-primary-foreground w-full md:w-auto"
                               onClick={() => window.location.href = "/pricing"}
                             >
                               <ZapIcon className="mr-2 h-4 w-4" />
@@ -234,45 +234,45 @@ export default function UserProfile() {
               
               {/* Bonus Balance Redemption */}
               {(referralInfo?.referralBonusBalance || 0) > 0 && (
-                <Card className="bg-emerald-50 border-emerald-200">
+                <Card className="bg-slate-900 border-slate-800">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-lg flex items-center text-emerald-800">
-                      <ZapIcon className="mr-2 h-5 w-5 text-emerald-600" />
+                    <CardTitle className="text-lg flex items-center text-slate-200">
+                      <ZapIcon className="mr-2 h-5 w-5 text-primary" />
                       Redeem Your Bonus Credit
                     </CardTitle>
-                    <CardDescription className="text-emerald-700">
-                      You have <span className="font-bold">£{referralInfo.referralBonusBalance}</span> available to use towards your subscription
+                    <CardDescription className="text-slate-400">
+                      You have <span className="font-bold text-primary">£{referralInfo?.referralBonusBalance || 0}</span> available to use towards your subscription
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      <div className="bg-white p-3 rounded-md border border-emerald-200">
-                        <div className="flex items-center justify-between">
+                      <div className="bg-slate-800 p-4 rounded-md border border-slate-700">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                           <div>
-                            <div className="font-medium">Monthly Subscription</div>
-                            <div className="text-sm text-muted-foreground">Regular price: £59</div>
+                            <div className="font-medium text-slate-200">Monthly Subscription</div>
+                            <div className="text-sm text-slate-400">Regular price: £59</div>
                           </div>
                           <Button
                             onClick={() => window.location.href = "/pricing"}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground"
                           >
-                            Apply £{Math.min(referralInfo.referralBonusBalance, 59)}
+                            Apply £{Math.min(referralInfo?.referralBonusBalance || 0, 59)}
                             <ExternalLink className="ml-2 h-4 w-4" />
                           </Button>
                         </div>
                       </div>
                       
-                      <div className="bg-white p-3 rounded-md border border-emerald-200">
-                        <div className="flex items-center justify-between">
+                      <div className="bg-slate-800 p-4 rounded-md border border-slate-700">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                           <div>
-                            <div className="font-medium">Annual Subscription</div>
-                            <div className="text-sm text-muted-foreground">Regular price: £399</div>
+                            <div className="font-medium text-slate-200">Annual Subscription</div>
+                            <div className="text-sm text-slate-400">Regular price: £399</div>
                           </div>
                           <Button
                             onClick={() => window.location.href = "/pricing"}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground"
                           >
-                            Apply £{Math.min(referralInfo.referralBonusBalance, 399)}
+                            Apply £{Math.min(referralInfo?.referralBonusBalance || 0, 399)}
                             <ExternalLink className="ml-2 h-4 w-4" />
                           </Button>
                         </div>
