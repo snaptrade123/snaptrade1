@@ -18,6 +18,159 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication
   setupAuth(app);
+  
+  // API endpoint to get info about a referrer from a referral code
+  app.get("/api/referrer-info", async (req, res) => {
+    try {
+      const { code } = req.query;
+      
+      if (!code || typeof code !== 'string') {
+        return res.status(400).json({ error: "Referral code is required" });
+      }
+      
+      const referrer = await storage.getUserByReferralCode(code);
+      
+      if (!referrer) {
+        return res.status(404).json({ error: "Invalid referral code" });
+      }
+      
+      // Return only public info about the referrer
+      return res.json({
+        username: referrer.username,
+        referralCode: referrer.referralCode,
+        customName: referrer.referralCustomName
+      });
+    } catch (error) {
+      console.error("Error fetching referrer info:", error);
+      return res.status(500).json({ error: "Server error" });
+    }
+  });
+  
+  // API endpoint to get referral info for a user
+  app.get("/api/referral/:userId", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      const userId = parseInt(req.params.userId);
+      
+      // Only allow users to view their own referral info
+      if (req.user.id !== userId) {
+        return res.status(403).json({ error: "Unauthorized access" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // Get referral stats
+      const totalReferrals = await storage.getUserReferralsCount(userId);
+      const referrals = await storage.getUserReferrals(userId);
+      const successfulReferrals = referrals.filter(r => r.subscriptionPurchased).length;
+      
+      // Create the full referral URL
+      const baseUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://snaptrade.replit.app' 
+        : 'http://localhost:5000';
+      
+      // Use custom name in URL if available
+      const customUrlPart = user.referralCustomName 
+        ? `&name=${user.referralCustomName}` 
+        : '';
+      
+      const referralUrl = `${baseUrl}/auth?ref=${user.referralCode}${customUrlPart}`;
+      
+      return res.json({
+        referralCode: user.referralCode,
+        referralCustomName: user.referralCustomName,
+        referralUrl,
+        referralBonusBalance: user.referralBonusBalance,
+        totalReferrals,
+        successfulReferrals,
+        bonusAmount: 10 // £10 per successful referral
+      });
+    } catch (error) {
+      console.error("Error fetching referral info:", error);
+      return res.status(500).json({ error: "Server error" });
+    }
+  });
+  
+  // API endpoint to update referral custom name
+  app.post("/api/referral/update-name", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      const { customName } = req.body;
+      
+      if (!customName || typeof customName !== 'string') {
+        return res.status(400).json({ error: "Custom name is required" });
+      }
+      
+      // Validate custom name format
+      if (!/^[a-zA-Z0-9-_]+$/.test(customName)) {
+        return res.status(400).json({ 
+          error: "Custom name can only contain letters, numbers, hyphens, and underscores" 
+        });
+      }
+      
+      // Update user's referral custom name
+      const updatedUser = await storage.updateReferralCode(req.user.id, customName);
+      
+      return res.json({
+        message: "Referral name updated successfully",
+        referralCustomName: updatedUser.referralCustomName
+      });
+    } catch (error) {
+      console.error("Error updating referral name:", error);
+      return res.status(500).json({ error: "Server error" });
+    }
+  });
+  
+  // API endpoint to redeem referral bonus
+  app.post("/api/referral/redeem", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      const { amount } = req.body;
+      
+      if (!amount || typeof amount !== 'number' || amount <= 0) {
+        return res.status(400).json({ error: "Valid redemption amount is required" });
+      }
+      
+      const user = await storage.getUser(req.user.id);
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      if (user.referralBonusBalance < amount) {
+        return res.status(400).json({ error: "Insufficient bonus balance" });
+      }
+      
+      // Deduct from user's bonus balance
+      const updatedUser = await storage.updateReferralBonusBalance(
+        user.id, 
+        user.referralBonusBalance - amount
+      );
+      
+      // Here you would normally also apply this credit to their subscription
+      // For this example, we're just showing the deduction
+      
+      return res.json({
+        message: `Successfully redeemed £${amount} from your bonus balance`,
+        newBalance: updatedUser.referralBonusBalance
+      });
+    } catch (error) {
+      console.error("Error redeeming bonus:", error);
+      return res.status(500).json({ error: "Server error" });
+    }
+  });
   // API endpoint for image analysis
   app.post("/api/analyze", async (req, res) => {
     try {
