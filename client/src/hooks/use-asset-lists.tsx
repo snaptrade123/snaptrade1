@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, UseQueryResult } from '@tanstack/react-query';
-import { apiRequest, queryClient } from '@/lib/queryClient';
+import { apiRequest, queryClient, getQueryFn } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
 export type AssetItem = {
@@ -38,12 +38,13 @@ export function useAssetLists(userId: number): {
   } = useQuery<AssetList[], Error>({
     queryKey: ['/api/asset-lists'],
     enabled: !!userId,
+    queryFn: getQueryFn({ on401: "throw", userId }),
   });
 
   // Mutation to create a new asset list
   const createMutation = useMutation({
     mutationFn: async (data: { name: string; assets: AssetItem[]; isDefault?: boolean }) => {
-      const res = await apiRequest('POST', '/api/asset-lists', data);
+      const res = await apiRequest('POST', '/api/asset-lists', data, { userId });
       return await res.json();
     },
     onSuccess: () => {
@@ -65,7 +66,7 @@ export function useAssetLists(userId: number): {
   // Mutation to update an asset list
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: { name?: string; assets?: AssetItem[]; isDefault?: boolean } }) => {
-      const res = await apiRequest('PUT', `/api/asset-lists/${id}`, data);
+      const res = await apiRequest('PUT', `/api/asset-lists/${id}`, data, { userId });
       return await res.json();
     },
     onSuccess: () => {
@@ -87,7 +88,7 @@ export function useAssetLists(userId: number): {
   // Mutation to delete an asset list
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest('DELETE', `/api/asset-lists/${id}`);
+      await apiRequest('DELETE', `/api/asset-lists/${id}`, undefined, { userId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/asset-lists'] });
@@ -108,7 +109,7 @@ export function useAssetLists(userId: number): {
   // Mutation to set an asset list as default
   const setDefaultMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await apiRequest('POST', `/api/asset-lists/${id}/set-default`);
+      const res = await apiRequest('POST', `/api/asset-lists/${id}/set-default`, undefined, { userId });
       return await res.json();
     },
     onSuccess: () => {
@@ -160,6 +161,7 @@ export function useDefaultAssetList(userId: number): UseQueryResult<AssetList | 
   const result = useQuery<AssetList[], Error>({
     queryKey: ['/api/asset-lists'],
     enabled: !!userId,
+    queryFn: getQueryFn({ on401: "throw", userId }),
     select: (data) => data.filter(list => list.isDefault),
   });
 
