@@ -11,126 +11,110 @@ export default function TermsOfService() {
 
         <div className="space-y-6 prose dark:prose-invert prose-h2:text-xl prose-h2:font-semibold prose-h3:text-lg prose-h3:font-medium">
           <section>
-            <h2 className="text-2xl font-bold mt-8 mb-4">1. Introduction</h2>
             <p>
-              Welcome to SnapTrade. These Terms of Service govern your use of our website and services.
-              By accessing or using SnapTrade, you agree to be bound by these Terms.
-              If you disagree with any part of the terms, you do not have permission to access the service.
+              Welcome to SnapTrade. By accessing or using our website and services, you agree to be bound by the following Terms and Conditions. 
+              If you do not agree with any part of these terms, please do not use SnapTrade.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mt-8 mb-4">2. Financial Disclaimer</h2>
+            <h2 className="text-2xl font-bold mt-8 mb-4">1. Educational Purpose Only — Not Financial Advice</h2>
             <p>
+              SnapTrade is designed purely for educational and informational purposes. All content, tools, predictions, and analyses provided on this platform, 
+              including but not limited to chart pattern recognition and news sentiment analysis, are intended to help users learn and explore financial markets.
+            </p>
+            <p className="mt-4">
               <strong className="text-destructive">
-                THE INFORMATION PROVIDED BY SNAPTRADE IS FOR INFORMATIONAL PURPOSES ONLY AND DOES NOT CONSTITUTE FINANCIAL ADVICE.
+                Nothing provided by SnapTrade constitutes financial, investment, or trading advice.
               </strong>
             </p>
+            <p className="mt-4">
+              We are not a licensed financial advisor, broker, or investment firm. You should consult a qualified financial professional before making any 
+              trading or investment decisions.
+            </p>
+            <p className="mt-4">
+              SnapTrade disclaims any liability for losses incurred as a result of using any of our tools or acting on any information provided by our platform.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold mt-8 mb-4">2. Subscription and Billing</h2>
             <p>
-              All chart analyses, pattern identifications, and market predictions are generated using artificial intelligence
-              and should not be considered as professional trading advice. The predictions, analyses, and recommendations
-              provided by our service:
+              SnapTrade may offer subscription-based features.
+            </p>
+            <p className="mt-4">
+              You may cancel your subscription at any time. Once cancelled, you will not be billed again.
+            </p>
+            <p className="mt-4">
+              We do not offer refunds for any paid subscription periods. However, you will retain full access to premium features 
+              for the remainder of the billing cycle that has already been paid.
+            </p>
+            <p className="mt-4">
+              Please ensure you understand your subscription billing terms before purchasing.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold mt-8 mb-4">3. User Conduct</h2>
+            <p>
+              By using SnapTrade, you agree to:
             </p>
             <ul className="list-disc pl-6 mt-4 space-y-2">
-              <li>
-                Are not financial advice and should not be treated as such
-              </li>
-              <li>
-                Do not guarantee future market performance or results
-              </li>
-              <li>
-                Should be considered as one of many tools in your trading strategy
-              </li>
-              <li>
-                May not account for all market variables or unforeseen events
-              </li>
-              <li>
-                Should be verified with additional research and analysis
-              </li>
+              <li>Use the service legally and responsibly.</li>
+              <li>Not upload harmful, abusive, or illegal content.</li>
+              <li>Not attempt to reverse-engineer, copy, or interfere with the website's functionality or services.</li>
+              <li>Refrain from using automated bots or scraping technologies on the platform.</li>
             </ul>
             <p className="mt-4">
-              You acknowledge that any investment decisions you make are at your own risk, and SnapTrade will
-              not be held liable for any losses or damages resulting from the use of our services.
+              We reserve the right to terminate access to users who violate these terms.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mt-8 mb-4">3. Service Description</h2>
+            <h2 className="text-2xl font-bold mt-8 mb-4">4. Image Upload and Data Handling</h2>
             <p>
-              SnapTrade provides AI-powered analysis of trading charts through pattern recognition and market sentiment analysis.
-              Our service allows users to upload images of trading charts and receive automated analyses including:
+              SnapTrade allows users to upload chart images for analysis. By uploading an image:
             </p>
             <ul className="list-disc pl-6 mt-4 space-y-2">
-              <li>Technical pattern identification</li>
-              <li>News sentiment analysis</li>
-              <li>Potential trade setups with entry/exit points</li>
-              <li>Risk-reward calculations</li>
+              <li>You confirm you have the right to use and share that image.</li>
+              <li>You grant us a limited license to process the image using our software.</li>
+              <li>We do not sell or distribute uploaded images or user data to third parties.</li>
             </ul>
             <p className="mt-4">
-              These features are provided on a subscription basis, with certain limitations for free users.
+              For more details on how we handle data, please refer to our Privacy Policy.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mt-8 mb-4">4. Risk Disclosure</h2>
+            <h2 className="text-2xl font-bold mt-8 mb-4">5. Intellectual Property</h2>
             <p>
-              Trading in financial markets involves substantial risk. Past performance is not indicative of future results.
-              The high degree of leverage that is often obtainable in financial trading can work against you as well as for you.
-            </p>
-            <p className="mt-4">
-              You should be aware of all the risks associated with trading and seek advice from an independent financial advisor
-              if you have any doubts. No representation is being made that any account will or is likely to achieve profits or
-              losses similar to those discussed on our website.
+              All content and services provided on SnapTrade, including logos, models, algorithms, text, and visuals, 
+              are the intellectual property of SnapTrade or its licensors. Unauthorized reproduction, redistribution, 
+              or commercial use is prohibited without explicit written consent.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mt-8 mb-4">5. User Accounts</h2>
+            <h2 className="text-2xl font-bold mt-8 mb-4">6. Limitation of Liability</h2>
             <p>
-              When you create an account with us, you guarantee that the information you provide is accurate, complete, and current.
-              Inaccurate, incomplete, or obsolete information may result in the termination of your account.
-            </p>
-            <p className="mt-4">
-              You are responsible for maintaining the confidentiality of your account and password and for restricting access to your computer.
-              You agree to accept responsibility for all activities that occur under your account or password.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-bold mt-8 mb-4">6. Subscription and Payments</h2>
-            <p>
-              SnapTrade offers subscription-based services at the following rates:
+              To the maximum extent permitted by law, SnapTrade and its operators shall not be liable for any direct, 
+              indirect, incidental, or consequential damages arising from:
             </p>
             <ul className="list-disc pl-6 mt-4 space-y-2">
-              <li>Monthly subscription: £59 per month</li>
-              <li>Annual subscription: £349 per year</li>
+              <li>Use or misuse of the platform.</li>
+              <li>Inaccuracies or errors in pattern detection or news analysis.</li>
+              <li>Trading decisions made based on SnapTrade outputs.</li>
             </ul>
             <p className="mt-4">
-              Subscriptions are automatically renewed unless canceled at least 24 hours before the end of the current period.
-              Refunds are not provided for partial subscription periods.
+              Use of SnapTrade is entirely at your own risk.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mt-8 mb-4">7. Intellectual Property</h2>
+            <h2 className="text-2xl font-bold mt-8 mb-4">7. Changes to These Terms</h2>
             <p>
-              The Service and its original content, features, and functionality are and will remain the exclusive property of SnapTrade.
-              The Service is protected by copyright, trademark, and other laws of both the United States and foreign countries.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-bold mt-8 mb-4">8. Changes to Terms</h2>
-            <p>
-              We reserve the right to modify or replace these Terms at any time. If a revision is material, we will provide at least
-              30 days' notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-bold mt-8 mb-4">9. Contact Us</h2>
-            <p>
-              If you have any questions about these Terms, please contact us at support@snaptrade.com.
+              SnapTrade may update these Terms and Conditions at any time. Continued use of the site after changes 
+              constitutes your acceptance of the revised terms. We recommend reviewing this page periodically.
             </p>
           </section>
 

@@ -22,6 +22,7 @@ function Router() {
       <Route path="/pricing" component={Pricing} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/terms" component={TermsOfService} />
+      <Route path="/terms-of-service" component={TermsOfService} />
       <Route path="/subscription-success" component={SubscriptionSuccess} />
       {/* Fallback to 404 */}
       <Route component={NotFound} />

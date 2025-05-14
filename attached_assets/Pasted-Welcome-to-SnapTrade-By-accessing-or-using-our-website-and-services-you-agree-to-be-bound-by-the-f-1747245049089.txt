@@ -1,0 +1,60 @@
+Welcome to SnapTrade. By accessing or using our website and services, you agree to be bound by the following Terms and Conditions. If you do not agree with any part of these terms, please do not use SnapTrade.
+
+1. Educational Purpose Only — Not Financial Advice
+SnapTrade is designed purely for educational and informational purposes. All content, tools, predictions, and analyses provided on this platform, including but not limited to chart pattern recognition and news sentiment analysis, are intended to help users learn and explore financial markets.
+
+Nothing provided by SnapTrade constitutes financial, investment, or trading advice.
+
+We are not a licensed financial advisor, broker, or investment firm. You should consult a qualified financial professional before making any trading or investment decisions.
+
+SnapTrade disclaims any liability for losses incurred as a result of using any of our tools or acting on any information provided by our platform.
+
+2. Subscription and Billing
+SnapTrade may offer subscription-based features.
+
+You may cancel your subscription at any time. Once cancelled, you will not be billed again.
+
+We do not offer refunds for any paid subscription periods. However, you will retain full access to premium features for the remainder of the billing cycle that has already been paid.
+
+Please ensure you understand your subscription billing terms before purchasing.
+
+3. User Conduct
+By using SnapTrade, you agree to:
+
+Use the service legally and responsibly.
+
+Not upload harmful, abusive, or illegal content.
+
+Not attempt to reverse-engineer, copy, or interfere with the website’s functionality or services.
+
+Refrain from using automated bots or scraping technologies on the platform.
+
+We reserve the right to terminate access to users who violate these terms.
+
+4. Image Upload and Data Handling
+SnapTrade allows users to upload chart images for analysis. By uploading an image:
+
+You confirm you have the right to use and share that image.
+
+You grant us a limited license to process the image using our software.
+
+We do not sell or distribute uploaded images or user data to third parties.
+
+For more details on how we handle data, please refer to our [Privacy Policy].
+
+5. Intellectual Property
+All content and services provided on SnapTrade, including logos, models, algorithms, text, and visuals, are the intellectual property of SnapTrade or its licensors. Unauthorized reproduction, redistribution, or commercial use is prohibited without explicit written consent.
+
+6. Limitation of Liability
+To the maximum extent permitted by law, SnapTrade and its operators shall not be liable for any direct, indirect, incidental, or consequential damages arising from:
+
+Use or misuse of the platform.
+
+Inaccuracies or errors in pattern detection or news analysis.
+
+Trading decisions made based on SnapTrade outputs.
+
+Use of SnapTrade is entirely at your own risk.
+
+7. Changes to These Terms
+SnapTrade may update these Terms and Conditions at any time. Continued use of the site after changes constitutes your acceptance of the revised terms. We recommend reviewing this page periodically.
