@@ -40,7 +40,7 @@ const PatternInfo = () => {
           </div>
         ))}
       </div>
-      <a href="#" className="text-primary hover:underline text-sm flex items-center">
+      <a href="/pattern-guide" className="text-primary hover:underline text-sm flex items-center">
         View all patterns
         <svg className="h-3 w-3 ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M5 12h14M12 5l7 7-7 7" />

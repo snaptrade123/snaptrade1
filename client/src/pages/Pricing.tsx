@@ -111,7 +111,7 @@ export default function Pricing() {
   };
 
   return (
-    <div className="container max-w-6xl py-12">
+    <div className="container max-w-6xl py-12 mx-auto">
       <div className="text-center mb-10">
         <h1 className="text-4xl font-bold tracking-tight">Simple, Transparent Pricing</h1>
         <p className="mt-4 text-lg text-muted-foreground">
