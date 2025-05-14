@@ -10,7 +10,8 @@ export const CHART_PATTERNS = [
       'Volume often decreases on the second peak',
       'Confirmation occurs when price breaks below the neckline (the trough between the two peaks)'
     ],
-    strategy: 'Enter short when price breaks below the neckline with a stop loss above the second peak. Target is typically the distance from the peaks to the neckline, projected downward from the breakout point.'
+    strategy: 'Enter short when price breaks below the neckline with a stop loss above the second peak. Target is typically the distance from the peaks to the neckline, projected downward from the breakout point.',
+    image: '/images/patterns/double_top.svg'
   },
   {
     id: 'double_bottom',
@@ -23,7 +24,8 @@ export const CHART_PATTERNS = [
       'Volume often increases on the second trough',
       'Confirmation occurs when price breaks above the neckline (the peak between the two troughs)'
     ],
-    strategy: 'Enter long when price breaks above the neckline with a stop loss below the second trough. Target is typically the distance from the troughs to the neckline, projected upward from the breakout point.'
+    strategy: 'Enter long when price breaks above the neckline with a stop loss below the second trough. Target is typically the distance from the troughs to the neckline, projected upward from the breakout point.',
+    image: '/images/patterns/double_bottom.svg'
   },
   {
     id: 'head_and_shoulders',
@@ -36,7 +38,8 @@ export const CHART_PATTERNS = [
       'Neckline connects the lows between the peaks',
       'Volume typically decreases with each peak and increases on the breakdown'
     ],
-    strategy: 'Enter short when price breaks below the neckline with a stop loss above the right shoulder. Price target is typically the distance from the head to the neckline, projected downward from the breakout point.'
+    strategy: 'Enter short when price breaks below the neckline with a stop loss above the right shoulder. Price target is typically the distance from the head to the neckline, projected downward from the breakout point.',
+    image: '/images/patterns/head_and_shoulders.svg'
   },
   {
     id: 'inverse_head_and_shoulders',
@@ -49,7 +52,8 @@ export const CHART_PATTERNS = [
       'Neckline connects the peaks between the troughs',
       'Volume typically decreases with each trough and increases on the breakout'
     ],
-    strategy: 'Enter long when price breaks above the neckline with a stop loss below the right shoulder. Price target is typically the distance from the head to the neckline, projected upward from the breakout point.'
+    strategy: 'Enter long when price breaks above the neckline with a stop loss below the right shoulder. Price target is typically the distance from the head to the neckline, projected upward from the breakout point.',
+    image: '/images/patterns/inverse_head_and_shoulders.svg'
   },
   {
     id: 'bull_flag',
@@ -62,7 +66,8 @@ export const CHART_PATTERNS = [
       'Usually forms over a shorter time period (1-3 weeks)',
       'Volume typically decreases during the flag formation and increases upon breakout'
     ],
-    strategy: 'Enter long when price breaks above the upper trendline of the flag with a stop loss below the lowest point of the flag. Target is typically the height of the flagpole added to the breakout point.'
+    strategy: 'Enter long when price breaks above the upper trendline of the flag with a stop loss below the lowest point of the flag. Target is typically the height of the flagpole added to the breakout point.',
+    image: '/images/patterns/bull_flag.svg'
   },
   {
     id: 'bear_flag',
@@ -75,7 +80,8 @@ export const CHART_PATTERNS = [
       'Usually forms over a shorter time period (1-3 weeks)',
       'Volume typically decreases during the flag formation and increases upon breakdown'
     ],
-    strategy: 'Enter short when price breaks below the lower trendline of the flag with a stop loss above the highest point of the flag. Target is typically the height of the flagpole subtracted from the breakdown point.'
+    strategy: 'Enter short when price breaks below the lower trendline of the flag with a stop loss above the highest point of the flag. Target is typically the height of the flagpole subtracted from the breakdown point.',
+    image: '/images/patterns/bear_flag.svg'
   },
   {
     id: 'ascending_triangle',
@@ -88,7 +94,8 @@ export const CHART_PATTERNS = [
       'Volume typically decreases as the pattern forms and increases upon breakout',
       'Usually forms over several weeks to months'
     ],
-    strategy: 'Enter long when price breaks above the horizontal resistance line with a stop loss below the most recent swing low. Target is typically the height of the triangle added to the breakout point.'
+    strategy: 'Enter long when price breaks above the horizontal resistance line with a stop loss below the most recent swing low. Target is typically the height of the triangle added to the breakout point.',
+    image: '/images/patterns/ascending_triangle.svg'
   },
   {
     id: 'descending_triangle',
@@ -101,7 +108,8 @@ export const CHART_PATTERNS = [
       'Volume typically decreases as the pattern forms and increases upon breakdown',
       'Usually forms over several weeks to months'
     ],
-    strategy: 'Enter short when price breaks below the horizontal support line with a stop loss above the most recent swing high. Target is typically the height of the triangle subtracted from the breakdown point.'
+    strategy: 'Enter short when price breaks below the horizontal support line with a stop loss above the most recent swing high. Target is typically the height of the triangle subtracted from the breakdown point.',
+    image: '/images/patterns/descending_triangle.svg'
   },
   {
     id: 'cup_and_handle',
@@ -114,7 +122,8 @@ export const CHART_PATTERNS = [
       'Volume typically decreases during the cup formation, is lower in the handle, and increases upon breakout',
       'Usually forms over several months (cup) and weeks (handle)'
     ],
-    strategy: 'Enter long when price breaks above the resistance level (the lip of the cup) with a stop loss below the lowest point of the handle. Target is typically the depth of the cup added to the breakout point.'
+    strategy: 'Enter long when price breaks above the resistance level (the lip of the cup) with a stop loss below the lowest point of the handle. Target is typically the depth of the cup added to the breakout point.',
+    image: '/images/patterns/cup_and_handle.svg'
   },
   {
     id: 'rounding_bottom',
@@ -127,7 +136,8 @@ export const CHART_PATTERNS = [
       'Forms over an extended period (often several months)',
       'No clear resistance level until the pattern is complete'
     ],
-    strategy: 'Enter long when price breaks above the level where the rounding began with a stop loss below the lowest point of the pattern. Target is typically the depth of the bowl added to the breakout point.'
+    strategy: 'Enter long when price breaks above the level where the rounding began with a stop loss below the lowest point of the pattern. Target is typically the depth of the bowl added to the breakout point.',
+    image: '/images/patterns/rounding_bottom.svg'
   },
   {
     id: 'symmetrical_triangle',
@@ -140,7 +150,8 @@ export const CHART_PATTERNS = [
       'Volume typically decreases as the pattern forms and increases upon breakout',
       'The breakout direction determines whether it is bullish or bearish'
     ],
-    strategy: 'Enter in the direction of the breakout with a stop loss on the opposite side of the triangle. Target is typically the height of the triangle (at its widest point) added to or subtracted from the breakout point.'
+    strategy: 'Enter in the direction of the breakout with a stop loss on the opposite side of the triangle. Target is typically the height of the triangle (at its widest point) added to or subtracted from the breakout point.',
+    image: '/images/patterns/symmetrical_triangle.svg'
   },
   {
     id: 'wedge_rising',
@@ -153,7 +164,8 @@ export const CHART_PATTERNS = [
       'Volume typically decreases as the pattern progresses',
       'Often appears after a prolonged uptrend'
     ],
-    strategy: 'Enter short when price breaks below the lower trendline with a stop loss above the most recent swing high. Target is typically the height of the wedge at its widest point, subtracted from the breakdown point.'
+    strategy: 'Enter short when price breaks below the lower trendline with a stop loss above the most recent swing high. Target is typically the height of the wedge at its widest point, subtracted from the breakdown point.',
+    image: '/images/patterns/wedge_rising.svg'
   },
   {
     id: 'wedge_falling',
@@ -166,7 +178,8 @@ export const CHART_PATTERNS = [
       'Volume typically decreases as the pattern progresses',
       'Often appears after a prolonged downtrend'
     ],
-    strategy: 'Enter long when price breaks above the upper trendline with a stop loss below the most recent swing low. Target is typically the height of the wedge at its widest point, added to the breakout point.'
+    strategy: 'Enter long when price breaks above the upper trendline with a stop loss below the most recent swing low. Target is typically the height of the wedge at its widest point, added to the breakout point.',
+    image: '/images/patterns/wedge_falling.svg'
   },
   {
     id: 'rectangle',
@@ -179,7 +192,8 @@ export const CHART_PATTERNS = [
       'Volume tends to be higher at the boundaries and lower in the middle',
       'Breakout direction typically follows the prior trend'
     ],
-    strategy: 'Enter in the direction of the breakout with a stop loss on the opposite side of the rectangle. Target is typically the height of the rectangle added to or subtracted from the breakout point.'
+    strategy: 'Enter in the direction of the breakout with a stop loss on the opposite side of the rectangle. Target is typically the height of the rectangle added to or subtracted from the breakout point.',
+    image: '/images/patterns/rectangle.svg'
   }
 ];
 

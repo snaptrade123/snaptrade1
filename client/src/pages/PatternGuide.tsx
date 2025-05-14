@@ -76,7 +76,7 @@ export default function PatternGuide() {
           </Card>
         </div>
 
-        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
+        <Tabs value={selectedTab} onValueChange={(value) => setSelectedTab(value as PatternType)} className="w-full">
           <div className="flex justify-center mb-6">
             <TabsList className="grid grid-cols-3 w-full max-w-md">
               <TabsTrigger value="bullish" className="px-8">Bullish</TabsTrigger>
@@ -147,15 +147,13 @@ const PatternCard = ({ pattern }: { pattern: Pattern }) => {
       </CardHeader>
       <CardContent>
         <div className="mb-4">
-          {pattern.image && (
-            <div className="bg-muted rounded-md p-4 flex justify-center">
-              <img 
-                src={pattern.image} 
-                alt={pattern.name} 
-                className="max-h-36" 
-              />
-            </div>
-          )}
+          <div className="bg-muted rounded-md p-4 flex justify-center">
+            <img 
+              src={pattern.image} 
+              alt={pattern.name} 
+              className="max-h-36" 
+            />
+          </div>
         </div>
         <div className="space-y-3">
           <div>
