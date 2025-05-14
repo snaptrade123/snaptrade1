@@ -8,7 +8,7 @@ import { setupAuth } from "./auth";
 import { db } from "./db";
 import { users, referrals } from "@shared/schema";
 import * as schema from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
@@ -19,6 +19,36 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication
   setupAuth(app);
+  
+  // Referral URL shortener/redirector
+  app.get("/r/:referralIdentifier", async (req, res) => {
+    try {
+      const { referralIdentifier } = req.params;
+      
+      if (!referralIdentifier) {
+        return res.redirect('/auth');
+      }
+      
+      // Check if this is a custom name first
+      let user = await storage.getUserByCustomName(referralIdentifier);
+      
+      // If not found by custom name, try the actual referral code
+      if (!user) {
+        user = await storage.getUserByReferralCode(referralIdentifier);
+      }
+      
+      if (user) {
+        // Redirect to the auth page with the referral code
+        return res.redirect(`/auth?ref=${user.referralCode}`);
+      } else {
+        // If no matching user, redirect to regular auth page
+        return res.redirect('/auth');
+      }
+    } catch (error) {
+      console.error("Error processing referral redirect:", error);
+      return res.redirect('/auth');
+    }
+  });
   
   // API endpoint to get info about a referrer from a referral code
   app.get("/api/referrer-info", async (req, res) => {
@@ -720,10 +750,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const referrals = await storage.getUserReferrals(userId);
       const successfulReferrals = referrals.filter(r => r.subscriptionPurchased);
       
+      // Create simplified referral URL with new domain
+      const domain = 'snaptrade.co.uk';
+      const referralPath = user.referralCustomName || user.referralCode;
+      
       const referralInfo = {
         referralCode: user.referralCode,
         referralCustomName: user.referralCustomName,
-        referralUrl: `${req.protocol}://${req.get('host')}/auth?ref=${user.referralCode}${user.referralCustomName ? `&name=${user.referralCustomName}` : ''}`,
+        referralUrl: `https://${domain}/r/${referralPath}`,
         referralBonusBalance: user.referralBonusBalance || 0,
         totalReferrals: referrals.length,
         successfulReferrals: successfulReferrals.length,
@@ -751,11 +785,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update the custom name
       const user = await storage.updateReferralCode(req.user.id, customName);
       
+      // Create simplified referral URL with new domain
+      const domain = 'snaptrade.co.uk';
+      const referralPath = user.referralCustomName || user.referralCode;
+      
       res.json({
         success: true,
         referralCode: user.referralCode,
         referralCustomName: user.referralCustomName,
-        referralUrl: `${req.protocol}://${req.get('host')}/auth?ref=${user.referralCode}${user.referralCustomName ? `&name=${user.referralCustomName}` : ''}`,
+        referralUrl: `https://${domain}/r/${referralPath}`,
       });
     } catch (error) {
       console.error("Error updating referral name:", error);
