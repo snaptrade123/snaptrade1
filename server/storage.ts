@@ -29,6 +29,7 @@ export interface IStorage {
   
   // Referral methods
   getUserByReferralCode(referralCode: string): Promise<User | undefined>;
+  getUserByCustomName(customName: string): Promise<User | undefined>;
   createReferral(referral: InsertReferral): Promise<Referral>;
   getUserReferrals(userId: number): Promise<Referral[]>;
   getUserReferralsCount(userId: number): Promise<number>;
@@ -172,6 +173,11 @@ export class DatabaseStorage implements IStorage {
   // Referral methods
   async getUserByReferralCode(referralCode: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.referralCode, referralCode));
+    return user;
+  }
+  
+  async getUserByCustomName(customName: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.referralCustomName, customName));
     return user;
   }
 
