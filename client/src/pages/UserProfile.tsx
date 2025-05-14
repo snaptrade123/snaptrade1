@@ -244,7 +244,7 @@ export default function UserProfile() {
                         onChange={(e) => setCustomName(e.target.value)}
                       />
                       <p className="text-xs text-muted-foreground mt-1">
-                        Your link will be: {window.location.origin}/auth?ref={referralInfo?.referralCode || "..."}&name={customName || "custom-name"}
+                        Your link will be: https://snaptrade.co.uk/r/{customName || "custom-name"}
                       </p>
                     </div>
                     <Button 
