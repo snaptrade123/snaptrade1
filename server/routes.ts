@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { analyzeChartImage, analyzeNewsSentiment, generateCombinedPrediction } from "./openai";
 import axios from "axios";
 import Stripe from "stripe";
+import { setupAuth } from "./auth";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
@@ -12,6 +13,8 @@ if (!process.env.STRIPE_SECRET_KEY) {
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Set up authentication
+  setupAuth(app);
   // API endpoint for image analysis
   app.post("/api/analyze", async (req, res) => {
     try {
