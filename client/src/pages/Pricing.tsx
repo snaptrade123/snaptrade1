@@ -268,7 +268,7 @@ export default function Pricing() {
 
       <div className="mt-12 text-center text-muted-foreground text-sm">
         <p>All plans include a 7-day money-back guarantee. No questions asked.</p>
-        <p className="mt-2">Need help? Contact us at support@snaptrade.com</p>
+        <p className="mt-2">Need help? Contact us at support@snaptrade.co.uk</p>
       </div>
     </div>
   );
