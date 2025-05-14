@@ -87,12 +87,38 @@ export function setupAuth(app: Express) {
         }
       }
 
-      // Create new user with hashed password
+      // Generate a unique referral code
+      const referralCode = nanoid(8);
+      
+      // Create new user with hashed password and referral code
       const hashedPassword = await hashPassword(req.body.password);
       const user = await storage.createUser({
         ...req.body,
         password: hashedPassword,
+        referralCode,
+        referralCustomName: null,
+        referralBonusBalance: 0
       });
+
+      // Check if user was referred
+      const { referredBy } = req.body;
+      if (referredBy) {
+        try {
+          const referrer = await storage.getUserByReferralCode(referredBy);
+          if (referrer) {
+            // Create a referral record
+            await storage.createReferral({
+              referrerId: referrer.id,
+              referredId: user.id,
+              bonusAwarded: false,
+              subscriptionPurchased: false
+            });
+          }
+        } catch (error) {
+          console.error("Error processing referral:", error);
+          // Continue with registration even if referral fails
+        }
+      }
 
       // Auto-login after registration
       req.login(user, (err) => {

@@ -283,7 +283,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 name: "SnapTrade Yearly Subscription",
                 description: "Advanced trading chart analysis with entry/exit points (Annual Plan)"
               },
-              unit_amount: 34900, // £349.00
+              unit_amount: 39900, // £399.00
               recurring: {
                 interval: "year"
               }
@@ -453,6 +453,110 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(subscriptionStatus);
     } catch (error) {
       console.error("Error getting subscription status:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Referral System Endpoints
+  
+  // Get user's referral info
+  app.get("/api/referral/:userId", async (req, res) => {
+    if (!req.isAuthenticated() || req.user.id !== parseInt(req.params.userId, 10)) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    
+    try {
+      const userId = parseInt(req.params.userId, 10);
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Get referrals count
+      const referrals = await storage.getUserReferrals(userId);
+      const successfulReferrals = referrals.filter(r => r.subscriptionPurchased);
+      
+      const referralInfo = {
+        referralCode: user.referralCode,
+        referralCustomName: user.referralCustomName,
+        referralUrl: `${req.protocol}://${req.get('host')}/auth?ref=${user.referralCode}${user.referralCustomName ? `&name=${user.referralCustomName}` : ''}`,
+        referralBonusBalance: user.referralBonusBalance || 0,
+        totalReferrals: referrals.length,
+        successfulReferrals: successfulReferrals.length,
+        bonusAmount: 10, // £10 per successful referral
+      };
+      
+      res.json(referralInfo);
+    } catch (error) {
+      console.error("Error getting referral information:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+  
+  // Update referral custom name
+  app.post("/api/referral/update-name", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    
+    try {
+      const { customName } = req.body;
+      
+      // Update the custom name
+      const user = await storage.updateReferralCode(req.user.id, customName);
+      
+      res.json({
+        success: true,
+        referralCode: user.referralCode,
+        referralCustomName: user.referralCustomName,
+        referralUrl: `${req.protocol}://${req.get('host')}/auth?ref=${user.referralCode}${user.referralCustomName ? `&name=${user.referralCustomName}` : ''}`,
+      });
+    } catch (error) {
+      console.error("Error updating referral name:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+  
+  // Redeem referral bonus
+  app.post("/api/referral/redeem", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    
+    try {
+      const { amount } = req.body;
+      const user = await storage.getUser(req.user.id);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const currentBalance = user.referralBonusBalance || 0;
+      
+      if (currentBalance < amount) {
+        return res.status(400).json({ message: "Insufficient referral bonus balance" });
+      }
+      
+      // Deduct the amount from the balance
+      const updatedUser = await storage.updateReferralBonusBalance(req.user.id, -amount);
+      
+      // TODO: Add logic to apply this credit to the user's subscription
+      // For now, we'll just return success
+      
+      res.json({
+        success: true,
+        message: `£${amount} has been redeemed from your referral bonus balance.`,
+        newBalance: updatedUser.referralBonusBalance
+      });
+    } catch (error) {
+      console.error("Error redeeming referral bonus:", error);
       res.status(500).json({ 
         message: error instanceof Error ? error.message : "An unknown error occurred" 
       });
