@@ -1,4 +1,4 @@
-import { analysis, namedAnalysis, type Analysis, type NamedAnalysis, type InsertAnalysis, type InsertNamedAnalysis } from "@shared/schema";
+import { analysis, namedAnalysis, users, type Analysis, type NamedAnalysis, type InsertAnalysis, type InsertNamedAnalysis, type User } from "@shared/schema";
 
 // Interface for storage
 export interface IStorage {
@@ -8,20 +8,34 @@ export interface IStorage {
   saveNamedAnalysis(namedAnalysis: InsertNamedAnalysis): Promise<NamedAnalysis>;
   getNamedAnalysis(id: number): Promise<NamedAnalysis | undefined>;
   getNamedAnalyses(): Promise<NamedAnalysis[]>;
+  
+  // User methods
+  getUser(id: number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  
+  // Stripe subscription methods
+  updateStripeCustomerId(userId: number, stripeCustomerId: string): Promise<User>;
+  updateUserSubscription(userId: number, stripeSubscriptionId: string, status: string, tier: string, endDate?: Date): Promise<User>;
+  getUserSubscriptionStatus(userId: number): Promise<{ active: boolean, tier?: string, endDate?: Date }>;
 }
 
 // Memory storage implementation
 export class MemStorage implements IStorage {
   private analyses: Map<number, Analysis>;
   private namedAnalyses: Map<number, NamedAnalysis>;
+  private users: Map<number, User>;
   private analysisId: number;
   private namedAnalysisId: number;
+  private userId: number;
 
   constructor() {
     this.analyses = new Map();
     this.namedAnalyses = new Map();
+    this.users = new Map();
     this.analysisId = 1;
     this.namedAnalysisId = 1;
+    this.userId = 1;
   }
 
   async createAnalysis(insertAnalysis: InsertAnalysis): Promise<Analysis> {
@@ -60,6 +74,74 @@ export class MemStorage implements IStorage {
       const dateB = new Date(b.timestamp || 0);
       return dateB.getTime() - dateA.getTime(); // Sort by most recent
     });
+  }
+  
+  // User methods
+  async getUser(id: number): Promise<User | undefined> {
+    return this.users.get(id);
+  }
+  
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.username === username);
+  }
+  
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.email === email);
+  }
+  
+  // Stripe subscription methods
+  async updateStripeCustomerId(userId: number, stripeCustomerId: string): Promise<User> {
+    const user = this.users.get(userId);
+    if (!user) {
+      throw new Error(`User not found with ID: ${userId}`);
+    }
+    
+    const updatedUser = { ...user, stripeCustomerId };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+  
+  async updateUserSubscription(
+    userId: number, 
+    stripeSubscriptionId: string, 
+    status: string, 
+    tier: string, 
+    endDate?: Date
+  ): Promise<User> {
+    const user = this.users.get(userId);
+    if (!user) {
+      throw new Error(`User not found with ID: ${userId}`);
+    }
+    
+    const updatedUser = { 
+      ...user, 
+      stripeSubscriptionId,
+      subscriptionStatus: status,
+      subscriptionTier: tier,
+      subscriptionEndDate: endDate || null
+    };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+  
+  async getUserSubscriptionStatus(userId: number): Promise<{ active: boolean, tier?: string, endDate?: Date }> {
+    const user = this.users.get(userId);
+    if (!user) {
+      return { active: false };
+    }
+    
+    // A subscription is active if it has status "active" or "trialing"
+    const active = user.subscriptionStatus === 'active' || user.subscriptionStatus === 'trialing';
+    
+    if (!active) {
+      return { active };
+    }
+    
+    return {
+      active,
+      tier: user.subscriptionTier || undefined,
+      endDate: user.subscriptionEndDate || undefined
+    };
   }
 }
 
