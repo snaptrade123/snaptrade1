@@ -195,7 +195,14 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, isLoading }) 
                   {/* Entry Condition */}
                   {result.prediction.tradingRecommendation.entryCondition && (
                     <div className="bg-secondary/30 p-3 rounded-md mb-3">
-                      <p className="text-sm">{result.prediction.tradingRecommendation.entryCondition}</p>
+                      <p className="text-sm">
+                        {result.prediction.tradingRecommendation.entryCondition.includes("might") ? 
+                          result.prediction.tradingRecommendation.entryCondition.split("might").map((part, i) => 
+                            i === 0 ? part : <React.Fragment key={i}><i>might</i>{part}</React.Fragment>
+                          )
+                          : result.prediction.tradingRecommendation.entryCondition
+                        }
+                      </p>
                     </div>
                   )}
                   

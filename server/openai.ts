@@ -84,7 +84,7 @@ For the tradingRecommendation:
 - If exact price levels cannot be determined from the data, provide estimates based on the patterns or set the values to null
 - For forex and crypto, use appropriate precision (e.g., 4-5 decimal places for forex majors)
 - Ensure the risk-reward ratio is favorable (generally at least 1:2) for the direction recommended
-- Include practical entry conditions that a trader could actually use
+- Format the entry condition as: "In this example, a trader might consider an entry around [entry price], with a stop below support at [stop loss], and a target near resistance at [take profit]."
 - If direction is "neutral", you may provide recommendations for both bullish and bearish scenarios or indicate to wait for clearer signals
 `;
 
