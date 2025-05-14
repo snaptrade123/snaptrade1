@@ -37,6 +37,14 @@ export interface IStorage {
   updateReferralCode(userId: number, customName?: string): Promise<User>;
   updateReferralBonusBalance(userId: number, amount: number): Promise<User>;
   
+  // Asset List methods
+  createAssetList(assetList: InsertAssetList): Promise<AssetList>;
+  getAssetList(id: number): Promise<AssetList | undefined>;
+  getUserAssetLists(userId: number): Promise<AssetList[]>;
+  updateAssetList(id: number, updates: Partial<InsertAssetList>): Promise<AssetList>;
+  deleteAssetList(id: number): Promise<void>;
+  setDefaultAssetList(userId: number, assetListId: number): Promise<AssetList>;
+  
   // Session store
   sessionStore: session.Store;
 }
@@ -251,6 +259,129 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return updatedUser;
+  }
+
+  // Asset List Methods
+  async createAssetList(insertAssetList: InsertAssetList): Promise<AssetList> {
+    // If this is the first asset list for the user, set it as default
+    const userLists = await this.getUserAssetLists(insertAssetList.userId);
+    const isDefault = userLists.length === 0 ? true : !!insertAssetList.isDefault;
+    
+    // If setting as default, unset any previous defaults
+    if (isDefault) {
+      await db
+        .update(assetLists)
+        .set({ isDefault: false })
+        .where(eq(assetLists.userId, insertAssetList.userId));
+    }
+
+    const [result] = await db
+      .insert(assetLists)
+      .values({
+        ...insertAssetList,
+        isDefault
+      })
+      .returning();
+    
+    return result;
+  }
+
+  async getAssetList(id: number): Promise<AssetList | undefined> {
+    const [result] = await db
+      .select()
+      .from(assetLists)
+      .where(eq(assetLists.id, id));
+    
+    return result;
+  }
+
+  async getUserAssetLists(userId: number): Promise<AssetList[]> {
+    return await db
+      .select()
+      .from(assetLists)
+      .where(eq(assetLists.userId, userId))
+      .orderBy(desc(assetLists.createdAt));
+  }
+
+  async updateAssetList(id: number, updates: Partial<InsertAssetList>): Promise<AssetList> {
+    // If setting as default, unset any previous defaults
+    if (updates.isDefault) {
+      const [assetList] = await db
+        .select()
+        .from(assetLists)
+        .where(eq(assetLists.id, id));
+      
+      if (assetList) {
+        await db
+          .update(assetLists)
+          .set({ isDefault: false })
+          .where(eq(assetLists.userId, assetList.userId));
+      }
+    }
+
+    const [result] = await db
+      .update(assetLists)
+      .set(updates)
+      .where(eq(assetLists.id, id))
+      .returning();
+    
+    if (!result) {
+      throw new Error(`Asset list not found with ID: ${id}`);
+    }
+    
+    return result;
+  }
+
+  async deleteAssetList(id: number): Promise<void> {
+    const [assetList] = await db
+      .select()
+      .from(assetLists)
+      .where(eq(assetLists.id, id));
+    
+    if (!assetList) {
+      throw new Error(`Asset list not found with ID: ${id}`);
+    }
+
+    await db
+      .delete(assetLists)
+      .where(eq(assetLists.id, id));
+    
+    // If this was a default list, set another list as default if available
+    if (assetList.isDefault) {
+      const otherLists = await db
+        .select()
+        .from(assetLists)
+        .where(eq(assetLists.userId, assetList.userId))
+        .orderBy(desc(assetLists.createdAt));
+      
+      if (otherLists.length > 0) {
+        await db
+          .update(assetLists)
+          .set({ isDefault: true })
+          .where(eq(assetLists.id, otherLists[0].id));
+      }
+    }
+  }
+
+  async setDefaultAssetList(userId: number, assetListId: number): Promise<AssetList> {
+    // First, unset any existing default lists for this user
+    await db
+      .update(assetLists)
+      .set({ isDefault: false })
+      .where(eq(assetLists.userId, userId));
+    
+    // Then, set the specified list as default
+    const [result] = await db
+      .update(assetLists)
+      .set({ isDefault: true })
+      .where(eq(assetLists.id, assetListId))
+      .returning();
+    
+    if (!result) {
+      throw new Error(`Asset list not found with ID: ${assetListId}`);
+    }
+    
+    return result;
   }
 }
 

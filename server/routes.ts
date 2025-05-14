@@ -891,6 +891,178 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+  
+  // Asset Lists API
+  
+  // Get all asset lists for a user
+  app.get("/api/asset-lists/:userId", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = parseInt(req.params.userId);
+      
+      if (req.user.id !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const assetLists = await storage.getUserAssetLists(userId);
+      res.json(assetLists);
+    } catch (error) {
+      console.error("Error fetching asset lists:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+  
+  // Get a single asset list
+  app.get("/api/asset-lists/list/:id", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const id = parseInt(req.params.id);
+      const assetList = await storage.getAssetList(id);
+      
+      if (!assetList) {
+        return res.status(404).json({ message: "Asset list not found" });
+      }
+      
+      if (req.user.id !== assetList.userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      res.json(assetList);
+    } catch (error) {
+      console.error("Error fetching asset list:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+  
+  // Create a new asset list
+  app.post("/api/asset-lists", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const { name, assets, isDefault } = req.body;
+      
+      if (!name || !assets || !Array.isArray(assets)) {
+        return res.status(400).json({ message: "Invalid asset list data" });
+      }
+      
+      const assetList = await storage.createAssetList({
+        name,
+        userId: req.user.id,
+        assets,
+        isDefault: isDefault || false
+      });
+      
+      res.status(201).json(assetList);
+    } catch (error) {
+      console.error("Error creating asset list:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+  
+  // Update an asset list
+  app.put("/api/asset-lists/:id", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const id = parseInt(req.params.id);
+      const assetList = await storage.getAssetList(id);
+      
+      if (!assetList) {
+        return res.status(404).json({ message: "Asset list not found" });
+      }
+      
+      if (req.user.id !== assetList.userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const { name, assets, isDefault } = req.body;
+      const updates: any = {};
+      
+      if (name !== undefined) updates.name = name;
+      if (assets !== undefined) updates.assets = assets;
+      if (isDefault !== undefined) updates.isDefault = isDefault;
+      
+      const updatedAssetList = await storage.updateAssetList(id, updates);
+      res.json(updatedAssetList);
+    } catch (error) {
+      console.error("Error updating asset list:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+  
+  // Delete an asset list
+  app.delete("/api/asset-lists/:id", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const id = parseInt(req.params.id);
+      const assetList = await storage.getAssetList(id);
+      
+      if (!assetList) {
+        return res.status(404).json({ message: "Asset list not found" });
+      }
+      
+      if (req.user.id !== assetList.userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      await storage.deleteAssetList(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting asset list:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+  
+  // Set an asset list as default
+  app.post("/api/asset-lists/:id/set-default", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const id = parseInt(req.params.id);
+      const assetList = await storage.getAssetList(id);
+      
+      if (!assetList) {
+        return res.status(404).json({ message: "Asset list not found" });
+      }
+      
+      if (req.user.id !== assetList.userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      const updatedAssetList = await storage.setDefaultAssetList(req.user.id, id);
+      res.json(updatedAssetList);
+    } catch (error) {
+      console.error("Error setting default asset list:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
