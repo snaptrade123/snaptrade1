@@ -144,15 +144,31 @@ export function setupAuth(app: Express) {
       const { referredBy } = req.body;
       if (referredBy) {
         try {
-          const referrer = await storage.getUserByReferralCode(referredBy);
-          if (referrer) {
-            // Create a referral record
-            await storage.createReferral({
-              referrerId: referrer.id,
-              referredId: user.id,
-              bonusAwarded: false,
-              subscriptionPurchased: false
-            });
+          // First check if the user has already been referred (this should never happen, but just in case)
+          const existingReferrals = await storage.getUserReferrals(user.id);
+          if (existingReferrals.length === 0) {
+            // This is the user's first referral - proceed
+            const referrer = await storage.getUserByReferralCode(referredBy);
+            
+            if (referrer) {
+              // Check if referrer has an active subscription - only active subscribers can refer
+              const referrerSubscriptionStatus = await storage.getUserSubscriptionStatus(referrer.id);
+              
+              if (referrerSubscriptionStatus.active) {
+                // Create a referral record
+                await storage.createReferral({
+                  referrerId: referrer.id,
+                  referredId: user.id,
+                  bonusAwarded: false,
+                  subscriptionPurchased: false
+                });
+                console.log(`User ${user.username} referred by ${referrer.username} with active subscription`);
+              } else {
+                console.log(`Referral not processed: Referrer ${referrer.username} does not have an active subscription`);
+              }
+            }
+          } else {
+            console.log(`User ${user.username} already has been referred - ignoring referral`);
           }
         } catch (error) {
           console.error("Error processing referral:", error);

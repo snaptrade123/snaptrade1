@@ -149,7 +149,7 @@ export default function Pricing() {
             </div>
           </div>
           
-          {hasReferralBalance && (
+          {hasReferralBalance ? (
             <div className="flex items-center space-x-2">
               <Checkbox 
                 id="applyCredit" 
@@ -163,7 +163,7 @@ export default function Pricing() {
                 Apply referral credit to my subscription
               </Label>
             </div>
-          )}
+          ) : null}
         </div>
       )}
 

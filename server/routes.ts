@@ -8,7 +8,7 @@ import { setupAuth } from "./auth";
 import { db } from "./db";
 import { users, referrals } from "@shared/schema";
 import * as schema from "@shared/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
