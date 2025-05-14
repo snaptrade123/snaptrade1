@@ -106,17 +106,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const referrals = await storage.getUserReferrals(userId);
       const successfulReferrals = referrals.filter(r => r.subscriptionPurchased).length;
       
-      // Create the full referral URL
-      const baseUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://snaptrade.replit.app' 
-        : 'http://localhost:5000';
+      // Create the full referral URL with the new format
+      // Always use snaptrade.co.uk domain for referral links
+      const domain = 'snaptrade.co.uk';
       
-      // Use custom name in URL if available
-      const customUrlPart = user.referralCustomName 
-        ? `&name=${user.referralCustomName}` 
-        : '';
+      // Use either the custom name or the referral code for the path
+      const referralPath = user.referralCustomName || user.referralCode;
       
-      const referralUrl = `${baseUrl}/auth?ref=${user.referralCode}${customUrlPart}`;
+      // Create the simplified referral URL
+      const referralUrl = `https://${domain}/r/${referralPath}`;
       
       return res.json({
         referralCode: user.referralCode,
