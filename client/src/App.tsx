@@ -16,6 +16,7 @@ import AuthPage from "./pages/AuthPage";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import PatternGuide from "./pages/PatternGuide";
+import UserProfile from "./pages/UserProfile";
 
 function Router() {
   return (
@@ -30,6 +31,7 @@ function Router() {
       <Route path="/patterns" component={PatternGuide} />
       <Route path="/pattern-guide" component={PatternGuide} />
       <Route path="/subscription-success" component={SubscriptionSuccess} />
+      <ProtectedRoute path="/profile" component={UserProfile} />
       {/* Fallback to 404 */}
       <Route component={NotFound} />
     </Switch>

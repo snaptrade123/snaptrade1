@@ -43,8 +43,7 @@ const Header = () => {
   };
 
   const handleProfileClick = () => {
-    // Future feature: profile page
-    // For now, just show user information in a toast
+    setLocation("/profile");
   };
 
   if (!mounted) {
@@ -121,7 +120,7 @@ const Header = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleProfileClick} disabled>
+                <DropdownMenuItem onClick={handleProfileClick}>
                   <User className="h-4 w-4 mr-2" />
                   Profile
                 </DropdownMenuItem>
