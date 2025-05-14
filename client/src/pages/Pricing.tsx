@@ -118,6 +118,54 @@ export default function Pricing() {
           Choose the plan that's right for you and start making smarter trading decisions today.
         </p>
       </div>
+      
+      {/* Referral Credits Section */}
+      {user && (
+        <div className="mb-8 bg-muted/50 rounded-lg p-4 flex flex-col md:flex-row items-center justify-between max-w-4xl mx-auto">
+          <div className="flex items-center mb-4 md:mb-0">
+            <GiftIcon className="h-5 w-5 mr-2 text-primary" />
+            <div>
+              {referralLoading ? (
+                <div className="flex items-center">
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  <span>Loading referral information...</span>
+                </div>
+              ) : hasReferralBalance ? (
+                <div className="flex flex-col">
+                  <span className="font-medium">
+                    You have <Badge variant="default" className="ml-1 mr-1">£{referralBalance}</Badge> 
+                    in referral credits!
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    Apply your credits to your subscription below.
+                  </span>
+                </div>
+              ) : (
+                <span>
+                  Earn £10 in credit for each friend who subscribes using your referral link.
+                  Visit your profile to get your referral link.
+                </span>
+              )}
+            </div>
+          </div>
+          
+          {hasReferralBalance && (
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="applyCredit" 
+                checked={applyReferralCredit}
+                onCheckedChange={(checked) => setApplyReferralCredit(checked === true)}
+              />
+              <Label 
+                htmlFor="applyCredit" 
+                className="cursor-pointer font-medium text-primary"
+              >
+                Apply referral credit to my subscription
+              </Label>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         {/* Monthly Plan */}
@@ -128,6 +176,12 @@ export default function Pricing() {
             <div className="mt-4">
               <span className="text-4xl font-bold">£59</span>
               <span className="text-muted-foreground ml-1">/month</span>
+              
+              {hasReferralBalance && applyReferralCredit && (
+                <div className="mt-1 text-emerald-600 font-medium text-sm">
+                  - £{Math.min(referralBalance, 59)} referral credit applied
+                </div>
+              )}
             </div>
           </CardHeader>
           <CardContent>
@@ -169,6 +223,12 @@ export default function Pricing() {
             <div className="mt-4">
               <span className="text-4xl font-bold">£399</span>
               <span className="text-muted-foreground ml-1">/year</span>
+              
+              {hasReferralBalance && applyReferralCredit && (
+                <div className="mt-1 text-emerald-600 font-medium text-sm">
+                  - £{Math.min(referralBalance, 399)} referral credit applied
+                </div>
+              )}
             </div>
             <div className="mt-1 inline-block bg-emerald-500/10 text-emerald-500 text-xs px-2 py-1 rounded-full">
               Save £309 compared to monthly
