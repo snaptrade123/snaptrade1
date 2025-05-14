@@ -36,7 +36,7 @@ export function useAssetLists(userId: number): {
     isLoading,
     error,
   } = useQuery<AssetList[], Error>({
-    queryKey: ['/api/asset-lists', userId],
+    queryKey: ['/api/asset-lists'],
     enabled: !!userId,
   });
 
@@ -47,7 +47,7 @@ export function useAssetLists(userId: number): {
       return await res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/asset-lists', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/asset-lists'] });
       toast({
         title: 'Asset list created',
         description: 'Your asset list has been created successfully.',
@@ -69,7 +69,7 @@ export function useAssetLists(userId: number): {
       return await res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/asset-lists', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/asset-lists'] });
       toast({
         title: 'Asset list updated',
         description: 'Your asset list has been updated successfully.',
@@ -90,7 +90,7 @@ export function useAssetLists(userId: number): {
       await apiRequest('DELETE', `/api/asset-lists/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/asset-lists', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/asset-lists'] });
       toast({
         title: 'Asset list deleted',
         description: 'Your asset list has been deleted successfully.',
@@ -112,7 +112,7 @@ export function useAssetLists(userId: number): {
       return await res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/asset-lists', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/asset-lists'] });
       toast({
         title: 'Default asset list set',
         description: 'Your default asset list has been updated successfully.',
@@ -158,7 +158,7 @@ export function useAssetLists(userId: number): {
 // Hook to get the default asset list for a user
 export function useDefaultAssetList(userId: number): UseQueryResult<AssetList | undefined, Error> & { defaultAssetList: AssetList | undefined } {
   const result = useQuery<AssetList[], Error>({
-    queryKey: ['/api/asset-lists', userId],
+    queryKey: ['/api/asset-lists'],
     enabled: !!userId,
     select: (data) => data.filter(list => list.isDefault),
   });
