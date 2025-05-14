@@ -1,12 +1,13 @@
 import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
-import { CloudUploadIcon, SearchIcon, RotateCwIcon, ListChecks, ListPlus } from "lucide-react";
+import { CloudUploadIcon, SearchIcon, RotateCwIcon, ListChecks, ListPlus, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { useAssetLists, useDefaultAssetList } from "@/hooks/use-asset-lists";
@@ -117,6 +118,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onUpload, isLoading }) =>
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+                <DialogTitle>Manage Asset Lists</DialogTitle>
                 <AssetListManager />
               </DialogContent>
             </Dialog>
