@@ -816,6 +816,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Missing user ID or custom name" });
       }
       
+      // Check if the custom name is already in use
+      const existingUserWithCustomName = await storage.getUserByCustomName(customName);
+      if (existingUserWithCustomName && existingUserWithCustomName.id !== userId) {
+        return res.status(400).json({ 
+          message: "This custom name is already in use. Please choose another name." 
+        });
+      }
+      
+      // Check if the custom name matches any existing referral code
+      const existingUserWithReferralCode = await storage.getUserByReferralCode(customName);
+      if (existingUserWithReferralCode && existingUserWithReferralCode.id !== userId) {
+        return res.status(400).json({
+          message: "This name conflicts with an existing referral code. Please choose another name."
+        });
+      }
+      
       // Update the custom name
       const user = await storage.updateReferralCode(userId, customName);
       

@@ -92,9 +92,26 @@ export function setupAuth(app: Express) {
       }
 
       // Generate a more readable unique referral code based on username
-      const userPart = req.body.username.slice(0, 5).toLowerCase();
-      const randomPart = nanoid(5).toLowerCase();
-      const referralCode = `${userPart}-${randomPart}`;
+      let referralCode;
+      let isUnique = false;
+      
+      // Loop until we generate a unique referral code
+      while (!isUnique) {
+        const userPart = req.body.username.slice(0, 5).toLowerCase();
+        const randomPart = nanoid(5).toLowerCase();
+        referralCode = `${userPart}-${randomPart}`;
+        
+        // Check if this referral code already exists
+        const existingUser = await storage.getUserByReferralCode(referralCode);
+        
+        // Also check if it matches any custom names
+        const existingUserCustomName = await storage.getUserByCustomName(referralCode);
+        
+        // If no conflicts, we have a unique code
+        if (!existingUser && !existingUserCustomName) {
+          isUnique = true;
+        }
+      }
       
       // Create new user with hashed password and referral code
       const hashedPassword = await hashPassword(req.body.password);
