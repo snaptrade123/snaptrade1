@@ -6,7 +6,8 @@ import axios from "axios";
 import Stripe from "stripe";
 import { setupAuth } from "./auth";
 import { db } from "./db";
-import { users } from "@shared/schema";
+import { users, referrals } from "@shared/schema";
+import * as schema from "@shared/schema";
 import { eq } from "drizzle-orm";
 
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -149,14 +150,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "User not found" });
       }
       
-      if (user.referralBonusBalance < amount) {
+      const currentBalance = user.referralBonusBalance || 0;
+      
+      if (currentBalance < amount) {
         return res.status(400).json({ error: "Insufficient bonus balance" });
       }
       
       // Deduct from user's bonus balance
       const updatedUser = await storage.updateReferralBonusBalance(
         user.id, 
-        user.referralBonusBalance - amount
+        currentBalance - amount
       );
       
       // Here you would normally also apply this credit to their subscription
@@ -510,6 +513,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   tier,
                   endDate
                 );
+                
+                // Process referral bonus if this user was referred
+                try {
+                  // Find if this user was referred by someone
+                  const referrals = await db.query.referrals.findMany({
+                    where: eq(schema.referrals.referredId, user.id)
+                  });
+                  
+                  if (referrals.length > 0) {
+                    const referral = referrals[0]; // Should only be one
+                    
+                    // Only award bonus if this is the first subscription and it hasn't been awarded yet
+                    if (!referral.subscriptionPurchased && !referral.bonusAwarded) {
+                      // Update referral status
+                      await storage.updateReferralStatus(
+                        referral.id,
+                        true, // subscriptionPurchased
+                        true  // bonusAwarded
+                      );
+                      
+                      // Award £10 bonus to the referrer
+                      const referrer = await storage.getUser(referral.referrerId);
+                      if (referrer) {
+                        await storage.updateReferralBonusBalance(
+                          referrer.id,
+                          (referrer.referralBonusBalance || 0) + 10
+                        );
+                        console.log(`Awarded £10 referral bonus to user ${referrer.username} for referring ${user.username}`);
+                      }
+                    }
+                  }
+                } catch (referralError) {
+                  console.error("Error processing referral bonus:", referralError);
+                  // Continue even if referral processing fails
+                }
               }
             } catch (dbError) {
               console.error("Error finding user in database:", dbError);
