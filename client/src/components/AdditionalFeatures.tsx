@@ -45,19 +45,8 @@ const AdditionalFeatures = () => {
         </div>
         <div className="flex items-center justify-center p-4">
           {/* Donut chart for accuracy */}
-          <div className="relative w-32 h-32">
-            <svg viewBox="0 0 36 36" className="w-full h-full">
-              <path 
-                className="fill-none stroke-gray-200 stroke-[2]" 
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
-              />
-              <path 
-                className="fill-none stroke-primary stroke-[3]" 
-                strokeDasharray="73, 100" 
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
-              />
-              <text x="18" y="20.5" className="fill-foreground text-base font-bold" textAnchor="middle">73%</text>
-            </svg>
+          <div className="relative w-32 h-32 flex items-center justify-center">
+            <span className="text-4xl font-bold">73%</span>
           </div>
         </div>
         <div className="text-center mt-2">
