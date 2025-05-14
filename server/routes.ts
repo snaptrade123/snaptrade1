@@ -5,6 +5,9 @@ import { analyzeChartImage, analyzeNewsSentiment, generateCombinedPrediction } f
 import axios from "axios";
 import Stripe from "stripe";
 import { setupAuth } from "./auth";
+import { db } from "./db";
+import { users } from "@shared/schema";
+import { eq } from "drizzle-orm";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
@@ -381,19 +384,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Get end date
           const endDate = new Date(subscription.current_period_end * 1000);
           
-          // Find user by Stripe customer ID
-          const users = Array.from(storage.users.values());
-          const user = users.find(u => u.stripeCustomerId === customerId);
-          
-          if (user) {
-            // Update user subscription
-            await storage.updateUserSubscription(
-              user.id,
-              subscription.id,
-              subscription.status,
-              tier,
-              endDate
-            );
+          // Find user by Stripe customer ID in the database
+          try {
+            // Query users from the database
+            const [user] = await db.select().from(users).where(eq(users.stripeCustomerId, customerId));
+            
+            if (user) {
+              // Update user subscription
+              await storage.updateUserSubscription(
+                user.id,
+                subscription.id,
+                subscription.status,
+                tier,
+                endDate
+              );
+            }
+          } catch (dbError) {
+            console.error("Error finding user in database:", dbError);
           }
           break;
         }
@@ -403,19 +410,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Get the customer ID
           const customerId = subscription.customer;
           
-          // Find user by Stripe customer ID
-          const users = Array.from(storage.users.values());
-          const user = users.find(u => u.stripeCustomerId === customerId);
-          
-          if (user) {
-            // Update user subscription status
-            await storage.updateUserSubscription(
-              user.id,
-              subscription.id,
-              'cancelled',
-              user.subscriptionTier || '',
-              null
-            );
+          // Find user by Stripe customer ID in the database
+          try {
+            // Query users from the database
+            const [user] = await db.select().from(users).where(eq(users.stripeCustomerId, customerId));
+            
+            if (user) {
+              // Update user subscription status
+              await storage.updateUserSubscription(
+                user.id,
+                subscription.id,
+                'cancelled',
+                user.subscriptionTier || '',
+                undefined
+              );
+            }
+          } catch (dbError) {
+            console.error("Error finding user in database:", dbError);
           }
           break;
         }

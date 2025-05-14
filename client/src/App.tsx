@@ -12,8 +12,8 @@ import Footer from "@/components/layout/Footer";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/ProtectedRoute";
-import AuthPage from "@/pages/AuthPage";
-import TermsOfService from "@/pages/TermsOfService";
+import AuthPage from "./pages/AuthPage";
+import TermsOfService from "./pages/TermsOfService";
 
 function Router() {
   return (
