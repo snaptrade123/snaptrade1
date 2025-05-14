@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import { Copy, Link as LinkIcon, RefreshCw, CheckIcon, ZapIcon, Users } from "lucide-react";
+import { Copy, Link as LinkIcon, RefreshCw, CheckIcon, ZapIcon, Users, ExternalLink } from "lucide-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Badge } from "@/components/ui/badge";
@@ -268,12 +268,17 @@ export default function UserProfile() {
 
                 {/* Redeem Bonus */}
                 {(referralInfo?.referralBonusBalance ?? 0) > 0 && (
-                  <div className="bg-muted p-4 rounded-md">
+                  <div className="bg-emerald-50 border-emerald-200 border p-4 rounded-md mt-6">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-medium">Redeem Bonus Credit</h3>
-                      <Badge variant="outline" className="text-primary">
+                      <h3 className="font-semibold text-emerald-700">Redeem Bonus Credit</h3>
+                      <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 font-semibold">
                         Available: £{referralInfo?.referralBonusBalance || 0}
                       </Badge>
+                    </div>
+                    <div className="mb-2">
+                      <p className="text-sm text-slate-600">
+                        You can use your referral credits to get a discount on your next subscription payment.
+                      </p>
                     </div>
                     <div className="flex items-start gap-2">
                       <div className="flex-1">
@@ -283,22 +288,30 @@ export default function UserProfile() {
                           max={referralInfo?.referralBonusBalance || 0}
                           value={redeemAmount}
                           onChange={(e) => setRedeemAmount(parseInt(e.target.value) || 0)}
+                          className="border-emerald-200 focus:border-emerald-300"
                         />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          This amount will be deducted from your next subscription payment
+                        <p className="text-xs text-emerald-700 font-medium mt-1">
+                          This credit will be automatically applied to your next subscription payment
                         </p>
                       </div>
                       <Button
                         onClick={handleRedeemBonus}
                         disabled={redeemBonus.isPending || !redeemAmount || redeemAmount > (referralInfo?.referralBonusBalance || 0)}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white"
                       >
                         {redeemBonus.isPending ? (
                           <RefreshCw className="h-4 w-4 animate-spin mr-2" />
                         ) : (
                           <ZapIcon className="h-4 w-4 mr-2" />
                         )}
-                        Redeem
+                        Redeem Now
                       </Button>
+                    </div>
+                    <div className="mt-3 flex items-center">
+                      <ExternalLink className="h-4 w-4 mr-2 text-emerald-600" />
+                      <a href="/pricing" className="text-sm text-emerald-600 hover:text-emerald-800 font-medium">
+                        Go to pricing page to subscribe with your credit
+                      </a>
                     </div>
                   </div>
                 )}

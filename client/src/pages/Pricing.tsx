@@ -121,9 +121,9 @@ export default function Pricing() {
       
       {/* Referral Credits Section */}
       {user && (
-        <div className="mb-8 bg-muted/50 rounded-lg p-4 flex flex-col md:flex-row items-center justify-between max-w-4xl mx-auto">
+        <div className="mb-8 bg-emerald-50 border border-emerald-200 rounded-lg p-5 flex flex-col md:flex-row items-center justify-between max-w-4xl mx-auto">
           <div className="flex items-center mb-4 md:mb-0">
-            <GiftIcon className="h-5 w-5 mr-2 text-primary" />
+            <GiftIcon className="h-5 w-5 mr-3 text-emerald-600" />
             <div>
               {referralLoading ? (
                 <div className="flex items-center">
@@ -132,35 +132,41 @@ export default function Pricing() {
                 </div>
               ) : hasReferralBalance ? (
                 <div className="flex flex-col">
-                  <span className="font-medium">
-                    You have <Badge variant="default" className="ml-1 mr-1">£{referralBalance}</Badge> 
+                  <span className="font-semibold text-slate-700">
+                    You have <Badge variant="secondary" className="ml-1 mr-1 bg-emerald-100 text-emerald-700 font-bold">£{referralBalance}</Badge> 
                     in referral credits!
                   </span>
-                  <span className="text-sm text-muted-foreground">
-                    Apply your credits to your subscription below.
+                  <span className="text-sm text-slate-600 mt-1">
+                    Apply your credits to your subscription for an instant discount.
                   </span>
                 </div>
               ) : (
-                <span>
-                  Earn £10 in credit for each friend who subscribes using your referral link.
-                  Visit your profile to get your referral link.
-                </span>
+                <div>
+                  <span className="font-medium">Earn £10 in credit for each friend who subscribes.</span>
+                  <div className="flex items-center mt-1">
+                    <ArrowRight className="h-3 w-3 mr-1 text-emerald-600" />
+                    <a href="/profile" className="text-sm text-emerald-600 hover:text-emerald-800 font-medium">
+                      Visit your profile to get your referral link
+                    </a>
+                  </div>
+                </div>
               )}
             </div>
           </div>
           
           {hasReferralBalance ? (
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3 bg-white py-2 px-4 rounded-lg border border-emerald-200">
               <Checkbox 
                 id="applyCredit" 
                 checked={applyReferralCredit}
                 onCheckedChange={(checked) => setApplyReferralCredit(checked === true)}
+                className="border-emerald-400 data-[state=checked]:bg-emerald-600 data-[state=checked]:text-emerald-50"
               />
               <Label 
                 htmlFor="applyCredit" 
-                className="cursor-pointer font-medium text-primary"
+                className="cursor-pointer font-medium text-emerald-700"
               >
-                Apply referral credit to my subscription
+                Apply £{Math.min(referralBalance, 59)} credit to my subscription
               </Label>
             </div>
           ) : null}
@@ -178,8 +184,16 @@ export default function Pricing() {
               <span className="text-muted-foreground ml-1">/month</span>
               
               {hasReferralBalance && applyReferralCredit && (
-                <div className="mt-1 text-emerald-600 font-medium text-sm">
-                  - £{Math.min(referralBalance, 59)} referral credit applied
+                <div className="mt-2 bg-emerald-50 border border-emerald-200 rounded-md p-2 flex items-center">
+                  <Check className="h-4 w-4 text-emerald-600 mr-2" />
+                  <div>
+                    <div className="text-emerald-700 font-semibold text-sm">
+                      £{Math.min(referralBalance, 59)} referral credit applied
+                    </div>
+                    <div className="text-emerald-600 text-xs font-medium">
+                      Total: £{Math.max(0, 59 - Math.min(referralBalance, 59))}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -225,8 +239,16 @@ export default function Pricing() {
               <span className="text-muted-foreground ml-1">/year</span>
               
               {hasReferralBalance && applyReferralCredit && (
-                <div className="mt-1 text-emerald-600 font-medium text-sm">
-                  - £{Math.min(referralBalance, 399)} referral credit applied
+                <div className="mt-2 bg-emerald-50 border border-emerald-200 rounded-md p-2 flex items-center">
+                  <Check className="h-4 w-4 text-emerald-600 mr-2" />
+                  <div>
+                    <div className="text-emerald-700 font-semibold text-sm">
+                      £{Math.min(referralBalance, 399)} referral credit applied
+                    </div>
+                    <div className="text-emerald-600 text-xs font-medium">
+                      Total: £{Math.max(0, 399 - Math.min(referralBalance, 399))}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
