@@ -48,11 +48,11 @@ const AdditionalFeatures = () => {
           <div className="relative w-32 h-32">
             <svg viewBox="0 0 36 36" className="w-full h-full">
               <path 
-                className="fill-border" 
+                className="fill-none stroke-gray-200 stroke-[2]" 
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
               />
               <path 
-                className="fill-primary" 
+                className="fill-none stroke-primary stroke-[3]" 
                 strokeDasharray="73, 100" 
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
               />
