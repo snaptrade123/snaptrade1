@@ -24,7 +24,7 @@ export interface IStorage {
 export class MemStorage implements IStorage {
   private analyses: Map<number, Analysis>;
   private namedAnalyses: Map<number, NamedAnalysis>;
-  private users: Map<number, User>;
+  public users: Map<number, User>;
   private analysisId: number;
   private namedAnalysisId: number;
   private userId: number;
@@ -36,6 +36,15 @@ export class MemStorage implements IStorage {
     this.analysisId = 1;
     this.namedAnalysisId = 1;
     this.userId = 1;
+    
+    // Add a test user
+    this.users.set(1, {
+      id: 1,
+      username: 'testuser',
+      password: 'password',
+      email: 'test@example.com'
+    });
+    this.userId = 2; // Next user will be ID 2
   }
 
   async createAnalysis(insertAnalysis: InsertAnalysis): Promise<Analysis> {

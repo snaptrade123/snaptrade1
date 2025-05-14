@@ -3,6 +3,13 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { analyzeChartImage, analyzeNewsSentiment, generateCombinedPrediction } from "./openai";
 import axios from "axios";
+import Stripe from "stripe";
+
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+}
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API endpoint for image analysis
@@ -152,6 +159,283 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error(`Error in /api/analysis/${req.params.id}:`, error);
       return res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Stripe subscription endpoints
+  
+  // Create a checkout session for monthly subscription
+  app.post("/api/create-monthly-subscription", async (req, res) => {
+    try {
+      const { userId, email } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+      
+      // Create or get customer
+      let customer;
+      const user = await storage.getUser(parseInt(userId));
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      if (user.stripeCustomerId) {
+        customer = await stripe.customers.retrieve(user.stripeCustomerId);
+      } else {
+        // Create a new customer
+        customer = await stripe.customers.create({
+          email: email || user.email,
+          metadata: {
+            userId: userId
+          }
+        });
+        
+        // Update user with Stripe customer ID
+        await storage.updateStripeCustomerId(user.id, customer.id);
+      }
+      
+      // Create checkout session
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        mode: "subscription",
+        customer: customer.id,
+        line_items: [
+          {
+            price_data: {
+              currency: "usd",
+              product_data: {
+                name: "SnapTrade Monthly Subscription",
+                description: "Advanced trading chart analysis with entry/exit points"
+              },
+              unit_amount: 5900, // $59.00
+              recurring: {
+                interval: "month"
+              }
+            },
+            quantity: 1
+          }
+        ],
+        success_url: `${req.headers.origin}/subscription-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${req.headers.origin}/pricing`,
+      });
+      
+      res.json({ url: session.url });
+    } catch (error) {
+      console.error("Error creating monthly subscription:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+  
+  // Create a checkout session for yearly subscription
+  app.post("/api/create-yearly-subscription", async (req, res) => {
+    try {
+      const { userId, email } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+      
+      // Create or get customer
+      let customer;
+      const user = await storage.getUser(parseInt(userId));
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      if (user.stripeCustomerId) {
+        customer = await stripe.customers.retrieve(user.stripeCustomerId);
+      } else {
+        // Create a new customer
+        customer = await stripe.customers.create({
+          email: email || user.email,
+          metadata: {
+            userId: userId
+          }
+        });
+        
+        // Update user with Stripe customer ID
+        await storage.updateStripeCustomerId(user.id, customer.id);
+      }
+      
+      // Create checkout session
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        mode: "subscription",
+        customer: customer.id,
+        line_items: [
+          {
+            price_data: {
+              currency: "usd",
+              product_data: {
+                name: "SnapTrade Yearly Subscription",
+                description: "Advanced trading chart analysis with entry/exit points (Annual Plan)"
+              },
+              unit_amount: 34900, // $349.00
+              recurring: {
+                interval: "year"
+              }
+            },
+            quantity: 1
+          }
+        ],
+        success_url: `${req.headers.origin}/subscription-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${req.headers.origin}/pricing`,
+      });
+      
+      res.json({ url: session.url });
+    } catch (error) {
+      console.error("Error creating yearly subscription:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+  
+  // Webhook for handling Stripe events
+  app.post("/api/stripe-webhook", async (req, res) => {
+    const payload = req.body;
+    const sig = req.headers['stripe-signature'];
+    
+    let event;
+    
+    // For testing, we'll disable the signature check since we don't have a webhook secret
+    try {
+      // In production, use this to verify the signature:
+      // event = stripe.webhooks.constructEvent(payload, sig, process.env.STRIPE_WEBHOOK_SECRET);
+      
+      // For development/testing, just parse the payload directly
+      event = payload;
+      
+      // Handle specific events
+      switch (event.type) {
+        case 'checkout.session.completed': {
+          const session = event.data.object;
+          
+          // Find the subscription
+          if (session.subscription) {
+            const subscription = await stripe.subscriptions.retrieve(
+              session.subscription,
+              { expand: ['items.data.price.product'] }
+            );
+            
+            // Get the customer ID
+            const customerId = session.customer;
+            
+            // Extract tier from product name
+            let tier = 'monthly';
+            if (subscription.items.data[0]?.price?.product?.name.includes('Yearly')) {
+              tier = 'yearly';
+            }
+            
+            // Get end date
+            const endDate = new Date(subscription.current_period_end * 1000);
+            
+            // Find user by Stripe customer ID
+            const users = Array.from(storage.users.values());
+            const user = users.find(u => u.stripeCustomerId === customerId);
+            
+            if (user) {
+              // Update user subscription
+              await storage.updateUserSubscription(
+                user.id,
+                subscription.id,
+                subscription.status,
+                tier,
+                endDate
+              );
+            }
+          }
+          break;
+        }
+        case 'customer.subscription.updated': {
+          const subscription = event.data.object;
+          
+          // Get the customer ID
+          const customerId = subscription.customer;
+          
+          // Extract tier from product name (need to expand the product info)
+          const expandedSubscription = await stripe.subscriptions.retrieve(
+            subscription.id,
+            { expand: ['items.data.price.product'] }
+          );
+          
+          let tier = 'monthly';
+          if (expandedSubscription.items.data[0]?.price?.product?.name.includes('Yearly')) {
+            tier = 'yearly';
+          }
+          
+          // Get end date
+          const endDate = new Date(subscription.current_period_end * 1000);
+          
+          // Find user by Stripe customer ID
+          const users = Array.from(storage.users.values());
+          const user = users.find(u => u.stripeCustomerId === customerId);
+          
+          if (user) {
+            // Update user subscription
+            await storage.updateUserSubscription(
+              user.id,
+              subscription.id,
+              subscription.status,
+              tier,
+              endDate
+            );
+          }
+          break;
+        }
+        case 'customer.subscription.deleted': {
+          const subscription = event.data.object;
+          
+          // Get the customer ID
+          const customerId = subscription.customer;
+          
+          // Find user by Stripe customer ID
+          const users = Array.from(storage.users.values());
+          const user = users.find(u => u.stripeCustomerId === customerId);
+          
+          if (user) {
+            // Update user subscription status
+            await storage.updateUserSubscription(
+              user.id,
+              subscription.id,
+              'cancelled',
+              user.subscriptionTier || '',
+              null
+            );
+          }
+          break;
+        }
+      }
+      
+      res.json({ received: true });
+    } catch (error) {
+      console.error('Error in webhook:', error);
+      return res.status(400).json({ message: `Webhook Error: ${error.message}` });
+    }
+  });
+  
+  // Get user's subscription status
+  app.get("/api/subscription-status/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+      
+      const subscriptionStatus = await storage.getUserSubscriptionStatus(parseInt(userId));
+      
+      res.json(subscriptionStatus);
+    } catch (error) {
+      console.error("Error getting subscription status:", error);
+      res.status(500).json({ 
         message: error instanceof Error ? error.message : "An unknown error occurred" 
       });
     }
