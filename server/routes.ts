@@ -895,18 +895,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Asset Lists API
   
   // Get all asset lists for a user
-  app.get("/api/asset-lists/:userId", async (req, res) => {
+  app.get("/api/asset-lists", async (req, res) => {
     try {
+      console.log("Get asset lists - Auth check:", req.isAuthenticated());
+      
       if (!req.isAuthenticated()) {
         return res.status(401).json({ message: "Unauthorized" });
       }
       
-      const userId = parseInt(req.params.userId);
+      console.log("User from session:", req.user);
+      const userId = req.user.id;
       
-      if (req.user.id !== userId) {
-        return res.status(403).json({ message: "Forbidden" });
-      }
-      
+      console.log("Fetching asset lists for user ID:", userId);
       const assetLists = await storage.getUserAssetLists(userId);
       res.json(assetLists);
     } catch (error) {
@@ -947,9 +947,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create a new asset list
   app.post("/api/asset-lists", async (req, res) => {
     try {
+      console.log("Create asset list - Auth check:", req.isAuthenticated());
+      console.log("Session:", req.session);
+      
       if (!req.isAuthenticated()) {
         return res.status(401).json({ message: "Unauthorized" });
       }
+      
+      console.log("User from session:", req.user);
       
       const { name, assets, isDefault } = req.body;
       
@@ -957,9 +962,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid asset list data" });
       }
       
+      const userId = req.user.id;
+      console.log("Creating asset list for user ID:", userId);
+      
       const assetList = await storage.createAssetList({
         name,
-        userId: req.user.id,
+        userId,
         assets,
         isDefault: isDefault || false
       });
