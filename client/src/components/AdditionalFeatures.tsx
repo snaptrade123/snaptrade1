@@ -40,32 +40,29 @@ const AdditionalFeatures = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div className="bg-card rounded-xl border border-border p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium">AI Prediction Accuracy</h3>
+          <h3 className="text-lg font-medium">Historical Accuracy</h3>
           <span className="bg-primary/20 text-primary text-xs px-2 py-1 rounded">BETA</span>
         </div>
         <div className="flex items-center justify-center p-4">
           {/* Donut chart for accuracy */}
-          <div className="relative w-36 h-36">
+          <div className="relative w-32 h-32">
             <svg viewBox="0 0 36 36" className="w-full h-full">
-              {/* Background circle */}
               <path 
-                className="fill-border/30" 
+                className="fill-border" 
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
               />
-              {/* Foreground circle (the progress) */}
               <path 
                 className="fill-primary" 
-                strokeDasharray="75, 100" 
+                strokeDasharray="73, 100" 
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
               />
-              {/* Center text with better positioning */}
-              <text x="18" y="18" className="text-3xl font-bold" dominantBaseline="middle" textAnchor="middle">75%</text>
+              <text x="18" y="19" className="fill-foreground text-[18px] font-bold" textAnchor="middle">73%</text>
             </svg>
           </div>
         </div>
         <div className="text-center mt-2">
           <p className="text-sm text-muted-foreground">
-            Verified pattern recognition accuracy based on <span className="font-medium">3,215 backtested trades</span>
+            Based on pattern detection accuracy over the last 100 analyses
           </p>
         </div>
       </div>
