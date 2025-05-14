@@ -340,19 +340,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Get end date
             const endDate = new Date(subscription.current_period_end * 1000);
             
-            // Find user by Stripe customer ID
-            const users = Array.from(storage.users.values());
-            const user = users.find(u => u.stripeCustomerId === customerId);
-            
-            if (user) {
-              // Update user subscription
-              await storage.updateUserSubscription(
-                user.id,
-                subscription.id,
-                subscription.status,
-                tier,
-                endDate
-              );
+            // Find user by Stripe customer ID in the database
+            try {
+              // Query users from the database
+              const [user] = await db.select().from(users).where(eq(users.stripeCustomerId, customerId));
+              
+              if (user) {
+                // Update user subscription
+                await storage.updateUserSubscription(
+                  user.id,
+                  subscription.id,
+                  subscription.status,
+                  tier,
+                  endDate
+                );
+              }
+            } catch (dbError) {
+              console.error("Error finding user in database:", dbError);
             }
           }
           break;
