@@ -19,6 +19,15 @@ export interface NewsSentiment {
   articles: NewsArticle[];
 }
 
+export interface TradingRecommendation {
+  entryPrice?: number | null;
+  stopLoss?: number | null;
+  takeProfit?: number | null;
+  entryCondition?: string;
+  timeframe?: string;
+  riskRewardRatio?: number | null;
+}
+
 export interface Prediction {
   direction: 'bullish' | 'bearish' | 'neutral';
   confidence: number;
@@ -27,6 +36,7 @@ export interface Prediction {
     technical: number;
     news: number;
   };
+  tradingRecommendation?: TradingRecommendation;
 }
 
 export interface AnalysisResult {

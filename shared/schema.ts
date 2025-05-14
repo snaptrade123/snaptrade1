@@ -25,6 +25,16 @@ const newsSentimentSchema = z.object({
   articles: z.array(newsArticleSchema),
 });
 
+// Trading Recommendation
+const tradingRecommendationSchema = z.object({
+  entryPrice: z.number().nullable().optional(),
+  stopLoss: z.number().nullable().optional(),
+  takeProfit: z.number().nullable().optional(),
+  entryCondition: z.string().optional(),
+  timeframe: z.string().optional(),
+  riskRewardRatio: z.number().nullable().optional(),
+});
+
 // Prediction
 const predictionSchema = z.object({
   direction: z.enum(['bullish', 'bearish', 'neutral']),
@@ -34,6 +44,7 @@ const predictionSchema = z.object({
     technical: z.number().min(0).max(100),
     news: z.number().min(0).max(100),
   }),
+  tradingRecommendation: tradingRecommendationSchema.optional(),
 });
 
 // Analysis result

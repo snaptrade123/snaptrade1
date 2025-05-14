@@ -49,7 +49,7 @@ Format your response as JSON:
 `;
 
 const combinedAnalysisPrompt = `
-You are a financial market analyst. Based on the provided technical pattern analysis and news sentiment analysis for a specific asset, predict the likely market direction.
+You are an expert financial market analyst and trader. Based on the provided technical pattern analysis and news sentiment analysis for a specific asset, predict the likely market direction and provide actionable trading recommendations including entry points, stop loss, and take profit levels.
 
 Technical patterns detected:
 {{PATTERNS}}
@@ -67,10 +67,25 @@ Provide your analysis as JSON with the following structure:
   "weights": {
     "technical": 70, // percentage weight given to technical analysis
     "news": 30 // percentage weight given to news sentiment
+  },
+  "tradingRecommendation": {
+    "entryPrice": 123.45, // estimated entry price or null if can't be determined
+    "stopLoss": 120.00, // recommended stop loss level or null
+    "takeProfit": 130.00, // recommended take profit level or null
+    "entryCondition": "Enter long position when price breaks above resistance at 123.45", // text explaining entry condition
+    "timeframe": "Short-term (1-2 weeks)", // recommended trading timeframe
+    "riskRewardRatio": 2.5 // calculated risk-reward ratio or null
   }
 }
 
 The weights should sum to 100%. Typically technical analysis should be weighted higher (70-80%) unless news sentiment is extremely strong.
+
+For the tradingRecommendation:
+- If exact price levels cannot be determined from the data, provide estimates based on the patterns or set the values to null
+- For forex and crypto, use appropriate precision (e.g., 4-5 decimal places for forex majors)
+- Ensure the risk-reward ratio is favorable (generally at least 1:2) for the direction recommended
+- Include practical entry conditions that a trader could actually use
+- If direction is "neutral", you may provide recommendations for both bullish and bearish scenarios or indicate to wait for clearer signals
 `;
 
 // Helper functions to validate OpenAI responses
@@ -109,6 +124,34 @@ function validatePredictionResponse(data: any): boolean {
   if (typeof data.weights !== 'object') return false;
   if (typeof data.weights.technical !== 'number' || typeof data.weights.news !== 'number') return false;
   if (data.weights.technical + data.weights.news !== 100) return false;
+  
+  // Validate trading recommendation if present
+  if (data.tradingRecommendation !== undefined) {
+    if (typeof data.tradingRecommendation !== 'object') return false;
+    
+    // These fields are optional, but if present must be of the correct type
+    if (data.tradingRecommendation.entryPrice !== undefined && 
+        data.tradingRecommendation.entryPrice !== null && 
+        typeof data.tradingRecommendation.entryPrice !== 'number') return false;
+        
+    if (data.tradingRecommendation.stopLoss !== undefined && 
+        data.tradingRecommendation.stopLoss !== null && 
+        typeof data.tradingRecommendation.stopLoss !== 'number') return false;
+        
+    if (data.tradingRecommendation.takeProfit !== undefined && 
+        data.tradingRecommendation.takeProfit !== null && 
+        typeof data.tradingRecommendation.takeProfit !== 'number') return false;
+        
+    if (data.tradingRecommendation.riskRewardRatio !== undefined && 
+        data.tradingRecommendation.riskRewardRatio !== null && 
+        typeof data.tradingRecommendation.riskRewardRatio !== 'number') return false;
+        
+    if (data.tradingRecommendation.entryCondition !== undefined && 
+        typeof data.tradingRecommendation.entryCondition !== 'string') return false;
+        
+    if (data.tradingRecommendation.timeframe !== undefined && 
+        typeof data.tradingRecommendation.timeframe !== 'string') return false;
+  }
   
   return true;
 }
