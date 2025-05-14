@@ -49,7 +49,10 @@ export default function UserProfile() {
   // Update referral name mutation
   const updateReferralName = useMutation({
     mutationFn: async (name: string) => {
-      const res = await apiRequest("POST", "/api/referral/update-name", { customName: name });
+      const res = await apiRequest("POST", "/api/referral/update-name", { 
+        customName: name,
+        userId: user?.id // Include userId in the request 
+      });
       return await res.json();
     },
     onSuccess: () => {

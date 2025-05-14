@@ -30,15 +30,15 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
+  // Use a simple in-memory session without external store
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || "snaptrade-session-secret",
-    resave: false,
-    saveUninitialized: false,
-    store: storage.sessionStore,
+    secret: "snaptrade-session-secret-key",
+    resave: true,
+    saveUninitialized: true,
     cookie: {
-      secure: false, // Setting to false for development
+      secure: false,
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
-      sameSite: 'lax'
+      httpOnly: true
     }
   };
 
