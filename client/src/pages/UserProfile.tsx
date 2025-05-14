@@ -209,11 +209,78 @@ export default function UserProfile() {
                     {isLoading ? (
                       <Skeleton className="h-8 w-20" />
                     ) : (
-                      <span className="text-2xl font-bold">£{referralInfo?.referralBonusBalance || 0}</span>
+                      <div className="space-y-2">
+                        <span className="text-2xl font-bold">£{referralInfo?.referralBonusBalance || 0}</span>
+                        {(referralInfo?.referralBonusBalance || 0) > 0 && (
+                          <div className="flex flex-col space-y-2">
+                            <div className="text-sm text-muted-foreground">
+                              Use your bonus credit towards your next subscription
+                            </div>
+                            <Button 
+                              size="sm" 
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white w-full md:w-auto"
+                              onClick={() => window.location.href = "/pricing"}
+                            >
+                              <ZapIcon className="mr-2 h-4 w-4" />
+                              Redeem on Subscription
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </CardContent>
                 </Card>
               </div>
+              
+              {/* Bonus Balance Redemption */}
+              {(referralInfo?.referralBonusBalance || 0) > 0 && (
+                <Card className="bg-emerald-50 border-emerald-200">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg flex items-center text-emerald-800">
+                      <ZapIcon className="mr-2 h-5 w-5 text-emerald-600" />
+                      Redeem Your Bonus Credit
+                    </CardTitle>
+                    <CardDescription className="text-emerald-700">
+                      You have <span className="font-bold">£{referralInfo.referralBonusBalance}</span> available to use towards your subscription
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="bg-white p-3 rounded-md border border-emerald-200">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium">Monthly Subscription</div>
+                            <div className="text-sm text-muted-foreground">Regular price: £59</div>
+                          </div>
+                          <Button
+                            onClick={() => window.location.href = "/pricing"}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                          >
+                            Apply £{Math.min(referralInfo.referralBonusBalance, 59)}
+                            <ExternalLink className="ml-2 h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-white p-3 rounded-md border border-emerald-200">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium">Annual Subscription</div>
+                            <div className="text-sm text-muted-foreground">Regular price: £399</div>
+                          </div>
+                          <Button
+                            onClick={() => window.location.href = "/pricing"}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                          >
+                            Apply £{Math.min(referralInfo.referralBonusBalance, 399)}
+                            <ExternalLink className="ml-2 h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Referral Link */}
               <div className="space-y-4">
