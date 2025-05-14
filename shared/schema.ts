@@ -118,7 +118,26 @@ export const insertReferralSchema = createInsertSchema(referrals).omit({
   createdAt: true 
 });
 
+// Custom Asset Lists
+export const assetLists = pgTable("asset_lists", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  assets: jsonb("assets").$type<{ type: string, value: string, label: string }[]>().notNull(),
+  isDefault: boolean("is_default").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertAssetListSchema = createInsertSchema(assetLists).omit({ 
+  id: true, 
+  createdAt: true,
+  updatedAt: true 
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertReferral = z.infer<typeof insertReferralSchema>;
 export type Referral = typeof referrals.$inferSelect;
+export type InsertAssetList = z.infer<typeof insertAssetListSchema>;
+export type AssetList = typeof assetLists.$inferSelect;

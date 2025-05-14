@@ -209,34 +209,117 @@ export const ASSETS = {
     { value: 'EUR/GBP', label: 'EUR/GBP - Euro/Pound' },
     { value: 'EUR/JPY', label: 'EUR/JPY - Euro/Yen' },
     { value: 'GBP/JPY', label: 'GBP/JPY - Pound/Yen' },
+    { value: 'AUD/JPY', label: 'AUD/JPY - Australian Dollar/Yen' },
+    { value: 'AUD/CAD', label: 'AUD/CAD - Australian Dollar/Canadian Dollar' },
+    { value: 'AUD/CHF', label: 'AUD/CHF - Australian Dollar/Swiss Franc' },
+    { value: 'AUD/NZD', label: 'AUD/NZD - Australian Dollar/New Zealand Dollar' },
+    { value: 'CAD/CHF', label: 'CAD/CHF - Canadian Dollar/Swiss Franc' },
+    { value: 'CAD/JPY', label: 'CAD/JPY - Canadian Dollar/Japanese Yen' },
+    { value: 'CHF/JPY', label: 'CHF/JPY - Swiss Franc/Japanese Yen' },
+    { value: 'EUR/AUD', label: 'EUR/AUD - Euro/Australian Dollar' },
+    { value: 'EUR/CAD', label: 'EUR/CAD - Euro/Canadian Dollar' },
+    { value: 'EUR/CHF', label: 'EUR/CHF - Euro/Swiss Franc' },
+    { value: 'EUR/NOK', label: 'EUR/NOK - Euro/Norwegian Krone' },
+    { value: 'EUR/NZD', label: 'EUR/NZD - Euro/New Zealand Dollar' },
+    { value: 'EUR/SEK', label: 'EUR/SEK - Euro/Swedish Krona' },
+    { value: 'GBP/AUD', label: 'GBP/AUD - British Pound/Australian Dollar' },
+    { value: 'GBP/CAD', label: 'GBP/CAD - British Pound/Canadian Dollar' },
+    { value: 'GBP/CHF', label: 'GBP/CHF - British Pound/Swiss Franc' },
+    { value: 'GBP/NZD', label: 'GBP/NZD - British Pound/New Zealand Dollar' },
+    { value: 'NZD/CAD', label: 'NZD/CAD - New Zealand Dollar/Canadian Dollar' },
+    { value: 'NZD/CHF', label: 'NZD/CHF - New Zealand Dollar/Swiss Franc' },
+    { value: 'NZD/JPY', label: 'NZD/JPY - New Zealand Dollar/Japanese Yen' },
+    { value: 'USD/MXN', label: 'USD/MXN - US Dollar/Mexican Peso' },
+    { value: 'USD/NOK', label: 'USD/NOK - US Dollar/Norwegian Krone' },
+    { value: 'USD/SEK', label: 'USD/SEK - US Dollar/Swedish Krona' },
+    { value: 'USD/SGD', label: 'USD/SGD - US Dollar/Singapore Dollar' },
+    { value: 'USD/ZAR', label: 'USD/ZAR - US Dollar/South African Rand' },
     { value: 'XAU/USD', label: 'XAU/USD - Gold' },
     { value: 'XAG/USD', label: 'XAG/USD - Silver' },
-    { value: 'USD/CNH', label: 'USD/CNH - Chinese Yuan' },
-    { value: 'USD/HKD', label: 'USD/HKD - Hong Kong Dollar' }
+    { value: 'USD/CNH', label: 'USD/CNH - US Dollar/Chinese Yuan' },
+    { value: 'USD/HKD', label: 'USD/HKD - US Dollar/Hong Kong Dollar' }
   ],
   stocks: [
+    // US Large Cap Tech
     { value: 'AAPL', label: 'Apple (AAPL)' },
     { value: 'MSFT', label: 'Microsoft (MSFT)' },
     { value: 'GOOGL', label: 'Alphabet (GOOGL)' },
+    { value: 'GOOG', label: 'Alphabet Class C (GOOG)' },
     { value: 'AMZN', label: 'Amazon (AMZN)' },
     { value: 'TSLA', label: 'Tesla (TSLA)' },
-    { value: 'META', label: 'Meta (META)' },
+    { value: 'META', label: 'Meta Platforms (META)' },
     { value: 'NVDA', label: 'NVIDIA (NVDA)' },
+    { value: 'NFLX', label: 'Netflix (NFLX)' },
+    
+    // US Financial Sector
     { value: 'JPM', label: 'JPMorgan Chase (JPM)' },
     { value: 'BAC', label: 'Bank of America (BAC)' },
+    { value: 'WFC', label: 'Wells Fargo (WFC)' },
+    { value: 'C', label: 'Citigroup (C)' },
+    { value: 'GS', label: 'Goldman Sachs (GS)' },
+    { value: 'MS', label: 'Morgan Stanley (MS)' },
+    
+    // US Retail
     { value: 'WMT', label: 'Walmart (WMT)' },
-    { value: 'NFLX', label: 'Netflix (NFLX)' },
+    { value: 'COST', label: 'Costco (COST)' },
+    { value: 'TGT', label: 'Target (TGT)' },
+    { value: 'HD', label: 'Home Depot (HD)' },
+    { value: 'LOW', label: 'Lowe\'s (LOW)' },
+    
+    // US Entertainment/Media
     { value: 'DIS', label: 'Disney (DIS)' },
+    { value: 'CMCSA', label: 'Comcast (CMCSA)' },
+    { value: 'PARA', label: 'Paramount (PARA)' },
+    { value: 'WBD', label: 'Warner Bros Discovery (WBD)' },
+    
+    // US Semiconductor
     { value: 'INTC', label: 'Intel (INTC)' },
     { value: 'AMD', label: 'AMD (AMD)' },
+    { value: 'QCOM', label: 'Qualcomm (QCOM)' },
+    { value: 'MU', label: 'Micron Technology (MU)' },
+    { value: 'TXN', label: 'Texas Instruments (TXN)' },
+    
+    // US Tech/Fintech
     { value: 'PYPL', label: 'PayPal (PYPL)' },
+    { value: 'SQ', label: 'Block (SQ)' },
+    { value: 'V', label: 'Visa (V)' },
+    { value: 'MA', label: 'Mastercard (MA)' },
+    { value: 'ADBE', label: 'Adobe (ADBE)' },
+    { value: 'CRM', label: 'Salesforce (CRM)' },
+    
+    // Tech/Consumer
     { value: 'UBER', label: 'Uber (UBER)' },
+    { value: 'LYFT', label: 'Lyft (LYFT)' },
     { value: 'ABNB', label: 'Airbnb (ABNB)' },
+    { value: 'DASH', label: 'DoorDash (DASH)' },
+    
+    // Consumer Goods
     { value: 'SBUX', label: 'Starbucks (SBUX)' },
+    { value: 'MCD', label: 'McDonald\'s (MCD)' },
     { value: 'KO', label: 'Coca-Cola (KO)' },
-    { value: 'PEP', label: 'PepsiCo (PEP)' }
+    { value: 'PEP', label: 'PepsiCo (PEP)' },
+    { value: 'NKE', label: 'Nike (NKE)' },
+    
+    // Healthcare
+    { value: 'JNJ', label: 'Johnson & Johnson (JNJ)' },
+    { value: 'PFE', label: 'Pfizer (PFE)' },
+    { value: 'MRNA', label: 'Moderna (MRNA)' },
+    { value: 'UNH', label: 'UnitedHealth Group (UNH)' },
+    
+    // UK Stocks
+    { value: 'HSBA.L', label: 'HSBC Holdings (HSBA.L)' },
+    { value: 'BARC.L', label: 'Barclays (BARC.L)' },
+    { value: 'LLOY.L', label: 'Lloyds Banking Group (LLOY.L)' },
+    { value: 'BP.L', label: 'BP (BP.L)' },
+    { value: 'SHEL.L', label: 'Shell (SHEL.L)' },
+    { value: 'VOD.L', label: 'Vodafone Group (VOD.L)' },
+    { value: 'GSK.L', label: 'GSK (GSK.L)' },
+    { value: 'AZN.L', label: 'AstraZeneca (AZN.L)' },
+    { value: 'ULVR.L', label: 'Unilever (ULVR.L)' },
+    { value: 'TSCO.L', label: 'Tesco (TSCO.L)' }
   ],
   crypto: [
+    // Major Cryptocurrencies
     { value: 'BTC/USD', label: 'Bitcoin (BTC/USD)' },
     { value: 'ETH/USD', label: 'Ethereum (ETH/USD)' },
     { value: 'SOL/USD', label: 'Solana (SOL/USD)' },
@@ -246,6 +329,28 @@ export const ASSETS = {
     { value: 'DOT/USD', label: 'Polkadot (DOT/USD)' },
     { value: 'DOGE/USD', label: 'Dogecoin (DOGE/USD)' },
     { value: 'AVAX/USD', label: 'Avalanche (AVAX/USD)' },
-    { value: 'MATIC/USD', label: 'Polygon (MATIC/USD)' }
+    { value: 'MATIC/USD', label: 'Polygon (MATIC/USD)' },
+    
+    // Additional Top-50 Cryptocurrencies
+    { value: 'SHIB/USD', label: 'Shiba Inu (SHIB/USD)' },
+    { value: 'LTC/USD', label: 'Litecoin (LTC/USD)' },
+    { value: 'TRX/USD', label: 'TRON (TRX/USD)' },
+    { value: 'UNI/USD', label: 'Uniswap (UNI/USD)' },
+    { value: 'LINK/USD', label: 'Chainlink (LINK/USD)' },
+    { value: 'XLM/USD', label: 'Stellar (XLM/USD)' },
+    { value: 'ATOM/USD', label: 'Cosmos (ATOM/USD)' },
+    { value: 'ETC/USD', label: 'Ethereum Classic (ETC/USD)' },
+    { value: 'FIL/USD', label: 'Filecoin (FIL/USD)' },
+    { value: 'VET/USD', label: 'VeChain (VET/USD)' },
+    { value: 'NEAR/USD', label: 'NEAR Protocol (NEAR/USD)' },
+    { value: 'ALGO/USD', label: 'Algorand (ALGO/USD)' },
+    { value: 'FTM/USD', label: 'Fantom (FTM/USD)' },
+    { value: 'XTZ/USD', label: 'Tezos (XTZ/USD)' },
+    { value: 'SAND/USD', label: 'The Sandbox (SAND/USD)' },
+    { value: 'MANA/USD', label: 'Decentraland (MANA/USD)' },
+    { value: 'HBAR/USD', label: 'Hedera (HBAR/USD)' },
+    { value: 'EGLD/USD', label: 'MultiversX (EGLD/USD)' },
+    { value: 'APE/USD', label: 'ApeCoin (APE/USD)' },
+    { value: 'AAVE/USD', label: 'Aave (AAVE/USD)' }
   ]
 };
