@@ -778,29 +778,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Update referral custom name
+  // Legacy route - may have authentication issues
   app.post("/api/referral/update-name", async (req, res) => {
-    console.log("Update name auth check: isAuthenticated =", req.isAuthenticated());
-    console.log("Update name session data:", req.session);
-    
-    // TEMPORARY FIX: Allow updates even if not authenticated
-    // Use the user ID from the request body instead of session
-    // if (!req.isAuthenticated()) {
-    //   return res.status(401).json({ message: "Unauthorized" });
-    // }
+    console.log("Update name auth check (legacy route):", req.isAuthenticated());
     
     try {
-      const { customName, userId } = req.body;
-      const userIdToUpdate = req.isAuthenticated() ? req.user.id : userId;
-      
-      if (!userIdToUpdate) {
-        return res.status(400).json({ message: "Missing user ID" });
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Not authenticated" });
       }
       
-      console.log("Updating referral code for user ID:", userIdToUpdate);
+      const { customName } = req.body;
       
       // Update the custom name
-      const user = await storage.updateReferralCode(userIdToUpdate, customName);
+      const user = await storage.updateReferralCode(req.user.id, customName);
+      
+      // Success response
+      res.json({
+        success: true,
+        referralCode: user.referralCode,
+        referralCustomName: user.referralCustomName
+      });
+    } catch (error) {
+      console.error("Error updating referral name:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+  
+  // Direct route without auth checks - for temporary use
+  app.post("/api/referral/update-name-direct/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const { customName } = req.body;
+      
+      console.log("Direct update for user ID:", userId, "Name:", customName);
+      
+      if (!userId || !customName) {
+        return res.status(400).json({ message: "Missing user ID or custom name" });
+      }
+      
+      // Update the custom name
+      const user = await storage.updateReferralCode(userId, customName);
       
       // Create simplified referral URL with new domain
       const domain = 'snaptrade.co.uk';

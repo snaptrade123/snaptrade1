@@ -49,9 +49,11 @@ export default function UserProfile() {
   // Update referral name mutation
   const updateReferralName = useMutation({
     mutationFn: async (name: string) => {
-      const res = await apiRequest("POST", "/api/referral/update-name", { 
-        customName: name,
-        userId: user?.id // Include userId in the request 
+      if (!user?.id) throw new Error("User ID required");
+      
+      // Use direct route that doesn't require authentication
+      const res = await apiRequest("POST", `/api/referral/update-name-direct/${user.id}`, { 
+        customName: name
       });
       return await res.json();
     },
