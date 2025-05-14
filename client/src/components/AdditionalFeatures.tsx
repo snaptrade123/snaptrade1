@@ -47,7 +47,6 @@ const AdditionalFeatures = () => {
           {/* Donut chart for accuracy */}
           <div className="relative w-32 h-32">
             <svg viewBox="0 0 36 36" className="w-full h-full">
-              <circle cx="18" cy="18" r="15.9155" className="fill-secondary/30" />
               <path 
                 className="fill-border" 
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
