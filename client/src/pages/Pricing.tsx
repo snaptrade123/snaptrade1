@@ -94,7 +94,7 @@ export default function Pricing() {
             <CardTitle className="flex items-center text-2xl">Monthly Plan</CardTitle>
             <CardDescription>Perfect for active traders</CardDescription>
             <div className="mt-4">
-              <span className="text-4xl font-bold">$59</span>
+              <span className="text-4xl font-bold">£59</span>
               <span className="text-muted-foreground ml-1">/month</span>
             </div>
           </CardHeader>
@@ -135,11 +135,11 @@ export default function Pricing() {
             <CardTitle className="flex items-center text-2xl">Annual Plan</CardTitle>
             <CardDescription>Best value for serious traders</CardDescription>
             <div className="mt-4">
-              <span className="text-4xl font-bold">$349</span>
+              <span className="text-4xl font-bold">£349</span>
               <span className="text-muted-foreground ml-1">/year</span>
             </div>
             <div className="mt-1 inline-block bg-emerald-500/10 text-emerald-500 text-xs px-2 py-1 rounded-full">
-              Save $359 compared to monthly
+              Save £359 compared to monthly
             </div>
           </CardHeader>
           <CardContent>

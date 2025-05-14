@@ -212,12 +212,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         line_items: [
           {
             price_data: {
-              currency: "usd",
+              currency: "gbp",
               product_data: {
                 name: "SnapTrade Monthly Subscription",
                 description: "Advanced trading chart analysis with entry/exit points"
               },
-              unit_amount: 5900, // $59.00
+              unit_amount: 5900, // £59.00
               recurring: {
                 interval: "month"
               }
@@ -278,12 +278,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         line_items: [
           {
             price_data: {
-              currency: "usd",
+              currency: "gbp",
               product_data: {
                 name: "SnapTrade Yearly Subscription",
                 description: "Advanced trading chart analysis with entry/exit points (Annual Plan)"
               },
-              unit_amount: 34900, // $349.00
+              unit_amount: 34900, // £349.00
               recurring: {
                 interval: "year"
               }

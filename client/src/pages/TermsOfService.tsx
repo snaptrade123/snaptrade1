@@ -102,8 +102,8 @@ export default function TermsOfService() {
               SnapTrade offers subscription-based services at the following rates:
             </p>
             <ul className="list-disc pl-6 mt-4 space-y-2">
-              <li>Monthly subscription: $59 per month</li>
-              <li>Annual subscription: $349 per year</li>
+              <li>Monthly subscription: £59 per month</li>
+              <li>Annual subscription: £349 per year</li>
             </ul>
             <p className="mt-4">
               Subscriptions are automatically renewed unless canceled at least 24 hours before the end of the current period.
