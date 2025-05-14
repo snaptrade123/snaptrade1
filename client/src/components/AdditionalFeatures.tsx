@@ -56,7 +56,7 @@ const AdditionalFeatures = () => {
                 strokeDasharray="73, 100" 
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
               />
-              <text x="18" y="20.35" className="fill-foreground text-[16px] font-bold" textAnchor="middle" dominantBaseline="middle">73%</text>
+              <text x="18" y="20.35" className="fill-primary text-[15px] font-bold" textAnchor="middle" dominantBaseline="middle">73%</text>
             </svg>
           </div>
         </div>
