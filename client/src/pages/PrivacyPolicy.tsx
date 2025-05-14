@@ -110,7 +110,7 @@ export default function PrivacyPolicy() {
               <li>Close your account</li>
             </ul>
             <p className="mt-4">
-              To exercise these rights, please contact us at privacy@snaptrade.com.
+              To exercise these rights, please contact us at privacy@snaptrade.co.uk.
             </p>
           </section>
 
@@ -160,7 +160,7 @@ export default function PrivacyPolicy() {
               If you have any questions about this Privacy Policy or our practices, please contact us at:
             </p>
             <p className="mt-4">
-              privacy@snaptrade.com
+              privacy@snaptrade.co.uk
             </p>
           </section>
 
