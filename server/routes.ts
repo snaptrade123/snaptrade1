@@ -331,7 +331,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create a checkout session for monthly subscription
   app.post("/api/create-monthly-subscription", async (req, res) => {
     try {
-      const { userId, email } = req.body;
+      const { userId, email, applyReferralCredit } = req.body;
       
       if (!userId) {
         return res.status(400).json({ message: "User ID is required" });
@@ -360,6 +360,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updateStripeCustomerId(user.id, customer.id);
       }
       
+      // Standard monthly price in pence
+      let unitAmount = 5900; // £59.00
+      
+      // Apply referral credit if requested and available
+      if (applyReferralCredit === true) {
+        const referralBalance = user.referralBonusBalance || 0;
+        
+        if (referralBalance > 0) {
+          // Convert to pence (£10 = 1000 pence)
+          const creditInPence = Math.min(referralBalance * 100, unitAmount);
+          
+          // Apply discount
+          unitAmount = Math.max(0, unitAmount - creditInPence);
+          
+          // Update user's referral balance - deducting the amount used
+          const creditUsedInPounds = creditInPence / 100;
+          await storage.updateReferralBonusBalance(
+            user.id, 
+            referralBalance - creditUsedInPounds
+          );
+          
+          console.log(`Applied £${creditUsedInPounds} referral credit for user ${user.username}`);
+        }
+      }
+      
       // Create checkout session
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
@@ -373,7 +398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 name: "SnapTrade Monthly Subscription",
                 description: "Advanced trading chart analysis with entry/exit points"
               },
-              unit_amount: 5900, // £59.00
+              unit_amount: unitAmount, 
               recurring: {
                 interval: "month"
               }
@@ -397,7 +422,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create a checkout session for yearly subscription
   app.post("/api/create-yearly-subscription", async (req, res) => {
     try {
-      const { userId, email } = req.body;
+      const { userId, email, applyReferralCredit } = req.body;
       
       if (!userId) {
         return res.status(400).json({ message: "User ID is required" });
@@ -426,6 +451,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updateStripeCustomerId(user.id, customer.id);
       }
       
+      // Standard yearly price in pence
+      let unitAmount = 39900; // £399.00
+      
+      // Apply referral credit if requested and available
+      if (applyReferralCredit === true) {
+        const referralBalance = user.referralBonusBalance || 0;
+        
+        if (referralBalance > 0) {
+          // Convert to pence (£10 = 1000 pence)
+          const creditInPence = Math.min(referralBalance * 100, unitAmount);
+          
+          // Apply discount
+          unitAmount = Math.max(0, unitAmount - creditInPence);
+          
+          // Update user's referral balance - deducting the amount used
+          const creditUsedInPounds = creditInPence / 100;
+          await storage.updateReferralBonusBalance(
+            user.id, 
+            referralBalance - creditUsedInPounds
+          );
+          
+          console.log(`Applied £${creditUsedInPounds} referral credit for user ${user.username} on yearly plan`);
+        }
+      }
+      
       // Create checkout session
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
@@ -439,7 +489,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 name: "SnapTrade Yearly Subscription",
                 description: "Advanced trading chart analysis with entry/exit points (Annual Plan)"
               },
-              unit_amount: 39900, // £399.00
+              unit_amount: unitAmount,
               recurring: {
                 interval: "year"
               }

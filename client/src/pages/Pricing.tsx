@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Check, Zap } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
+import { ArrowRight, Check, Zap, GiftIcon, Loader2 } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 const features = [
   "Advanced pattern detection",
@@ -18,21 +22,43 @@ const features = [
 
 export default function Pricing() {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const [applyReferralCredit, setApplyReferralCredit] = useState(false);
+
+  // Get user referral info
+  const { data: referralInfo, isLoading: referralLoading } = useQuery({
+    queryKey: ["/api/referral", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const res = await apiRequest("GET", `/api/referral/${user.id}`);
+      return res.json();
+    },
+    enabled: !!user,
+  });
+  
+  const referralBalance = referralInfo?.referralBonusBalance || 0;
+  const hasReferralBalance = referralBalance > 0;
 
   // Mutations for subscriptions
   const monthlySubscription = useMutation({
     mutationFn: async () => {
-      // In a real app, you would get the user ID from auth context
-      const userId = 1; // Using our test user for demonstration
+      if (!user) {
+        // Redirect to login if not authenticated
+        window.location.href = "/auth";
+        return null;
+      }
+      
       const response = await apiRequest("POST", "/api/create-monthly-subscription", { 
-        userId,
-        email: "test@example.com" 
+        userId: user.id,
+        email: user.email,
+        applyReferralCredit: applyReferralCredit
       });
+      
       const data = await response.json();
       return data;
     },
     onSuccess: (data) => {
-      if (data.url) {
+      if (data?.url) {
         window.location.href = data.url;
       }
     },
@@ -47,17 +73,23 @@ export default function Pricing() {
 
   const yearlySubscription = useMutation({
     mutationFn: async () => {
-      // In a real app, you would get the user ID from auth context
-      const userId = 1; // Using our test user for demonstration
+      if (!user) {
+        // Redirect to login if not authenticated
+        window.location.href = "/auth";
+        return null;
+      }
+      
       const response = await apiRequest("POST", "/api/create-yearly-subscription", { 
-        userId,
-        email: "test@example.com" 
+        userId: user.id,
+        email: user.email,
+        applyReferralCredit: applyReferralCredit
       });
+      
       const data = await response.json();
       return data;
     },
     onSuccess: (data) => {
-      if (data.url) {
+      if (data?.url) {
         window.location.href = data.url;
       }
     },

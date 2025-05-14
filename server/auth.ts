@@ -32,12 +32,13 @@ async function comparePasswords(supplied: string, stored: string) {
 export function setupAuth(app: Express) {
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "snaptrade-session-secret",
-    resave: false,
-    saveUninitialized: false,
+    resave: true,
+    saveUninitialized: true,
     store: storage.sessionStore,
     cookie: {
       secure: process.env.NODE_ENV === "production",
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+      sameSite: 'lax'
     }
   };
 
@@ -87,8 +88,10 @@ export function setupAuth(app: Express) {
         }
       }
 
-      // Generate a unique referral code
-      const referralCode = nanoid(8);
+      // Generate a more readable unique referral code based on username
+      const userPart = req.body.username.slice(0, 5).toLowerCase();
+      const randomPart = nanoid(5).toLowerCase();
+      const referralCode = `${userPart}-${randomPart}`;
       
       // Create new user with hashed password and referral code
       const hashedPassword = await hashPassword(req.body.password);
