@@ -89,6 +89,20 @@ export const users = pgTable("users", {
   subscriptionStatus: text("subscription_status"),
   subscriptionTier: text("subscription_tier"),
   subscriptionEndDate: timestamp("subscription_end_date"),
+  referralCode: text("referral_code").unique(),
+  referralCustomName: text("referral_custom_name"),
+  referralBonusBalance: integer("referral_bonus_balance").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Referrals table to track who referred whom
+export const referrals = pgTable("referrals", {
+  id: serial("id").primaryKey(),
+  referrerId: integer("referrer_id").notNull().references(() => users.id),
+  referredId: integer("referred_id").notNull().unique().references(() => users.id),
+  bonusAwarded: boolean("bonus_awarded").default(false),
+  subscriptionPurchased: boolean("subscription_purchased").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -97,5 +111,12 @@ export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
 });
 
+export const insertReferralSchema = createInsertSchema(referrals).omit({ 
+  id: true, 
+  createdAt: true 
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+export type InsertReferral = z.infer<typeof insertReferralSchema>;
+export type Referral = typeof referrals.$inferSelect;
