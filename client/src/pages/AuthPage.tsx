@@ -16,7 +16,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Loader2, ChevronRight, Lock, Mail, User } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, ChevronRight, Lock, Mail, User, UserPlus } from "lucide-react";
 import { Link } from "wouter";
 
 // Login schema
@@ -43,7 +44,32 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<string>("login");
   const { user, loginMutation, registerMutation } = useAuth();
-  const [_, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [referrerName, setReferrerName] = useState<string | null>(null);
+
+  // Extract referral code from URL if present
+  useEffect(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+    const ref = queryParams.get('ref');
+    
+    if (ref) {
+      setReferralCode(ref);
+      setActiveTab("register");
+      
+      // Fetch referrer username if we have a code
+      fetch(`/api/referrer-info?code=${ref}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.username) {
+            setReferrerName(data.username);
+          }
+        })
+        .catch(err => {
+          console.error("Failed to fetch referrer info:", err);
+        });
+    }
+  }, []);
 
   // Redirect if user is already logged in
   useEffect(() => {
@@ -79,7 +105,16 @@ export default function AuthPage() {
   const onRegisterSubmit = (values: RegisterFormValues) => {
     // Omit confirmPassword when sending to API
     const { confirmPassword, ...registerData } = values;
-    registerMutation.mutate(registerData);
+    
+    // Add referral code if present
+    if (referralCode) {
+      registerMutation.mutate({ 
+        ...registerData, 
+        referredBy: referralCode 
+      });
+    } else {
+      registerMutation.mutate(registerData);
+    }
   };
 
   return (
@@ -166,6 +201,19 @@ export default function AuthPage() {
             <TabsContent value="register">
               <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)}>
                 <CardContent className="space-y-4 mt-4">
+                  {referralCode && referrerName && (
+                    <div className="p-3 bg-muted rounded-md">
+                      <div className="flex items-center gap-2">
+                        <UserPlus className="h-5 w-5 text-primary" />
+                        <div>
+                          <p className="text-sm font-medium">
+                            Invited by <span className="font-bold">{referrerName}</span>
+                          </p>
+                          <Badge variant="outline" className="mt-1">Referral code: {referralCode}</Badge>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="register-username">
                       <div className="flex items-center space-x-2">

@@ -109,6 +109,8 @@ export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
   email: true,
+}).extend({
+  referredBy: z.string().optional(),
 });
 
 export const insertReferralSchema = createInsertSchema(referrals).omit({ 
