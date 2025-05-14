@@ -38,8 +38,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       if (user) {
-        // Redirect to the auth page with the referral code
-        return res.redirect(`/auth?ref=${user.referralCode}`);
+        // Check if user has an active subscription - only active subscribers can refer
+        const subscriptionStatus = await storage.getUserSubscriptionStatus(user.id);
+        
+        if (subscriptionStatus.active) {
+          // User has active subscription - redirect with referral code
+          console.log(`Valid referral from user ${user.username} with active subscription`);
+          return res.redirect(`/auth?ref=${user.referralCode}`);
+        } else {
+          // User's subscription is not active - referral link is invalid
+          console.log(`Referral link inactive: User ${user.username} has no active subscription`);
+          return res.redirect('/auth');
+        }
       } else {
         // If no matching user, redirect to regular auth page
         return res.redirect('/auth');
@@ -597,7 +607,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   endDate
                 );
                 
-                // Process referral bonus if this user was referred
+                // Process referral status if this user was referred, but don't award bonus yet
+                // The bonus will be awarded after 7-day refund period
                 try {
                   // Find if this user was referred by someone
                   const referrals = await db.query.referrals.findMany({
@@ -607,24 +618,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   if (referrals.length > 0) {
                     const referral = referrals[0]; // Should only be one
                     
-                    // Only award bonus if this is the first subscription and it hasn't been awarded yet
-                    if (!referral.subscriptionPurchased && !referral.bonusAwarded) {
-                      // Update referral status
+                    // Only update status if this is the first subscription and the status hasn't been updated yet
+                    if (!referral.subscriptionPurchased) {
+                      // Update referral subscription status, but don't award bonus yet
                       await storage.updateReferralStatus(
                         referral.id,
                         true, // subscriptionPurchased
-                        true  // bonusAwarded
+                        false // bonusAwarded - will be awarded after 7-day period
                       );
                       
-                      // Award £10 bonus to the referrer
-                      const referrer = await storage.getUser(referral.referrerId);
-                      if (referrer) {
-                        await storage.updateReferralBonusBalance(
-                          referrer.id,
-                          (referrer.referralBonusBalance || 0) + 10
-                        );
-                        console.log(`Awarded £10 referral bonus to user ${referrer.username} for referring ${user.username}`);
-                      }
+                      console.log(`Marked referred subscription as purchased for user ${user.username}. Bonus will be awarded after 7-day refund period.`);
                     }
                   }
                 } catch (referralError) {
@@ -675,6 +678,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           } catch (dbError) {
             console.error("Error finding user in database:", dbError);
+          }
+          break;
+        }
+        case 'invoice.paid': {
+          // This event happens initially when subscription is created, and also on renewals
+          const invoice = event.data.object;
+          
+          // Only process if this is a subscription invoice
+          if (invoice.subscription) {
+            const subscriptionId = invoice.subscription;
+            
+            // Get subscription details to find the customer/user
+            const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+            const customerId = subscription.customer;
+            
+            // Find user by Stripe customer ID
+            try {
+              const [user] = await db.select().from(users).where(eq(users.stripeCustomerId, customerId));
+              
+              if (user) {
+                // Check invoice creation date
+                const invoiceCreatedTimestamp = invoice.created;
+                const currentTimestamp = Math.floor(Date.now() / 1000);
+                
+                // Check if invoice is at least 7 days old (7 days = 604800 seconds)
+                // This means the refund period has passed
+                if (currentTimestamp - invoiceCreatedTimestamp >= 604800) {
+                  console.log(`Invoice ${invoice.id} for subscription ${subscriptionId} has passed the 7-day refund period`);
+                  
+                  // Look for any referred subscriptions that haven't had their bonus awarded yet
+                  const referrals = await db.query.referrals.findMany({
+                    where: and(
+                      eq(schema.referrals.referredId, user.id),
+                      eq(schema.referrals.subscriptionPurchased, true),
+                      eq(schema.referrals.bonusAwarded, false)
+                    )
+                  });
+                  
+                  if (referrals.length > 0) {
+                    const referral = referrals[0];
+                    
+                    // Get the referrer user
+                    const referrer = await storage.getUser(referral.referrerId);
+                    if (referrer) {
+                      // Make sure referrer has an active subscription (only active subscribers can get referral bonuses)
+                      if (referrer.subscriptionStatus === 'active') {
+                        // Update referral record to mark bonus as awarded
+                        await storage.updateReferralStatus(
+                          referral.id,
+                          true, // subscriptionPurchased (already set, but confirming)
+                          true  // bonusAwarded - now past 7 day period
+                        );
+                        
+                        // Award £10 bonus to the referrer
+                        await storage.updateReferralBonusBalance(
+                          referrer.id,
+                          (referrer.referralBonusBalance || 0) + 10
+                        );
+                        
+                        console.log(`Awarded £10 referral bonus to user ${referrer.username} for referring ${user.username} after 7-day refund period`);
+                      } else {
+                        console.log(`Referrer ${referrer.username} has no active subscription, cannot award referral bonus`);
+                      }
+                    }
+                  }
+                }
+              }
+            } catch (error) {
+              console.error("Error processing invoice for referral bonus:", error);
+            }
           }
           break;
         }
