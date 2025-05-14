@@ -1,16 +1,32 @@
-import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import UploadSection from "@/components/UploadSection";
 import PatternInfo from "@/components/PatternInfo";
 import AnalysisResults from "@/components/AnalysisResults";
 import AdditionalFeatures from "@/components/AdditionalFeatures";
-import { AnalysisResult } from "@/lib/api";
-import { analyzeChart } from "@/lib/api";
+import { AnalysisResult, SubscriptionStatus } from "@/lib/api";
+import { analyzeChart, checkSubscription } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
+import { LockIcon, ZapIcon } from "lucide-react";
 
 const Home = () => {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
+  
+  // In a real app, we would get the user ID from an auth context
+  const userId = 1; // Using our test user
+  
+  // Query subscription status
+  const { data: subscriptionData, isLoading: isLoadingSubscription } = useQuery({
+    queryKey: ['subscription', userId],
+    queryFn: async () => {
+      return await checkSubscription(userId);
+    }
+  });
   
   const analyzeChartMutation = useMutation({
     mutationFn: async ({ file, asset }: { file: File, asset: string }) => {

@@ -119,3 +119,31 @@ export const saveAnalysis = async (analysisName: string, notes: string, result: 
     throw error;
   }
 };
+
+export interface SubscriptionStatus {
+  active: boolean;
+  tier?: string;
+  endDate?: string;
+}
+
+export const checkSubscription = async (userId: number): Promise<SubscriptionStatus> => {
+  try {
+    const response = await fetch(`/api/subscription-status/${userId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to check subscription status`);
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('Error checking subscription status:', error);
+    // Return inactive status when there's an error
+    return { active: false };
+  }
+};

@@ -17,7 +17,6 @@ const features = [
 ];
 
 export default function Pricing() {
-  const [isYearly, setIsYearly] = useState(false);
   const { toast } = useToast();
 
   // Mutations for subscriptions
@@ -71,8 +70,8 @@ export default function Pricing() {
     }
   });
 
-  const handleSubscribe = (plan: "monthly" | "yearly") => {
-    if (plan === "monthly") {
+  const handleSubscribe = (selectedPlan: "monthly" | "yearly") => {
+    if (selectedPlan === "monthly") {
       monthlySubscription.mutate();
     } else {
       yearlySubscription.mutate();
@@ -88,38 +87,16 @@ export default function Pricing() {
         </p>
       </div>
 
-      <div className="flex justify-center mb-8">
-        <div className="bg-secondary rounded-full p-1 flex items-center">
-          <button 
-            className={`px-4 py-2 rounded-full ${!isYearly ? 'bg-primary text-primary-foreground' : ''}`}
-            onClick={() => setIsYearly(false)}
-          >
-            Monthly
-          </button>
-          <button 
-            className={`px-4 py-2 rounded-full ${isYearly ? 'bg-primary text-primary-foreground' : ''}`}
-            onClick={() => setIsYearly(true)}
-          >
-            Yearly <span className="text-xs ml-1 text-emerald-500">Save 50%</span>
-          </button>
-        </div>
-      </div>
-
       <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         {/* Monthly Plan */}
-        <Card className={`border-2 ${!isYearly ? 'border-primary' : 'border-border'} shadow-lg`}>
+        <Card className="border-2 border-primary shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center text-2xl">Monthly Plan</CardTitle>
             <CardDescription>Perfect for active traders</CardDescription>
             <div className="mt-4">
-              <span className="text-4xl font-bold">${isYearly ? "29" : "59"}</span>
+              <span className="text-4xl font-bold">$59</span>
               <span className="text-muted-foreground ml-1">/month</span>
             </div>
-            {isYearly && (
-              <div className="mt-1 inline-block bg-emerald-500/10 text-emerald-500 text-xs px-2 py-1 rounded-full">
-                Billed annually (${349}/year)
-              </div>
-            )}
           </CardHeader>
           <CardContent>
             <ul className="space-y-3">
@@ -135,7 +112,7 @@ export default function Pricing() {
             <Button 
               className="w-full" 
               size="lg"
-              onClick={() => handleSubscribe(isYearly ? "yearly" : "monthly")}
+              onClick={() => handleSubscribe("monthly")}
               disabled={monthlySubscription.isPending || yearlySubscription.isPending}
             >
               {monthlySubscription.isPending || yearlySubscription.isPending ? (
@@ -148,23 +125,21 @@ export default function Pricing() {
         </Card>
 
         {/* Yearly Plan */}
-        <Card className={`border-2 ${isYearly ? 'border-primary' : 'border-border'} shadow-lg relative overflow-hidden`}>
-          {!isYearly && (
-            <div className="absolute top-5 right-5">
-              <div className="bg-emerald-500 text-white text-xs px-3 py-1 rounded-full font-medium flex items-center">
-                <Zap className="h-3 w-3 mr-1" /> Best Value
-              </div>
+        <Card className="border-2 border-primary shadow-lg relative overflow-hidden">
+          <div className="absolute top-5 right-5">
+            <div className="bg-emerald-500 text-white text-xs px-3 py-1 rounded-full font-medium flex items-center">
+              <Zap className="h-3 w-3 mr-1" /> Best Value
             </div>
-          )}
+          </div>
           <CardHeader>
             <CardTitle className="flex items-center text-2xl">Annual Plan</CardTitle>
             <CardDescription>Best value for serious traders</CardDescription>
             <div className="mt-4">
-              <span className="text-4xl font-bold">${isYearly ? "349" : "439"}</span>
+              <span className="text-4xl font-bold">$349</span>
               <span className="text-muted-foreground ml-1">/year</span>
             </div>
             <div className="mt-1 inline-block bg-emerald-500/10 text-emerald-500 text-xs px-2 py-1 rounded-full">
-              Save ${isYearly ? "359" : "269"} compared to monthly
+              Save $359 compared to monthly
             </div>
           </CardHeader>
           <CardContent>
