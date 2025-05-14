@@ -45,7 +45,7 @@ const Footer = () => {
           <div>
             <h4 className="font-medium mb-4">Resources</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-foreground transition-colors">Pattern Guide</a></li>
+              <li><Link href="/pattern-guide" className="hover:text-foreground transition-colors">Pattern Guide</Link></li>
               <li><a href="#" className="hover:text-foreground transition-colors">API Documentation</a></li>
               <li><a href="#" className="hover:text-foreground transition-colors">Trading Tutorials</a></li>
               <li><a href="#" className="hover:text-foreground transition-colors">Knowledge Base</a></li>

@@ -9,7 +9,8 @@ import {
   LogOut, 
   User, 
   Loader2,
-  CreditCard
+  CreditCard,
+  BookOpen
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/hooks/use-auth";
@@ -65,6 +66,13 @@ const Header = () => {
             <Button variant="ghost" size="sm" className="hidden md:flex">
               <Home className="h-4 w-4 mr-2" />
               Home
+            </Button>
+          </Link>
+          
+          <Link href="/pattern-guide">
+            <Button variant="ghost" size="sm">
+              <BookOpen className="h-4 w-4 mr-2 md:mr-1" />
+              <span className="hidden md:inline">Patterns</span>
             </Button>
           </Link>
           

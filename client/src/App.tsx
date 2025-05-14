@@ -15,6 +15,7 @@ import { ProtectedRoute } from "@/lib/ProtectedRoute";
 import AuthPage from "./pages/AuthPage";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import PatternGuide from "./pages/PatternGuide";
 
 function Router() {
   return (
@@ -26,6 +27,8 @@ function Router() {
       <Route path="/terms-of-service" component={TermsOfService} />
       <Route path="/privacy" component={PrivacyPolicy} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
+      <Route path="/patterns" component={PatternGuide} />
+      <Route path="/pattern-guide" component={PatternGuide} />
       <Route path="/subscription-success" component={SubscriptionSuccess} />
       {/* Fallback to 404 */}
       <Route component={NotFound} />
