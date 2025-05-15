@@ -90,13 +90,49 @@ For the tradingRecommendation:
 
 // Helper functions to validate OpenAI responses
 function validatePatternResponse(data: any): boolean {
-  if (!Array.isArray(data)) return false;
+  console.log("Validating pattern response:", JSON.stringify(data, null, 2));
+  
+  // Check if the response has a "patterns" array property (this is common in GPT-4o responses)
+  if (data.patterns && Array.isArray(data.patterns)) {
+    data = data.patterns;
+  }
+  
+  // Handle case where response is not wrapped in an array
+  if (!Array.isArray(data)) {
+    if (typeof data === 'object' && data !== null) {
+      // If it's a single object with pattern properties, convert to array
+      if (data.name && data.type && 'confidence' in data) {
+        data = [data];
+      } else {
+        console.error("Invalid pattern format - not an array and not a single valid pattern");
+        return false;
+      }
+    } else {
+      console.error("Invalid pattern format - not an array or object:", data);
+      return false;
+    }
+  }
   
   for (const pattern of data) {
-    if (typeof pattern !== 'object') return false;
-    if (typeof pattern.name !== 'string') return false;
-    if (!['bullish', 'bearish', 'neutral'].includes(pattern.type)) return false;
-    if (typeof pattern.confidence !== 'number' || pattern.confidence < 0 || pattern.confidence > 100) return false;
+    if (typeof pattern !== 'object') {
+      console.error("Pattern is not an object:", pattern);
+      return false;
+    }
+    
+    if (typeof pattern.name !== 'string') {
+      console.error("Pattern name is not a string:", pattern.name);
+      return false;
+    }
+    
+    if (!['bullish', 'bearish', 'neutral'].includes(pattern.type)) {
+      console.error("Invalid pattern type:", pattern.type);
+      return false;
+    }
+    
+    if (typeof pattern.confidence !== 'number' || pattern.confidence < 0 || pattern.confidence > 100) {
+      console.error("Invalid confidence value:", pattern.confidence);
+      return false;
+    }
   }
   
   return true;
@@ -190,13 +226,26 @@ export async function analyzeChartImage(base64Image: string) {
       throw new Error("No content in response");
     }
 
-    const patterns = JSON.parse(content);
+    console.log("Raw OpenAI response:", content);
     
-    if (!validatePatternResponse(patterns)) {
-      throw new Error("Invalid pattern response format");
+    try {
+      const patterns = JSON.parse(content);
+      
+      if (!validatePatternResponse(patterns)) {
+        throw new Error("Invalid pattern response format");
+      }
+      
+      // If the response has a "patterns" property, return that
+      if (patterns.patterns && Array.isArray(patterns.patterns)) {
+        return patterns.patterns;
+      }
+      
+      // Otherwise return the patterns directly
+      return Array.isArray(patterns) ? patterns : [patterns];
+    } catch (parseError) {
+      console.error("Error parsing pattern response:", parseError);
+      throw new Error(`Failed to parse pattern response: ${parseError.message}`);
     }
-
-    return patterns;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error("Error analyzing chart image:", error);
