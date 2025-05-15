@@ -161,7 +161,7 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
   
-  async getUserSubscriptionStatus(userId: number): Promise<{ active: boolean, tier?: string, endDate?: Date }> {
+  async getUserSubscriptionStatus(userId: number): Promise<{ active: boolean, tier?: string, endDate?: Date, dailyLimit?: number, usageCount?: number }> {
     const user = await this.getUser(userId);
     
     if (!user) {
@@ -171,15 +171,119 @@ export class DatabaseStorage implements IStorage {
     // A subscription is active if it has status "active" or "trialing"
     const active = user.subscriptionStatus === 'active' || user.subscriptionStatus === 'trialing';
     
+    // Get daily usage count
+    const usageCount = await this.getDailyAnalysisUsage(userId);
+    
     if (!active) {
-      return { active };
+      return { active, usageCount };
     }
+    
+    // Determine daily limit based on tier
+    const tier = user.subscriptionTier || 'standard';
+    const dailyLimit = tier === 'premium' ? 20 : 10; // Premium gets 20, Standard gets 10
     
     return {
       active,
-      tier: user.subscriptionTier || undefined,
-      endDate: user.subscriptionEndDate || undefined
+      tier: tier,
+      endDate: user.subscriptionEndDate,
+      dailyLimit: dailyLimit,
+      usageCount: usageCount
     };
+  }
+  
+  // Get current day's usage count for a user
+  async getDailyAnalysisUsage(userId: number): Promise<number> {
+    try {
+      // Get today's date in ISO format YYYY-MM-DD
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Start of day
+      
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1); // Start of next day
+      
+      // Find existing record for today
+      const [existingUsage] = await db
+        .select()
+        .from(analysisUsage)
+        .where(eq(analysisUsage.userId, userId));
+      
+      // Check if the record is from today
+      if (existingUsage) {
+        const usageDate = new Date(existingUsage.date);
+        if (usageDate >= today && usageDate < tomorrow) {
+          return existingUsage.count;
+        }
+      }
+      
+      return 0; // No usage today
+    } catch (error) {
+      console.error(`Error getting analysis usage for user ${userId}:`, error);
+      return 0;
+    }
+  }
+  
+  // Get daily limit based on subscription tier
+  async getUserDailyLimit(userId: number): Promise<number> {
+    const user = await this.getUser(userId);
+    
+    if (!user) {
+      return 0;
+    }
+    
+    const active = user.subscriptionStatus === 'active' || user.subscriptionStatus === 'trialing';
+    if (!active) {
+      return 0;
+    }
+    
+    return user.subscriptionTier === "premium" ? 20 : 10;
+  }
+  
+  // Track a new analysis usage
+  async trackAnalysisUsage(userId: number): Promise<AnalysisUsage> {
+    try {
+      // Get today's date in ISO format YYYY-MM-DD
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Start of day
+      
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1); // Start of next day
+      
+      // Find existing record for today
+      const [existingUsage] = await db
+        .select()
+        .from(analysisUsage)
+        .where(eq(analysisUsage.userId, userId));
+      
+      // Check if the record is from today
+      if (existingUsage) {
+        const usageDate = new Date(existingUsage.date);
+        if (usageDate >= today && usageDate < tomorrow) {
+          // Update existing record
+          const [updatedUsage] = await db
+            .update(analysisUsage)
+            .set({ count: existingUsage.count + 1 })
+            .where(eq(analysisUsage.id, existingUsage.id))
+            .returning();
+            
+          return updatedUsage;
+        }
+      }
+      
+      // Create new record for today
+      const [newUsage] = await db
+        .insert(analysisUsage)
+        .values({
+          userId,
+          date: today,
+          count: 1
+        })
+        .returning();
+        
+      return newUsage;
+    } catch (error) {
+      console.error(`Error tracking analysis usage for user ${userId}:`, error);
+      throw error;
+    }
   }
 
   // Referral methods

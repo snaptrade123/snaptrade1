@@ -220,6 +220,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API endpoint for image analysis
   app.post("/api/analyze", async (req, res) => {
     try {
+      // Check if user is authenticated
+      if (!req.isAuthenticated() || !req.user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      const userId = req.user.id;
+      
+      // Check subscription status and limits
+      const subscriptionStatus = await storage.getUserSubscriptionStatus(userId);
+      
+      if (!subscriptionStatus.active) {
+        return res.status(403).json({ 
+          message: "Active subscription required",
+          subscriptionRequired: true
+        });
+      }
+      
+      // Check if user has reached their daily limit
+      if (subscriptionStatus.usageCount && subscriptionStatus.dailyLimit && 
+          subscriptionStatus.usageCount >= subscriptionStatus.dailyLimit) {
+        return res.status(403).json({ 
+          message: `Daily analysis limit reached (${subscriptionStatus.usageCount}/${subscriptionStatus.dailyLimit})`,
+          limitReached: true,
+          usage: subscriptionStatus.usageCount,
+          limit: subscriptionStatus.dailyLimit,
+          tier: subscriptionStatus.tier
+        });
+      }
+      
       const { image, asset } = req.body;
       
       if (!image) {
