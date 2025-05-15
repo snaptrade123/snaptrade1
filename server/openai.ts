@@ -73,8 +73,20 @@ Provide your analysis as JSON with the following structure:
     "stopLoss": 120.00, // recommended stop loss level or null
     "takeProfit": 130.00, // recommended take profit level or null
     "entryCondition": "Enter long position when price breaks above resistance at 123.45", // text explaining entry condition
-    "timeframe": "Short-term (1-2 weeks)", // recommended trading timeframe
-    "riskRewardRatio": 2.5 // calculated risk-reward ratio or null
+    "timeframe": "Short-term (1-2 weeks)", // recommended trading timeframe: "Quick trade (intraday to 3 days)", "Swing trade (1-2 weeks)", or "Position trade (2+ weeks)"
+    "riskRewardRatio": 2.5, // calculated risk-reward ratio or null
+    "quickTrade": { // for day traders and short-term positions
+      "entryPrice": 123.45, // can be the same as main recommendation or slightly different
+      "stopLoss": 122.00, // tighter stop loss for quick trades
+      "takeProfit": 126.00, // closer target for quick trades
+      "timeframe": "Intraday to 3 days"
+    },
+    "swingTrade": { // for swing traders looking for larger moves
+      "entryPrice": 123.45, // often same as main recommendation
+      "stopLoss": 120.00, // wider stop loss for swing trades
+      "takeProfit": 130.00, // further target for swing trades
+      "timeframe": "1-2 weeks"
+    }
   }
 }
 
@@ -84,7 +96,7 @@ For the tradingRecommendation:
 - If exact price levels cannot be determined from the data, provide estimates based on the patterns or set the values to null
 - For forex and crypto, use appropriate precision (e.g., 4-5 decimal places for forex majors)
 - Ensure the risk-reward ratio is favorable (generally at least 1:2) for the direction recommended
-- Format the entry condition as: "In this example, a trader might consider an entry around [entry price], with a stop below support at [stop loss], and a target near resistance at [take profit]."
+- Format the entry condition as: "In this example, a professional trader *might* consider an entry around [entry price], with a stop below support at [stop loss], and a target near resistance at [take profit]. This is for educational purposes only."
 - If direction is "neutral", you may provide recommendations for both bullish and bearish scenarios or indicate to wait for clearer signals
 `;
 
@@ -282,9 +294,21 @@ function validatePredictionResponse(data: any): boolean {
       entryPrice: null,
       stopLoss: null,
       takeProfit: null,
-      entryCondition: "Wait for confirmation before entering a trade",
+      entryCondition: "In this example, a professional trader *might* consider waiting for confirmation before entering. This is for educational purposes only.",
       timeframe: "Medium-term",
-      riskRewardRatio: null
+      riskRewardRatio: null,
+      quickTrade: {
+        entryPrice: null,
+        stopLoss: null,
+        takeProfit: null,
+        timeframe: "Intraday to 3 days"
+      },
+      swingTrade: {
+        entryPrice: null,
+        stopLoss: null,
+        takeProfit: null,
+        timeframe: "1-2 weeks"
+      }
     };
   } else if (typeof data.tradingRecommendation !== 'object') {
     console.error("Invalid trading recommendation (not an object):", data.tradingRecommendation);
@@ -292,9 +316,21 @@ function validatePredictionResponse(data: any): boolean {
       entryPrice: null,
       stopLoss: null,
       takeProfit: null,
-      entryCondition: "Wait for confirmation before entering a trade",
+      entryCondition: "In this example, a professional trader *might* consider waiting for confirmation before entering. This is for educational purposes only.",
       timeframe: "Medium-term",
-      riskRewardRatio: null
+      riskRewardRatio: null,
+      quickTrade: {
+        entryPrice: null,
+        stopLoss: null,
+        takeProfit: null,
+        timeframe: "Intraday to 3 days"
+      },
+      swingTrade: {
+        entryPrice: null,
+        stopLoss: null,
+        takeProfit: null,
+        timeframe: "1-2 weeks"
+      }
     };
   } else {
     // Validate entry price
@@ -325,7 +361,18 @@ function validatePredictionResponse(data: any): boolean {
     if (data.tradingRecommendation.entryCondition === undefined || 
         typeof data.tradingRecommendation.entryCondition !== 'string') {
       console.error("Invalid entry condition:", data.tradingRecommendation.entryCondition);
-      data.tradingRecommendation.entryCondition = "In this example, a trader *might* consider waiting for confirmation before entering";
+      data.tradingRecommendation.entryCondition = "In this example, a professional trader *might* consider waiting for confirmation before entering. This is for educational purposes only.";
+    } else if (!data.tradingRecommendation.entryCondition.includes("*might*") && 
+               !data.tradingRecommendation.entryCondition.includes("might")) {
+      // Add *might* if it's missing
+      data.tradingRecommendation.entryCondition = data.tradingRecommendation.entryCondition.replace(
+        "trader", "professional trader *might*"
+      );
+    }
+    
+    // Add educational purposes disclaimer if missing
+    if (!data.tradingRecommendation.entryCondition.includes("educational purposes")) {
+      data.tradingRecommendation.entryCondition += " This is for educational purposes only.";
     }
     
     // Validate timeframe
@@ -341,6 +388,32 @@ function validatePredictionResponse(data: any): boolean {
         typeof data.tradingRecommendation.riskRewardRatio !== 'number') {
       console.error("Invalid risk reward ratio:", data.tradingRecommendation.riskRewardRatio);
       data.tradingRecommendation.riskRewardRatio = null;
+    }
+    
+    // Check and create quickTrade if missing
+    if (!data.tradingRecommendation.quickTrade || typeof data.tradingRecommendation.quickTrade !== 'object') {
+      console.log("Creating default quick trade setup");
+      data.tradingRecommendation.quickTrade = {
+        entryPrice: data.tradingRecommendation.entryPrice,
+        stopLoss: data.tradingRecommendation.stopLoss,
+        takeProfit: data.tradingRecommendation.takeProfit ? 
+          // For quick trades, set a closer target (halfway to the main target)
+          data.tradingRecommendation.entryPrice + 
+          ((data.tradingRecommendation.takeProfit - data.tradingRecommendation.entryPrice) * 0.5) :
+          null,
+        timeframe: "Intraday to 3 days"
+      };
+    }
+    
+    // Check and create swingTrade if missing
+    if (!data.tradingRecommendation.swingTrade || typeof data.tradingRecommendation.swingTrade !== 'object') {
+      console.log("Creating default swing trade setup");
+      data.tradingRecommendation.swingTrade = {
+        entryPrice: data.tradingRecommendation.entryPrice,
+        stopLoss: data.tradingRecommendation.stopLoss,
+        takeProfit: data.tradingRecommendation.takeProfit,
+        timeframe: "1-2 weeks"
+      };
     }
   }
   

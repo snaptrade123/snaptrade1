@@ -19,13 +19,19 @@ export interface NewsSentiment {
   articles: NewsArticle[];
 }
 
-export interface TradingRecommendation {
+// Defines a single trade setup with price levels
+export interface TradeSetup {
   entryPrice?: number | null;
   stopLoss?: number | null;
   takeProfit?: number | null;
-  entryCondition?: string;
   timeframe?: string;
   riskRewardRatio?: number | null;
+}
+
+export interface TradingRecommendation extends TradeSetup {
+  entryCondition?: string;
+  quickTrade?: TradeSetup;
+  swingTrade?: TradeSetup;
 }
 
 export interface Prediction {

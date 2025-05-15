@@ -11,8 +11,16 @@ type AnalysisResultsProps = {
   isLoading: boolean;
 };
 
+// Helper function to calculate risk/reward ratio
+const calculateRiskReward = (entryPrice: number, stopLoss: number, takeProfit: number): number => {
+  const risk = Math.abs(entryPrice - stopLoss);
+  const reward = Math.abs(takeProfit - entryPrice);
+  return risk > 0 ? reward / risk : 0;
+};
+
 const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, isLoading }) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'swing' | 'quick'>('swing');
 
   useEffect(() => {
     if (result?.imageUrl) {
@@ -192,6 +200,14 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, isLoading }) 
                 <div className="mt-4 pt-4 border-t border-border">
                   <h4 className="text-sm font-medium mb-3">Trading Recommendations</h4>
                   
+                  {/* Educational Disclaimer */}
+                  <div className="bg-amber-500/10 border border-amber-500/30 p-3 rounded-md mb-3">
+                    <p className="text-xs text-amber-600 font-medium">
+                      <span className="mr-1">⚠️</span>
+                      The following is for educational purposes only and should not be considered financial advice.
+                    </p>
+                  </div>
+                  
                   {/* Entry Condition */}
                   {result.prediction.tradingRecommendation.entryCondition && (
                     <div className="bg-secondary/30 p-3 rounded-md mb-3">
@@ -206,66 +222,120 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, isLoading }) 
                     </div>
                   )}
                   
-                  {/* Visual Trading Levels Chart */}
-                  {result.prediction.tradingRecommendation.entryPrice !== undefined && 
-                   result.prediction.tradingRecommendation.stopLoss !== undefined && 
-                   result.prediction.tradingRecommendation.takeProfit !== undefined && (
+                  {/* Trade Type Tabs */}
+                  <div className="mb-4">
+                    <div className="flex border-b border-border">
+                      <button 
+                        className={`px-4 py-2 text-sm font-medium ${activeTab === 'swing' ? 'border-b-2 border-primary' : 'text-muted-foreground'}`}
+                        onClick={() => setActiveTab('swing')}
+                      >
+                        Swing Trade (1-2 weeks)
+                      </button>
+                      <button 
+                        className={`px-4 py-2 text-sm font-medium ${activeTab === 'quick' ? 'border-b-2 border-primary' : 'text-muted-foreground'}`}
+                        onClick={() => setActiveTab('quick')}
+                      >
+                        Quick Trade (1-3 days)
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Visual Trading Levels Chart based on active tab */}
+                  {activeTab === 'quick' && result.prediction.tradingRecommendation.quickTrade && (
+                    <TradingLevelsChart 
+                      tradingRecommendation={{
+                        ...result.prediction.tradingRecommendation,
+                        entryPrice: result.prediction.tradingRecommendation.quickTrade.entryPrice,
+                        stopLoss: result.prediction.tradingRecommendation.quickTrade.stopLoss,
+                        takeProfit: result.prediction.tradingRecommendation.quickTrade.takeProfit
+                      }}
+                      direction={result.prediction.direction}
+                    />
+                  )}
+                  
+                  {activeTab === 'swing' && (
                     <TradingLevelsChart 
                       tradingRecommendation={result.prediction.tradingRecommendation}
                       direction={result.prediction.direction}
                     />
                   )}
                   
-                  {/* Price Levels Grid */}
+                  {/* Price Levels Grid - Show quick or swing trade based on active tab */}
                   <div className="grid grid-cols-3 gap-3 mb-3">
                     {/* Entry Price */}
-                    {result.prediction.tradingRecommendation.entryPrice !== undefined && (
-                      <div className="bg-secondary/30 p-3 rounded-md">
-                        <p className="text-xs text-muted-foreground mb-1">Entry Price</p>
-                        <p className={`text-lg font-medium ${result.prediction.direction === 'bullish' ? 'text-emerald-500' : 'text-red-500'}`}>
-                          {result.prediction.tradingRecommendation.entryPrice?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 }) || 'N/A'}
-                        </p>
-                      </div>
-                    )}
+                    <div className="bg-secondary/30 p-3 rounded-md">
+                      <p className="text-xs text-muted-foreground mb-1">Entry Price</p>
+                      <p className={`text-lg font-medium ${result.prediction.direction === 'bullish' ? 'text-emerald-500' : 'text-red-500'}`}>
+                        {activeTab === 'quick' && result.prediction.tradingRecommendation.quickTrade?.entryPrice
+                          ? result.prediction.tradingRecommendation.quickTrade.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 })
+                          : activeTab === 'swing' && result.prediction.tradingRecommendation.swingTrade?.entryPrice
+                          ? result.prediction.tradingRecommendation.swingTrade.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 })
+                          : result.prediction.tradingRecommendation.entryPrice?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 }) || 'N/A'}
+                      </p>
+                    </div>
                     
                     {/* Stop Loss */}
-                    {result.prediction.tradingRecommendation.stopLoss !== undefined && (
-                      <div className="bg-secondary/30 p-3 rounded-md">
-                        <p className="text-xs text-muted-foreground mb-1">Stop Loss</p>
-                        <p className="text-lg font-medium text-red-500">
-                          {result.prediction.tradingRecommendation.stopLoss?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 }) || 'N/A'}
-                        </p>
-                      </div>
-                    )}
+                    <div className="bg-secondary/30 p-3 rounded-md">
+                      <p className="text-xs text-muted-foreground mb-1">Stop Loss</p>
+                      <p className="text-lg font-medium text-red-500">
+                        {activeTab === 'quick' && result.prediction.tradingRecommendation.quickTrade?.stopLoss
+                          ? result.prediction.tradingRecommendation.quickTrade.stopLoss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 })
+                          : activeTab === 'swing' && result.prediction.tradingRecommendation.swingTrade?.stopLoss
+                          ? result.prediction.tradingRecommendation.swingTrade.stopLoss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 })
+                          : result.prediction.tradingRecommendation.stopLoss?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 }) || 'N/A'}
+                      </p>
+                    </div>
                     
                     {/* Take Profit */}
-                    {result.prediction.tradingRecommendation.takeProfit !== undefined && (
-                      <div className="bg-secondary/30 p-3 rounded-md">
-                        <p className="text-xs text-muted-foreground mb-1">Take Profit</p>
-                        <p className="text-lg font-medium text-emerald-500">
-                          {result.prediction.tradingRecommendation.takeProfit?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 }) || 'N/A'}
-                        </p>
-                      </div>
-                    )}
+                    <div className="bg-secondary/30 p-3 rounded-md">
+                      <p className="text-xs text-muted-foreground mb-1">Take Profit</p>
+                      <p className="text-lg font-medium text-emerald-500">
+                        {activeTab === 'quick' && result.prediction.tradingRecommendation.quickTrade?.takeProfit
+                          ? result.prediction.tradingRecommendation.quickTrade.takeProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 })
+                          : activeTab === 'swing' && result.prediction.tradingRecommendation.swingTrade?.takeProfit
+                          ? result.prediction.tradingRecommendation.swingTrade.takeProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 })
+                          : result.prediction.tradingRecommendation.takeProfit?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 }) || 'N/A'}
+                      </p>
+                    </div>
                   </div>
                   
                   {/* Additional Info */}
                   <div className="grid grid-cols-2 gap-3">
                     {/* Timeframe */}
-                    {result.prediction.tradingRecommendation.timeframe && (
-                      <div className="bg-secondary/30 p-3 rounded-md">
-                        <p className="text-xs text-muted-foreground mb-1">Timeframe</p>
-                        <p className="text-sm">{result.prediction.tradingRecommendation.timeframe}</p>
-                      </div>
-                    )}
+                    <div className="bg-secondary/30 p-3 rounded-md">
+                      <p className="text-xs text-muted-foreground mb-1">Timeframe</p>
+                      <p className="text-sm">
+                        {activeTab === 'quick' && result.prediction.tradingRecommendation.quickTrade?.timeframe
+                          ? result.prediction.tradingRecommendation.quickTrade.timeframe
+                          : activeTab === 'swing' && result.prediction.tradingRecommendation.swingTrade?.timeframe
+                          ? result.prediction.tradingRecommendation.swingTrade.timeframe
+                          : result.prediction.tradingRecommendation.timeframe || 'N/A'}
+                      </p>
+                    </div>
                     
                     {/* Risk-Reward Ratio */}
-                    {result.prediction.tradingRecommendation.riskRewardRatio !== undefined && (
-                      <div className="bg-secondary/30 p-3 rounded-md">
-                        <p className="text-xs text-muted-foreground mb-1">Risk:Reward Ratio</p>
-                        <p className="text-sm">1:{result.prediction.tradingRecommendation.riskRewardRatio?.toFixed(1) || 'N/A'}</p>
-                      </div>
-                    )}
+                    <div className="bg-secondary/30 p-3 rounded-md">
+                      <p className="text-xs text-muted-foreground mb-1">Risk:Reward Ratio</p>
+                      <p className="text-sm">
+                        {activeTab === 'quick' && result.prediction.tradingRecommendation.quickTrade?.entryPrice && 
+                          result.prediction.tradingRecommendation.quickTrade?.stopLoss &&
+                          result.prediction.tradingRecommendation.quickTrade?.takeProfit
+                          ? `1:${calculateRiskReward(
+                              result.prediction.tradingRecommendation.quickTrade.entryPrice,
+                              result.prediction.tradingRecommendation.quickTrade.stopLoss,
+                              result.prediction.tradingRecommendation.quickTrade.takeProfit
+                            ).toFixed(1)}`
+                          : activeTab === 'swing' && result.prediction.tradingRecommendation.swingTrade?.entryPrice &&
+                            result.prediction.tradingRecommendation.swingTrade?.stopLoss &&
+                            result.prediction.tradingRecommendation.swingTrade?.takeProfit
+                          ? `1:${calculateRiskReward(
+                              result.prediction.tradingRecommendation.swingTrade.entryPrice,
+                              result.prediction.tradingRecommendation.swingTrade.stopLoss,
+                              result.prediction.tradingRecommendation.swingTrade.takeProfit
+                            ).toFixed(1)}`
+                          : `1:${result.prediction.tradingRecommendation.riskRewardRatio?.toFixed(1) || 'N/A'}`}
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}
