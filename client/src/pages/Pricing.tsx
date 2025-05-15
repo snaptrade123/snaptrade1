@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Link } from "wouter";
 
 const standardFeatures = [
   "Advanced pattern detection",
