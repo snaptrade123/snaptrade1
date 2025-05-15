@@ -41,11 +41,43 @@ const Home = () => {
       });
     },
     onError: (error) => {
-      toast({
-        title: "Analysis failed",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
-        variant: "destructive",
-      });
+      // Check if this is a limit reached error
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+      
+      if (errorMessage.includes("Daily analysis limit reached")) {
+        // Extract usage information, if available
+        const limitMatch = errorMessage.match(/\((\d+)\/(\d+)\)/);
+        const usageCount = limitMatch?.[1] ? parseInt(limitMatch[1]) : 0;
+        const limit = limitMatch?.[2] ? parseInt(limitMatch[2]) : 0;
+        
+        toast({
+          title: "Daily Limit Reached",
+          description: `You've used ${usageCount} of ${limit} analyses today. Upgrade to Premium tier for more analyses.`,
+          variant: "destructive",
+        });
+        
+        // Optionally redirect to pricing page after a delay
+        setTimeout(() => {
+          setLocation("/pricing");
+        }, 3000);
+      } else if (errorMessage.includes("subscription required") || errorMessage.includes("Authentication required")) {
+        toast({
+          title: "Subscription Required",
+          description: "You need an active subscription to analyze charts.",
+          variant: "destructive",
+        });
+        
+        // Redirect to pricing page
+        setTimeout(() => {
+          setLocation("/pricing");
+        }, 1500);
+      } else {
+        toast({
+          title: "Analysis failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     }
   });
 
@@ -75,9 +107,12 @@ const Home = () => {
           <div className="flex items-center">
             <ZapIcon className="h-6 w-6 text-emerald-500 mr-3" />
             <div>
-              <h3 className="font-semibold text-lg">Premium Subscription Active</h3>
+              <h3 className="font-semibold text-lg">
+                {subscriptionData.tier === 'premium' ? 'Premium' : 'Standard'} Subscription Active
+              </h3>
               <p className="text-sm text-muted-foreground">
-                {subscriptionData.tier === 'yearly' ? 'Annual' : 'Monthly'} plan - Expires: {subscriptionData.endDate ? new Date(subscriptionData.endDate).toLocaleDateString() : 'N/A'}
+                {subscriptionData.dailyLimit ? `${subscriptionData.dailyLimit} analyses per day` : ''} 
+                {subscriptionData.endDate ? ` - Expires: ${new Date(subscriptionData.endDate).toLocaleDateString()}` : ''}
               </p>
             </div>
           </div>

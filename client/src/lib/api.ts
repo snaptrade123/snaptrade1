@@ -97,8 +97,25 @@ export const analyzeChart = async (file: File, asset: string): Promise<AnalysisR
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Analysis failed: ${errorText}`);
+      const errorData = await response.json().catch(() => null);
+      
+      // If we received structured error data
+      if (errorData) {
+        if (errorData.limitReached) {
+          throw new Error(
+            `Daily analysis limit reached (${errorData.usage}/${errorData.limit}). ` +
+            `Your ${errorData.tier} plan allows ${errorData.limit} analyses per day.`
+          );
+        } else if (errorData.subscriptionRequired) {
+          throw new Error("Active subscription required");
+        } else {
+          throw new Error(errorData.message || "Analysis failed");
+        }
+      } else {
+        // Fallback to text error
+        const errorText = await response.text().catch(() => "Unknown error");
+        throw new Error(`Analysis failed: ${errorText}`);
+      }
     }
 
     const result = await response.json();
@@ -137,6 +154,8 @@ export interface SubscriptionStatus {
   active: boolean;
   tier?: string;
   endDate?: string;
+  dailyLimit?: number;
+  usageCount?: number;
 }
 
 export const checkSubscription = async (userId: number): Promise<SubscriptionStatus> => {
