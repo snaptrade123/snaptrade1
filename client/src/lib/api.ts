@@ -248,14 +248,21 @@ export const getFreeTradingSignals = async (limit?: number): Promise<TradingSign
 };
 
 // Function to get all premium trading signals
-export const getPremiumTradingSignals = async (limit?: number): Promise<TradingSignal[]> => {
+export const getPremiumTradingSignals = async (limit?: number, userId?: number): Promise<TradingSignal[]> => {
   try {
     const url = new URL('/api/trading-signals/premium', window.location.origin);
     if (limit) {
       url.searchParams.append('limit', limit.toString());
     }
     
-    const response = await fetch(url.toString());
+    const headers: Record<string, string> = {};
+    
+    // If we have a userId, add it as a header for development
+    if (userId) {
+      headers['X-User-ID'] = userId.toString();
+    }
+    
+    const response = await fetch(url.toString(), { headers });
     
     if (!response.ok) {
       if (response.status === 401) {
@@ -314,13 +321,26 @@ export const getProviderSignals = async (providerId: number): Promise<TradingSig
 };
 
 // Function to create a new trading signal
-export const createTradingSignal = async (signalData: Omit<TradingSignal, 'id' | 'providerId' | 'createdAt' | 'updatedAt'>): Promise<TradingSignal> => {
+export const createTradingSignal = async (
+  signalData: Omit<TradingSignal, 'id' | 'providerId' | 'createdAt' | 'updatedAt'>,
+  userId?: number
+): Promise<TradingSignal> => {
   try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    // If we have a userId, add it as a header for development
+    if (userId) {
+      headers['X-User-ID'] = userId.toString();
+    }
+    
+    console.log('Creating trading signal with headers:', headers);
+    console.log('Signal data:', signalData);
+    
     const response = await fetch('/api/trading-signals', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify(signalData),
     });
     

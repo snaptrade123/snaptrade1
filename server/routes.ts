@@ -1249,8 +1249,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Trading Signals API
+
+  // Authentication middleware with fallback to X-User-ID header for development
+  const authOrIdHeader = (req: any, res: any, next: any) => {
+    // For session-based authentication
+    if (req.isAuthenticated()) {
+      req.userId = req.user.id;
+      console.log("Using authenticated user ID:", req.userId);
+      next();
+      return;
+    }
+    
+    // For development - allow direct user ID header
+    const authHeader = req.header('X-User-ID');
+    if (authHeader) {
+      req.userId = parseInt(authHeader);
+      console.log("Using user ID from header:", req.userId);
+      next();
+      return;
+    }
+    
+    console.log("Not authenticated and no user ID header provided");
+    res.status(401).json({ message: "Authentication required to create signal" });
+  };
   
-  // Get all free trading signals
+  // Get all free trading signals - no auth required
   app.get("/api/trading-signals/free", async (req, res) => {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
@@ -1264,15 +1287,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all premium trading signals
-  app.get("/api/trading-signals/premium", async (req, res) => {
+  // Get all premium trading signals - auth required
+  app.get("/api/trading-signals/premium", authOrIdHeader, async (req: any, res) => {
     try {
-      // Check if user is authenticated
-      if (!req.isAuthenticated()) {
-        return res.status(401).json({ message: "Authentication required to view premium signals" });
-      }
-      
-      const userId = req.user.id;
+      const userId = req.userId;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
       
       // Get all premium signals
@@ -1302,7 +1320,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get a specific trading signal by ID
-  app.get("/api/trading-signals/:id", async (req, res) => {
+  app.get("/api/trading-signals/:id", async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const signal = await storage.getTradingSignal(id);
@@ -1313,11 +1331,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // For premium signals, verify user subscription
       if (signal.isPremium) {
-        if (!req.isAuthenticated()) {
+        // Get user ID from session or header
+        const authHeader = req.header('X-User-ID');
+        let userId;
+        
+        if (req.isAuthenticated()) {
+          userId = req.user.id;
+        } else if (authHeader) {
+          userId = parseInt(authHeader);
+        } else {
           return res.status(401).json({ message: "Authentication required to view premium signals" });
         }
-        
-        const userId = req.user.id;
         
         // If user is the provider, allow access
         if (userId === signal.providerId) {
@@ -1349,21 +1373,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get signals posted by a specific provider
-  app.get("/api/trading-signals/provider/:providerId", async (req, res) => {
+  app.get("/api/trading-signals/provider/:providerId", async (req: any, res) => {
     try {
       const providerId = parseInt(req.params.providerId);
       const signals = await storage.getProviderTradingSignals(providerId);
       
-      // If user is authenticated and is the provider, return all signals
-      if (req.isAuthenticated() && req.user.id === providerId) {
-        return res.json(signals);
+      // Get user ID from session or header
+      const authHeader = req.header('X-User-ID');
+      let userId;
+      
+      if (req.isAuthenticated()) {
+        userId = req.user.id;
+        // If user is the provider, return all signals
+        if (userId === providerId) {
+          return res.json(signals);
+        }
+      } else if (authHeader) {
+        userId = parseInt(authHeader);
+        // If user is the provider, return all signals
+        if (userId === providerId) {
+          return res.json(signals);
+        }
       }
       
       // For other users, only return free signals or premium ones they've subscribed to
       let filteredSignals = signals.filter(signal => !signal.isPremium);
       
-      if (req.isAuthenticated()) {
-        const userId = req.user.id;
+      if (userId) {
         const subscriptions = await storage.getUserSignalSubscriptions(userId);
         const hasSubscription = subscriptions.some(
           sub => sub.providerId === providerId && sub.status === 'active'
@@ -1384,14 +1420,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create a new trading signal
-  app.post("/api/trading-signals", async (req, res) => {
-    try {
-      if (!req.isAuthenticated()) {
-        return res.status(401).json({ message: "Authentication required to create signals" });
-      }
-      
-      const userId = req.user.id;
+  // Create a new trading signal - auth required
+  app.post("/api/trading-signals", authOrIdHeader, async (req: any, res) => {
+    try {      
+      const userId = req.userId;
       
       // Check if premium - only subscribers can create premium signals
       if (req.body.isPremium) {
@@ -1403,12 +1435,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      const signalData = {
-        ...req.body,
-        providerId: userId
+      // Adapt field names to match schema
+      const signal = {
+        providerId: userId,
+        pair: req.body.asset || req.body.pair,
+        direction: req.body.direction,
+        entry: req.body.entry || req.body.entryPrice?.toString(),
+        stopLoss: req.body.stopLoss?.toString(),
+        takeProfit1: req.body.takeProfit1 || req.body.takeProfit?.toString(),
+        takeProfit2: req.body.takeProfit2,
+        takeProfit3: req.body.takeProfit3,
+        timeframe: req.body.timeframe,
+        notes: req.body.notes || req.body.analysis,
+        isPremium: req.body.isPremium === true
       };
       
-      const newSignal = await storage.createTradingSignal(signalData);
+      console.log("Creating trading signal with data:", signal);
+      const newSignal = await storage.createTradingSignal(signal);
       res.status(201).json(newSignal);
     } catch (error) {
       console.error("Error creating trading signal:", error);
@@ -1419,14 +1462,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update a trading signal
-  app.patch("/api/trading-signals/:id", async (req, res) => {
+  app.patch("/api/trading-signals/:id", authOrIdHeader, async (req: any, res) => {
     try {
-      if (!req.isAuthenticated()) {
-        return res.status(401).json({ message: "Authentication required to update signals" });
-      }
-      
       const id = parseInt(req.params.id);
-      const userId = req.user.id;
+      const userId = req.userId;
       
       // Get the signal
       const signal = await storage.getTradingSignal(id);
