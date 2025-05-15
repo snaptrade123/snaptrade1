@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,106 +11,195 @@ import { Badge } from "@/components/ui/badge";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowRight, TrendingUp, Info, Clock, DollarSign, PiggyBank, AlertTriangle } from "lucide-react";
+import { ArrowRight, TrendingUp, Info, Clock, DollarSign, PiggyBank, AlertTriangle, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-
-// Placeholder data for signals
-const demoSignals = [
-  {
-    id: 1,
-    provider: "TradeMaster42",
-    pair: "EUR/USD",
-    direction: "buy",
-    entry: "1.0685-1.0695",
-    stopLoss: "1.0650",
-    takeProfit1: "1.0725",
-    takeProfit2: "1.0750",
-    takeProfit3: "1.0775",
-    timeframe: "4H",
-    notes: "Bullish engulfing pattern with RSI divergence. Wait for pullback to enter.",
-    timestamp: "2025-05-14T14:30:00",
-    isPremium: false
-  },
-  {
-    id: 2,
-    provider: "TechTrader",
-    pair: "BTC/USD",
-    direction: "sell",
-    entry: "56800-57000",
-    stopLoss: "57500",
-    takeProfit1: "56000",
-    takeProfit2: "55500",
-    takeProfit3: "55000",
-    timeframe: "Daily",
-    notes: "Bearish divergence on RSI, resistance at key level. Wait for confirmation.",
-    timestamp: "2025-05-15T09:15:00",
-    isPremium: true,
-    price: 25
-  },
-  {
-    id: 3,
-    provider: "ForexPro",
-    pair: "GBP/JPY",
-    direction: "buy",
-    entry: "186.50-186.75",
-    stopLoss: "186.00",
-    takeProfit1: "187.50",
-    takeProfit2: "188.00",
-    takeProfit3: null,
-    timeframe: "1H",
-    notes: "Bounce from support level with increasing volume.",
-    timestamp: "2025-05-15T11:45:00",
-    isPremium: false
-  }
-];
+import { 
+  TradingSignal, 
+  SignalSubscription,
+  SubscriberData,
+  getFreeTradingSignals,
+  getPremiumTradingSignals,
+  getTradingSignal,
+  getProviderSignals,
+  createTradingSignal as createSignalApi,
+  subscribeToProvider
+} from "@/lib/api";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // Form schema for adding a new signal
 const signalFormSchema = z.object({
-  pair: z.string().min(1, "Trading pair is required"),
+  title: z.string().min(3, "Title is required").max(100, "Title cannot exceed 100 characters"),
+  asset: z.string().min(1, "Trading instrument/pair is required"),
   direction: z.enum(["buy", "sell"]),
-  entry: z.string().min(1, "Entry price/range is required"),
-  stopLoss: z.string().min(1, "Stop Loss is required"),
-  takeProfit1: z.string().min(1, "At least one Take Profit is required"),
-  takeProfit2: z.string().optional(),
-  takeProfit3: z.string().optional(),
+  entryPrice: z.coerce.number().min(0, "Entry price is required"),
+  stopLoss: z.coerce.number().min(0, "Stop Loss is required"),
+  takeProfit: z.coerce.number().min(0, "At least one Take Profit is required"),
   timeframe: z.string().min(1, "Timeframe is required"),
-  notes: z.string().optional(),
+  analysis: z.string().min(10, "Please provide some analysis").max(1000, "Analysis too long"),
+  imageUrl: z.string().optional(),
   isPremium: z.boolean().default(false),
-  price: z.number().min(5).max(100).optional()
-    .refine(val => !isPremiumProvider || val !== undefined, {
-      message: "Price is required for premium signals"
-    })
+  price: z.coerce.number().min(5, "Minimum price is £5").max(100, "Maximum price is £100").optional()
 });
 
-// We'll set this based on user subscription status
-const isPremiumProvider = false;
+// Helper function to calculate risk-reward ratio
+function calculateRiskReward(entry: number, sl: number, tp: number): number {
+  if (!entry || !sl || !tp) return 0;
+  const risk = Math.abs(entry - sl);
+  const reward = Math.abs(tp - entry);
+  return risk > 0 ? +(reward / risk).toFixed(2) : 0;
+}
 
 export default function TradingSignals() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("free");
   const [showNewSignalDialog, setShowNewSignalDialog] = useState(false);
-  const [signals] = useState(demoSignals);
+  const [showDetailDialog, setShowDetailDialog] = useState(false);
+  const [selectedSignalId, setSelectedSignalId] = useState<number | null>(null);
+  const [subscribing, setSubscribing] = useState(false);
+
+  // Check if user is a premium subscriber
+  const isPremiumProvider = !!user?.subscriptionTier;
+
+  // Query to get free trading signals
+  const { 
+    data: freeSignals = [], 
+    isLoading: freeSignalsLoading 
+  } = useQuery({
+    queryKey: ['/api/trading-signals/free'],
+    queryFn: () => getFreeTradingSignals(),
+  });
+
+  // Query to get premium trading signals
+  const { 
+    data: premiumSignals = [], 
+    isLoading: premiumSignalsLoading 
+  } = useQuery({
+    queryKey: ['/api/trading-signals/premium'],
+    queryFn: () => getPremiumTradingSignals(),
+  });
+
+  // Query to get signal details when selected
+  const { 
+    data: selectedSignal,
+    isLoading: signalDetailsLoading
+  } = useQuery({
+    queryKey: ['/api/trading-signals', selectedSignalId],
+    queryFn: () => selectedSignalId ? getTradingSignal(selectedSignalId) : null,
+    enabled: !!selectedSignalId,
+  });
 
   const form = useForm<z.infer<typeof signalFormSchema>>({
     resolver: zodResolver(signalFormSchema),
     defaultValues: {
+      title: "",
+      asset: "",
       direction: "buy",
+      entryPrice: 0,
+      stopLoss: 0,
+      takeProfit: 0,
+      timeframe: "",
+      analysis: "",
       isPremium: false,
       price: undefined
     }
   });
 
+  // Create signal mutation
+  const createSignalMutation = useMutation({
+    mutationFn: (signalData: any) => createSignalApi(signalData),
+    onSuccess: () => {
+      toast({
+        title: "Signal Published",
+        description: "Your trading signal has been shared successfully.",
+      });
+      setShowNewSignalDialog(false);
+      form.reset();
+      // Invalidate queries to refresh the signals lists
+      queryClient.invalidateQueries({ queryKey: ['/api/trading-signals/free'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/trading-signals/premium'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to publish signal",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Subscribe to provider mutation
+  const subscribeMutation = useMutation({
+    mutationFn: (providerId: number) => subscribeToProvider(providerId),
+    onSuccess: (data) => {
+      // Open Stripe checkout in a new window
+      window.open(data.url, '_blank');
+      setSubscribing(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Subscription failed",
+        description: error.message,
+        variant: "destructive"
+      });
+      setSubscribing(false);
+    }
+  });
+
+  // Watch values to calculate risk-reward ratio
+  const entryPrice = form.watch("entryPrice");
+  const stopLoss = form.watch("stopLoss");
+  const takeProfit = form.watch("takeProfit");
+  const isPremiumSignal = form.watch("isPremium");
+  
+  // Calculate risk-reward ratio when values change
+  const riskRewardRatio = calculateRiskReward(entryPrice, stopLoss, takeProfit);
+
+  // Add price validation when premium status changes
+  useEffect(() => {
+    form.trigger("price");
+  }, [isPremiumSignal, form]);
+
   const handleSubmit = (values: z.infer<typeof signalFormSchema>) => {
-    console.log(values);
-    toast({
-      title: "Signal Submitted",
-      description: "Your trading signal has been shared successfully.",
-    });
-    setShowNewSignalDialog(false);
-    form.reset();
+    // Validate price for premium signals
+    if (values.isPremium && !values.price) {
+      form.setError("price", { 
+        type: "manual", 
+        message: "Price is required for premium signals" 
+      });
+      return;
+    }
+    
+    const signalData = {
+      ...values,
+      riskRewardRatio,
+      // Default to active status
+      status: 'active' as const
+    };
+    createSignalMutation.mutate(signalData);
+  };
+  
+  // Function to open signal details
+  const openSignalDetails = (id: number) => {
+    setSelectedSignalId(id);
+    setShowDetailDialog(true);
+  };
+  
+  // Function to handle subscription
+  const handleSubscribe = (providerId: number) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to subscribe to premium signals.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setSubscribing(true);
+    subscribeMutation.mutate(providerId);
   };
 
   return (

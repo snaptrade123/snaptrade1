@@ -179,3 +179,325 @@ export const checkSubscription = async (userId: number): Promise<SubscriptionSta
     return { active: false };
   }
 };
+
+// Trading Signals Types
+export interface TradingSignal {
+  id: number;
+  providerId: number;
+  title: string;
+  asset: string;
+  timeframe: string;
+  direction: 'buy' | 'sell';
+  entryPrice: number;
+  stopLoss: number;
+  takeProfit: number;
+  riskRewardRatio: number;
+  analysis: string;
+  imageUrl?: string;
+  isPremium: boolean;
+  price: number;
+  expiresAt?: string;
+  status: 'active' | 'expired' | 'closed';
+  outcome?: 'win' | 'loss' | 'breakeven';
+  actualPips?: number;
+  createdAt: string;
+  updatedAt: string;
+  hasAccess?: boolean; // Added client-side for access control
+}
+
+export interface SignalSubscription {
+  id: number;
+  userId: number;
+  providerId: number;
+  price: number;
+  status: 'active' | 'cancelled' | 'expired';
+  stripeSubscriptionId?: string;
+  createdAt: string;
+  updatedAt: string;
+  providerUsername?: string; // Enhanced field from the API
+}
+
+export interface SubscriberData {
+  subscribers: SignalSubscription[];
+  metrics: {
+    subscriberCount: number;
+    totalRevenue: number;
+    pendingRevenue: number;
+  };
+}
+
+// Function to get all free trading signals
+export const getFreeTradingSignals = async (limit?: number): Promise<TradingSignal[]> => {
+  try {
+    const url = new URL('/api/trading-signals/free', window.location.origin);
+    if (limit) {
+      url.searchParams.append('limit', limit.toString());
+    }
+    
+    const response = await fetch(url.toString());
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch free trading signals');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching free trading signals:', error);
+    return [];
+  }
+};
+
+// Function to get all premium trading signals
+export const getPremiumTradingSignals = async (limit?: number): Promise<TradingSignal[]> => {
+  try {
+    const url = new URL('/api/trading-signals/premium', window.location.origin);
+    if (limit) {
+      url.searchParams.append('limit', limit.toString());
+    }
+    
+    const response = await fetch(url.toString());
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required to view premium signals');
+      }
+      throw new Error('Failed to fetch premium trading signals');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching premium trading signals:', error);
+    return [];
+  }
+};
+
+// Function to get a specific trading signal by ID
+export const getTradingSignal = async (id: number): Promise<TradingSignal> => {
+  try {
+    const response = await fetch(`/api/trading-signals/${id}`);
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required to view this signal');
+      }
+      if (response.status === 403) {
+        const data = await response.json();
+        throw new Error(data.message || 'Subscription required to view this signal');
+      }
+      if (response.status === 404) {
+        throw new Error('Trading signal not found');
+      }
+      throw new Error('Failed to fetch trading signal');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching trading signal:', error);
+    throw error;
+  }
+};
+
+// Function to get signals from a specific provider
+export const getProviderSignals = async (providerId: number): Promise<TradingSignal[]> => {
+  try {
+    const response = await fetch(`/api/trading-signals/provider/${providerId}`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch provider signals');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching provider signals:', error);
+    return [];
+  }
+};
+
+// Function to create a new trading signal
+export const createTradingSignal = async (signalData: Omit<TradingSignal, 'id' | 'providerId' | 'createdAt' | 'updatedAt'>): Promise<TradingSignal> => {
+  try {
+    const response = await fetch('/api/trading-signals', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(signalData),
+    });
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required to create signals');
+      }
+      if (response.status === 403) {
+        throw new Error('You must be a SnapTrade subscriber to create premium signals');
+      }
+      const data = await response.json();
+      throw new Error(data.message || 'Failed to create trading signal');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error creating trading signal:', error);
+    throw error;
+  }
+};
+
+// Function to update a trading signal
+export const updateTradingSignal = async (id: number, updates: Partial<TradingSignal>): Promise<TradingSignal> => {
+  try {
+    const response = await fetch(`/api/trading-signals/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updates),
+    });
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required to update signals');
+      }
+      if (response.status === 403) {
+        throw new Error('You can only update your own signals');
+      }
+      if (response.status === 404) {
+        throw new Error('Trading signal not found');
+      }
+      const data = await response.json();
+      throw new Error(data.message || 'Failed to update trading signal');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error updating trading signal:', error);
+    throw error;
+  }
+};
+
+// Function to delete a trading signal
+export const deleteTradingSignal = async (id: number): Promise<void> => {
+  try {
+    const response = await fetch(`/api/trading-signals/${id}`, {
+      method: 'DELETE',
+    });
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required to delete signals');
+      }
+      if (response.status === 403) {
+        throw new Error('You can only delete your own signals');
+      }
+      if (response.status === 404) {
+        throw new Error('Trading signal not found');
+      }
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.message || 'Failed to delete trading signal');
+    }
+  } catch (error) {
+    console.error('Error deleting trading signal:', error);
+    throw error;
+  }
+};
+
+// Function to subscribe to a provider's signals
+export const subscribeToProvider = async (providerId: number): Promise<{ sessionId: string, url: string }> => {
+  try {
+    const response = await fetch('/api/signal-subscriptions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ providerId }),
+    });
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required to subscribe');
+      }
+      if (response.status === 400) {
+        const data = await response.json();
+        throw new Error(data.message || 'Invalid subscription request');
+      }
+      throw new Error('Failed to create subscription');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error subscribing to provider:', error);
+    throw error;
+  }
+};
+
+// Function to get user's signal subscriptions
+export const getUserSubscriptions = async (): Promise<SignalSubscription[]> => {
+  try {
+    const response = await fetch('/api/signal-subscriptions');
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required');
+      }
+      throw new Error('Failed to fetch subscriptions');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching user subscriptions:', error);
+    return [];
+  }
+};
+
+// Function to get provider's subscribers
+export const getProviderSubscribers = async (): Promise<SubscriberData> => {
+  try {
+    const response = await fetch('/api/signal-subscribers');
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required');
+      }
+      throw new Error('Failed to fetch subscribers');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching provider subscribers:', error);
+    return { 
+      subscribers: [],
+      metrics: {
+        subscriberCount: 0,
+        totalRevenue: 0,
+        pendingRevenue: 0
+      }
+    };
+  }
+};
+
+// Function to cancel a signal subscription
+export const cancelSubscription = async (subscriptionId: number): Promise<SignalSubscription> => {
+  try {
+    const response = await fetch(`/api/signal-subscriptions/${subscriptionId}/cancel`, {
+      method: 'POST',
+    });
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required');
+      }
+      if (response.status === 403) {
+        throw new Error('You can only cancel your own subscriptions');
+      }
+      if (response.status === 404) {
+        throw new Error('Subscription not found');
+      }
+      const data = await response.json();
+      throw new Error(data.message || 'Failed to cancel subscription');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error canceling subscription:', error);
+    throw error;
+  }
+};
