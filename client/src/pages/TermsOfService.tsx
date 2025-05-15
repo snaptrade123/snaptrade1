@@ -6,7 +6,7 @@ export default function TermsOfService() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold mb-6">Terms of Service</h1>
-          <p className="text-muted-foreground">Last updated: May 14, 2025</p>
+          <p className="text-muted-foreground">Last updated: May 15, 2025</p>
         </div>
 
         <div className="space-y-6 prose dark:prose-invert prose-h2:text-xl prose-h2:font-semibold prose-h3:text-lg prose-h3:font-medium">
@@ -95,7 +95,28 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mt-8 mb-4">6. Limitation of Liability</h2>
+            <h2 className="text-2xl font-bold mt-8 mb-4">6. AI Analysis Variability and Results</h2>
+            <p>
+              SnapTrade utilizes artificial intelligence to analyze charts and news sentiment. By using our platform, you acknowledge and accept:
+            </p>
+            <ul className="list-disc pl-6 mt-4 space-y-2">
+              <li><strong>Varying Results:</strong> The same chart or data may produce different analysis results each time it is processed due to:
+                <ul className="list-disc pl-6 mt-2 mb-2">
+                  <li>The inherent non-deterministic nature of AI models</li>
+                  <li>Real-time news sentiment integration that may change between analyses</li>
+                  <li>Varying pattern recognition confidence levels</li>
+                  <li>Random sampling elements in AI processing</li>
+                  <li>Combined weighting of multiple analysis factors</li>
+                </ul>
+              </li>
+              <li>This variability is by design and mirrors how different professional traders might interpret the same chart differently.</li>
+              <li>Historical accuracy statistics provided are approximations and not guarantees of future performance.</li>
+              <li>All analyses should be considered as one of multiple possible interpretations rather than definitive conclusions.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold mt-8 mb-4">7. Limitation of Liability</h2>
             <p>
               To the maximum extent permitted by law, SnapTrade and its operators shall not be liable for any direct, 
               indirect, incidental, or consequential damages arising from:
@@ -103,6 +124,7 @@ export default function TermsOfService() {
             <ul className="list-disc pl-6 mt-4 space-y-2">
               <li>Use or misuse of the platform.</li>
               <li>Inaccuracies or errors in pattern detection or news analysis.</li>
+              <li>Variability in AI analysis results as described in Section 6.</li>
               <li>Trading decisions made based on SnapTrade outputs.</li>
             </ul>
             <p className="mt-4">
@@ -111,7 +133,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mt-8 mb-4">7. Changes to These Terms</h2>
+            <h2 className="text-2xl font-bold mt-8 mb-4">8. Changes to These Terms</h2>
             <p>
               SnapTrade may update these Terms and Conditions at any time. Continued use of the site after changes 
               constitutes your acceptance of the revised terms. We recommend reviewing this page periodically.
