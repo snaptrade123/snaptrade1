@@ -45,6 +45,12 @@ export interface Prediction {
   tradingRecommendation?: TradingRecommendation;
 }
 
+export interface UsageInfo {
+  count: number;
+  limit: number;
+  tier: string;
+}
+
 export interface AnalysisResult {
   id?: string;
   asset: string;
@@ -53,6 +59,7 @@ export interface AnalysisResult {
   newsSentiment: NewsSentiment;
   prediction: Prediction;
   timestamp?: string;
+  usageInfo?: UsageInfo;
 }
 
 // File to Base64

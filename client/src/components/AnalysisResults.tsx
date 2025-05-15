@@ -36,10 +36,35 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, isLoading }) 
     <div className="bg-card rounded-xl border border-border p-6 mb-6">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-medium">Analysis Results</h3>
-        {result?.asset && (
-          <Badge variant="outline">{result.asset}</Badge>
-        )}
-        {isLoading && <Skeleton className="h-6 w-32" />}
+        <div className="flex items-center gap-3">
+          {/* Usage indicator */}
+          {result?.usageInfo && (
+            <div className="flex items-center gap-2">
+              <div className="text-xs text-muted-foreground whitespace-nowrap">
+                <span className="font-medium">
+                  {result.usageInfo.tier === 'premium' ? 'Premium' : 'Standard'}:
+                </span>
+                <span> {result.usageInfo.count}/{result.usageInfo.limit}</span>
+              </div>
+              <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
+                <div 
+                  className={`h-full ${
+                    result.usageInfo.count / result.usageInfo.limit > 0.8 
+                      ? 'bg-amber-500' 
+                      : 'bg-emerald-500'
+                  }`}
+                  style={{ 
+                    width: `${Math.min(100, (result.usageInfo.count / result.usageInfo.limit) * 100)}%` 
+                  }}
+                />
+              </div>
+            </div>
+          )}
+          {result?.asset && (
+            <Badge variant="outline">{result.asset}</Badge>
+          )}
+          {isLoading && <Skeleton className="h-6 w-32" />}
+        </div>
       </div>
 
       {/* Preview and Detection Section */}

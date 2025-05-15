@@ -327,8 +327,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const savedAnalysis = await storage.createAnalysis(result);
-
-      return res.status(200).json(savedAnalysis);
+      
+      // 6. Track usage for the current user
+      try {
+        await storage.trackAnalysisUsage(userId);
+        
+        // Get updated usage status
+        const updatedStatus = await storage.getUserSubscriptionStatus(userId);
+        
+        // Include usage information in response
+        return res.status(200).json({
+          ...savedAnalysis,
+          usageInfo: {
+            count: updatedStatus.usageCount || 0,
+            limit: updatedStatus.dailyLimit || 0,
+            tier: updatedStatus.tier || 'standard'
+          }
+        });
+      } catch (trackingError) {
+        console.error("Error tracking analysis usage:", trackingError);
+        // Continue even if tracking fails
+        return res.status(200).json(savedAnalysis);
+      }
     } catch (error) {
       console.error("Error in /api/analyze:", error);
       return res.status(500).json({ 
