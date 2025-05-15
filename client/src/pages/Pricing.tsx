@@ -10,14 +10,25 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
-const features = [
+const standardFeatures = [
   "Advanced pattern detection",
   "News sentiment analysis",
   "Market direction predictions",
-  "Entry/exit price recommendations",
+  "Entry/exit price education",
   "Stop loss & take profit levels",
   "Risk-reward ratio calculation",
-  "Timeframe suggestions"
+  "10 analyses per day"
+];
+
+const premiumFeatures = [
+  "Advanced pattern detection",
+  "News sentiment analysis",
+  "Market direction predictions",
+  "Entry/exit price education",
+  "Stop loss & take profit levels",
+  "Risk-reward ratio calculation",
+  "20 analyses per day",
+  "Priority support"
 ];
 
 export default function Pricing() {
@@ -40,18 +51,29 @@ export default function Pricing() {
   const hasReferralBalance = referralBalance > 0;
 
   // Mutations for subscriptions
-  const monthlySubscription = useMutation({
-    mutationFn: async () => {
+  const createSubscription = useMutation({
+    mutationFn: async ({
+      plan,
+      tier
+    }: {
+      plan: "monthly" | "yearly";
+      tier: "standard" | "premium";
+    }) => {
       if (!user) {
         // Redirect to login if not authenticated
         window.location.href = "/auth";
         return null;
       }
       
-      const response = await apiRequest("POST", "/api/create-monthly-subscription", { 
+      const endpoint = plan === "monthly" 
+        ? "/api/create-monthly-subscription" 
+        : "/api/create-yearly-subscription";
+      
+      const response = await apiRequest("POST", endpoint, { 
         userId: user.id,
         email: user.email,
-        applyReferralCredit: applyReferralCredit
+        applyReferralCredit: applyReferralCredit,
+        tier: tier
       });
       
       const data = await response.json();
@@ -71,43 +93,11 @@ export default function Pricing() {
     }
   });
 
-  const yearlySubscription = useMutation({
-    mutationFn: async () => {
-      if (!user) {
-        // Redirect to login if not authenticated
-        window.location.href = "/auth";
-        return null;
-      }
-      
-      const response = await apiRequest("POST", "/api/create-yearly-subscription", { 
-        userId: user.id,
-        email: user.email,
-        applyReferralCredit: applyReferralCredit
-      });
-      
-      const data = await response.json();
-      return data;
-    },
-    onSuccess: (data) => {
-      if (data?.url) {
-        window.location.href = data.url;
-      }
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to create subscription. Please try again.",
-        variant: "destructive"
-      });
-    }
-  });
-
-  const handleSubscribe = (selectedPlan: "monthly" | "yearly") => {
-    if (selectedPlan === "monthly") {
-      monthlySubscription.mutate();
-    } else {
-      yearlySubscription.mutate();
-    }
+  const handleSubscribe = (selectedPlan: "monthly" | "yearly" | "monthly-premium" | "yearly-premium") => {
+    const tier = selectedPlan.includes("premium") ? "premium" : "standard";
+    const plan = selectedPlan.includes("monthly") ? "monthly" : "yearly";
+    
+    createSubscription.mutate({ plan, tier });
   };
 
   return (
@@ -173,12 +163,19 @@ export default function Pricing() {
         </div>
       )}
 
-      <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-        {/* Monthly Plan */}
-        <Card className="border-2 border-primary shadow-lg">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold">Choose Your Plan</h2>
+        <p className="text-muted-foreground mt-2">Select the tier that best fits your trading needs</p>
+      </div>
+
+      {/* Tier Selection - 2x2 Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+        {/* STANDARD TIER - Monthly */}
+        <Card className="border-2 border-slate-200 shadow-lg">
           <CardHeader>
+            <div className="bg-slate-100 inline-block py-1 px-3 rounded-full text-slate-800 text-sm font-medium mb-2">STANDARD</div>
             <CardTitle className="flex items-center text-2xl">Monthly Plan</CardTitle>
-            <CardDescription>Perfect for active traders</CardDescription>
+            <CardDescription>Perfect for regular traders</CardDescription>
             <div className="mt-4">
               <span className="text-4xl font-bold">£59</span>
               <span className="text-muted-foreground ml-1">/month</span>
@@ -200,7 +197,7 @@ export default function Pricing() {
           </CardHeader>
           <CardContent>
             <ul className="space-y-3">
-              {features.map((feature) => (
+              {standardFeatures.map((feature) => (
                 <li key={feature} className="flex items-center">
                   <Check className="h-4 w-4 text-emerald-500 mr-2" />
                   <span>{feature}</span>
@@ -213,9 +210,9 @@ export default function Pricing() {
               className="w-full" 
               size="lg"
               onClick={() => handleSubscribe("monthly")}
-              disabled={monthlySubscription.isPending || yearlySubscription.isPending}
+              disabled={createSubscription.isPending}
             >
-              {monthlySubscription.isPending || yearlySubscription.isPending ? (
+              {createSubscription.isPending ? (
                 "Processing..."
               ) : (
                 <>Subscribe Now <ArrowRight className="ml-2 h-4 w-4" /></>
@@ -224,16 +221,63 @@ export default function Pricing() {
           </CardFooter>
         </Card>
 
-        {/* Yearly Plan */}
-        <Card className="border-2 border-primary shadow-lg relative overflow-hidden">
-          <div className="absolute top-5 right-5">
-            <div className="bg-emerald-500 text-white text-xs px-3 py-1 rounded-full font-medium flex items-center">
-              <Zap className="h-3 w-3 mr-1" /> Best Value
-            </div>
-          </div>
+        {/* PREMIUM TIER - Monthly */}
+        <Card className="border-2 border-primary shadow-lg">
           <CardHeader>
+            <div className="bg-primary/10 inline-block py-1 px-3 rounded-full text-primary text-sm font-medium mb-2">PREMIUM</div>
+            <CardTitle className="flex items-center text-2xl">Monthly Plan</CardTitle>
+            <CardDescription>Advanced features for serious traders</CardDescription>
+            <div className="mt-4">
+              <span className="text-4xl font-bold">£79</span>
+              <span className="text-muted-foreground ml-1">/month</span>
+              
+              {hasReferralBalance && applyReferralCredit && (
+                <div className="mt-2 bg-emerald-50 border border-emerald-200 rounded-md p-2 flex items-center">
+                  <Check className="h-4 w-4 text-emerald-600 mr-2" />
+                  <div>
+                    <div className="text-emerald-700 font-semibold text-sm">
+                      £{Math.min(referralBalance, 79)} referral credit applied
+                    </div>
+                    <div className="text-emerald-600 text-xs font-medium">
+                      Total: £{Math.max(0, 79 - Math.min(referralBalance, 79))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-3">
+              {premiumFeatures.map((feature) => (
+                <li key={feature} className="flex items-center">
+                  <Check className="h-4 w-4 text-emerald-500 mr-2" />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+          <CardFooter>
+            <Button 
+              className="w-full" 
+              size="lg"
+              onClick={() => handleSubscribe("monthly-premium")}
+              disabled={createSubscription.isPending}
+            >
+              {createSubscription.isPending ? (
+                "Processing..."
+              ) : (
+                <>Subscribe Now <ArrowRight className="ml-2 h-4 w-4" /></>
+              )}
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* STANDARD TIER - Annual */}
+        <Card className="border-2 border-slate-200 shadow-lg">
+          <CardHeader>
+            <div className="bg-slate-100 inline-block py-1 px-3 rounded-full text-slate-800 text-sm font-medium mb-2">STANDARD</div>
             <CardTitle className="flex items-center text-2xl">Annual Plan</CardTitle>
-            <CardDescription>Best value for serious traders</CardDescription>
+            <CardDescription>Great value for regular traders</CardDescription>
             <div className="mt-4">
               <span className="text-4xl font-bold">£399</span>
               <span className="text-muted-foreground ml-1">/year</span>
@@ -258,16 +302,71 @@ export default function Pricing() {
           </CardHeader>
           <CardContent>
             <ul className="space-y-3">
-              {features.map((feature) => (
+              {standardFeatures.map((feature) => (
                 <li key={feature} className="flex items-center">
                   <Check className="h-4 w-4 text-emerald-500 mr-2" />
                   <span>{feature}</span>
                 </li>
               ))}
-              <li className="flex items-center font-medium text-primary">
-                <Check className="h-4 w-4 text-emerald-500 mr-2" />
-                <span>Priority support</span>
-              </li>
+            </ul>
+          </CardContent>
+          <CardFooter>
+            <Button 
+              className="w-full" 
+              size="lg"
+              onClick={() => handleSubscribe("yearly")}
+              disabled={createSubscription.isPending}
+            >
+              {createSubscription.isPending ? (
+                "Processing..."
+              ) : (
+                <>Subscribe Now <ArrowRight className="ml-2 h-4 w-4" /></>
+              )}
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* PREMIUM TIER - Annual */}
+        <Card className="border-2 border-primary shadow-lg relative overflow-hidden">
+          <div className="absolute top-5 right-5">
+            <div className="bg-emerald-500 text-white text-xs px-3 py-1 rounded-full font-medium flex items-center">
+              <Zap className="h-3 w-3 mr-1" /> Best Value
+            </div>
+          </div>
+          <CardHeader>
+            <div className="bg-primary/10 inline-block py-1 px-3 rounded-full text-primary text-sm font-medium mb-2">PREMIUM</div>
+            <CardTitle className="flex items-center text-2xl">Annual Plan</CardTitle>
+            <CardDescription>Best value for serious traders</CardDescription>
+            <div className="mt-4">
+              <span className="text-4xl font-bold">£549</span>
+              <span className="text-muted-foreground ml-1">/year</span>
+              
+              {hasReferralBalance && applyReferralCredit && (
+                <div className="mt-2 bg-emerald-50 border border-emerald-200 rounded-md p-2 flex items-center">
+                  <Check className="h-4 w-4 text-emerald-600 mr-2" />
+                  <div>
+                    <div className="text-emerald-700 font-semibold text-sm">
+                      £{Math.min(referralBalance, 549)} referral credit applied
+                    </div>
+                    <div className="text-emerald-600 text-xs font-medium">
+                      Total: £{Math.max(0, 549 - Math.min(referralBalance, 549))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="mt-1 inline-block bg-emerald-500/10 text-emerald-500 text-xs px-2 py-1 rounded-full">
+              Save £399 compared to monthly
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-3">
+              {premiumFeatures.map((feature) => (
+                <li key={feature} className="flex items-center">
+                  <Check className="h-4 w-4 text-emerald-500 mr-2" />
+                  <span>{feature}</span>
+                </li>
+              ))}
             </ul>
           </CardContent>
           <CardFooter>
@@ -275,10 +374,10 @@ export default function Pricing() {
               className="w-full" 
               size="lg"
               variant="default"
-              onClick={() => handleSubscribe("yearly")}
-              disabled={monthlySubscription.isPending || yearlySubscription.isPending}
+              onClick={() => handleSubscribe("yearly-premium")}
+              disabled={createSubscription.isPending}
             >
-              {monthlySubscription.isPending || yearlySubscription.isPending ? (
+              {createSubscription.isPending ? (
                 "Processing..."
               ) : (
                 <>Subscribe Now <ArrowRight className="ml-2 h-4 w-4" /></>
