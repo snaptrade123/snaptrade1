@@ -103,9 +103,15 @@ const Home = () => {
     <div className="container mx-auto px-4 py-6">
       {/* Subscription banner - only shown when active */}
       {subscriptionData?.active && (
-        <div className="mb-8 p-4 border-2 border-emerald-500/50 bg-emerald-500/5 rounded-lg flex items-center justify-between">
+        <div className={`mb-8 p-4 border-2 rounded-lg flex items-center justify-between ${
+          subscriptionData.tier === 'premium' 
+            ? 'border-emerald-500/50 bg-emerald-500/5' 
+            : 'border-violet-500/50 bg-violet-500/5'
+        }`}>
           <div className="flex items-center">
-            <ZapIcon className="h-6 w-6 text-emerald-500 mr-3" />
+            <ZapIcon className={`h-6 w-6 mr-3 ${
+              subscriptionData.tier === 'premium' ? 'text-emerald-500' : 'text-violet-500'
+            }`} />
             <div>
               <h3 className="font-semibold text-lg">
                 {subscriptionData.tier === 'premium' ? 'Premium' : 'Standard'} Subscription Active

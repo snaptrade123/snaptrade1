@@ -171,9 +171,9 @@ export default function Pricing() {
       {/* Tier Selection - 2x2 Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
         {/* STANDARD TIER - Monthly */}
-        <Card className="border-2 border-slate-200 shadow-lg">
+        <Card className="border-2 border-violet-500/30 shadow-lg">
           <CardHeader>
-            <div className="bg-slate-100 inline-block py-1 px-3 rounded-full text-slate-800 text-sm font-medium mb-2">STANDARD</div>
+            <div className="bg-violet-500/10 inline-block py-1 px-3 rounded-full text-violet-500 text-sm font-medium mb-2">STANDARD</div>
             <CardTitle className="flex items-center text-2xl">Monthly Plan</CardTitle>
             <CardDescription>Perfect for regular traders</CardDescription>
             <div className="mt-4">
@@ -181,13 +181,13 @@ export default function Pricing() {
               <span className="text-muted-foreground ml-1">/month</span>
               
               {hasReferralBalance && applyReferralCredit && (
-                <div className="mt-2 bg-emerald-50 border border-emerald-200 rounded-md p-2 flex items-center">
-                  <Check className="h-4 w-4 text-emerald-600 mr-2" />
+                <div className="mt-2 bg-emerald-900/20 border border-emerald-700/40 rounded-md p-2 flex items-center">
+                  <Check className="h-4 w-4 text-emerald-500 mr-2" />
                   <div>
-                    <div className="text-emerald-700 font-semibold text-sm">
+                    <div className="text-emerald-500 font-semibold text-sm">
                       £{Math.min(referralBalance, 59)} referral credit applied
                     </div>
-                    <div className="text-emerald-600 text-xs font-medium">
+                    <div className="text-emerald-400 text-xs font-medium">
                       Total: £{Math.max(0, 59 - Math.min(referralBalance, 59))}
                     </div>
                   </div>
@@ -273,9 +273,9 @@ export default function Pricing() {
         </Card>
 
         {/* STANDARD TIER - Annual */}
-        <Card className="border-2 border-slate-200 shadow-lg">
+        <Card className="border-2 border-violet-500/30 shadow-lg">
           <CardHeader>
-            <div className="bg-slate-100 inline-block py-1 px-3 rounded-full text-slate-800 text-sm font-medium mb-2">STANDARD</div>
+            <div className="bg-violet-500/10 inline-block py-1 px-3 rounded-full text-violet-500 text-sm font-medium mb-2">STANDARD</div>
             <CardTitle className="flex items-center text-2xl">Annual Plan</CardTitle>
             <CardDescription>Great value for regular traders</CardDescription>
             <div className="mt-4">
@@ -283,13 +283,13 @@ export default function Pricing() {
               <span className="text-muted-foreground ml-1">/year</span>
               
               {hasReferralBalance && applyReferralCredit && (
-                <div className="mt-2 bg-emerald-50 border border-emerald-200 rounded-md p-2 flex items-center">
-                  <Check className="h-4 w-4 text-emerald-600 mr-2" />
+                <div className="mt-2 bg-emerald-900/20 border border-emerald-700/40 rounded-md p-2 flex items-center">
+                  <Check className="h-4 w-4 text-emerald-500 mr-2" />
                   <div>
-                    <div className="text-emerald-700 font-semibold text-sm">
+                    <div className="text-emerald-500 font-semibold text-sm">
                       £{Math.min(referralBalance, 399)} referral credit applied
                     </div>
-                    <div className="text-emerald-600 text-xs font-medium">
+                    <div className="text-emerald-400 text-xs font-medium">
                       Total: £{Math.max(0, 399 - Math.min(referralBalance, 399))}
                     </div>
                   </div>

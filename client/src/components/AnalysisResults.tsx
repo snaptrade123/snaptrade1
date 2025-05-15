@@ -41,7 +41,9 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, isLoading }) 
           {result?.usageInfo && (
             <div className="flex items-center gap-2">
               <div className="text-xs text-muted-foreground whitespace-nowrap">
-                <span className="font-medium">
+                <span className={`font-medium ${
+                  result.usageInfo.tier === 'premium' ? 'text-emerald-500' : 'text-violet-500'
+                }`}>
                   {result.usageInfo.tier === 'premium' ? 'Premium' : 'Standard'}:
                 </span>
                 <span> {result.usageInfo.count}/{result.usageInfo.limit}</span>
@@ -51,7 +53,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, isLoading }) 
                   className={`h-full ${
                     result.usageInfo.count / result.usageInfo.limit > 0.8 
                       ? 'bg-amber-500' 
-                      : 'bg-emerald-500'
+                      : result.usageInfo.tier === 'premium' ? 'bg-emerald-500' : 'bg-violet-500'
                   }`}
                   style={{ 
                     width: `${Math.min(100, (result.usageInfo.count / result.usageInfo.limit) * 100)}%` 
