@@ -139,54 +139,209 @@ function validatePatternResponse(data: any): boolean {
 }
 
 function validateSentimentResponse(data: any): boolean {
-  if (typeof data !== 'object') return false;
-  if (typeof data.score !== 'number' || data.score < -1 || data.score > 1) return false;
-  if (!Array.isArray(data.articles)) return false;
+  console.log("Validating sentiment response:", JSON.stringify(data, null, 2));
   
+  if (typeof data !== 'object') {
+    console.error("Sentiment data is not an object");
+    return false;
+  }
+  
+  // Check for score field
+  if (typeof data.score !== 'number' || data.score < -1 || data.score > 1) {
+    console.error("Invalid sentiment score:", data.score);
+    
+    // Special case: if score is outside range but otherwise valid, clamp it
+    if (typeof data.score === 'number') {
+      data.score = Math.max(-1, Math.min(1, data.score));
+      console.log("Clamped sentiment score to valid range:", data.score);
+    } else {
+      return false;
+    }
+  }
+  
+  // Check for articles array
+  if (!Array.isArray(data.articles)) {
+    console.error("Articles is not an array");
+    
+    // If there are no articles, set to empty array
+    data.articles = [];
+    console.log("Set articles to empty array");
+  }
+  
+  // Validate each article
   for (const article of data.articles) {
-    if (typeof article !== 'object') return false;
-    if (typeof article.title !== 'string') return false;
-    if (typeof article.sentiment !== 'number' || article.sentiment < -1 || article.sentiment > 1) return false;
+    if (typeof article !== 'object') {
+      console.error("Article is not an object:", article);
+      continue; // Skip this invalid article but don't fail
+    }
+    
+    if (typeof article.title !== 'string') {
+      console.error("Article title is not a string:", article.title);
+      article.title = "Untitled Article";
+      console.log("Set article title to 'Untitled Article'");
+    }
+    
+    if (typeof article.sentiment !== 'number' || article.sentiment < -1 || article.sentiment > 1) {
+      console.error("Invalid article sentiment:", article.sentiment);
+      
+      // If sentiment is a number but outside range, clamp it
+      if (typeof article.sentiment === 'number') {
+        article.sentiment = Math.max(-1, Math.min(1, article.sentiment));
+        console.log("Clamped article sentiment to valid range:", article.sentiment);
+      } else {
+        // Default to neutral sentiment
+        article.sentiment = 0;
+        console.log("Set article sentiment to neutral (0)");
+      }
+    }
   }
   
   return true;
 }
 
 function validatePredictionResponse(data: any): boolean {
-  if (typeof data !== 'object') return false;
-  if (!['bullish', 'bearish', 'neutral'].includes(data.direction)) return false;
-  if (typeof data.confidence !== 'number' || data.confidence < 0 || data.confidence > 100) return false;
-  if (typeof data.explanation !== 'string') return false;
-  if (typeof data.weights !== 'object') return false;
-  if (typeof data.weights.technical !== 'number' || typeof data.weights.news !== 'number') return false;
-  if (data.weights.technical + data.weights.news !== 100) return false;
+  console.log("Validating prediction response:", JSON.stringify(data, null, 2));
+  
+  if (typeof data !== 'object') {
+    console.error("Prediction data is not an object");
+    return false;
+  }
+  
+  // Check direction
+  if (!['bullish', 'bearish', 'neutral'].includes(data.direction)) {
+    console.error("Invalid direction:", data.direction);
+    
+    // Default to neutral if invalid
+    data.direction = 'neutral';
+    console.log("Set direction to 'neutral'");
+  }
+  
+  // Check confidence
+  if (typeof data.confidence !== 'number' || data.confidence < 0 || data.confidence > 100) {
+    console.error("Invalid confidence:", data.confidence);
+    
+    // If it's a number but outside range, clamp it
+    if (typeof data.confidence === 'number') {
+      data.confidence = Math.max(0, Math.min(100, data.confidence));
+      console.log("Clamped confidence to valid range:", data.confidence);
+    } else {
+      // Default to medium confidence
+      data.confidence = 50;
+      console.log("Set confidence to default (50)");
+    }
+  }
+  
+  // Check explanation
+  if (typeof data.explanation !== 'string') {
+    console.error("Invalid explanation:", data.explanation);
+    data.explanation = "No explanation provided";
+    console.log("Set explanation to default text");
+  }
+  
+  // Check weights
+  if (typeof data.weights !== 'object' || data.weights === null) {
+    console.error("Invalid weights object:", data.weights);
+    data.weights = { technical: 70, news: 30 };
+    console.log("Set weights to default values");
+  } else {
+    // Check individual weight values
+    if (typeof data.weights.technical !== 'number') {
+      console.error("Invalid technical weight:", data.weights.technical);
+      data.weights.technical = 70;
+      console.log("Set technical weight to default (70)");
+    }
+    
+    if (typeof data.weights.news !== 'number') {
+      console.error("Invalid news weight:", data.weights.news);
+      data.weights.news = 30;
+      console.log("Set news weight to default (30)");
+    }
+    
+    // Ensure weights sum to 100
+    if (data.weights.technical + data.weights.news !== 100) {
+      console.error("Weights don't sum to 100:", data.weights);
+      
+      // Normalize weights
+      const total = data.weights.technical + data.weights.news;
+      if (total > 0) {
+        data.weights.technical = Math.round((data.weights.technical / total) * 100);
+        data.weights.news = 100 - data.weights.technical;
+      } else {
+        data.weights.technical = 70;
+        data.weights.news = 30;
+      }
+      
+      console.log("Normalized weights to sum to 100:", data.weights);
+    }
+  }
   
   // Validate trading recommendation if present
-  if (data.tradingRecommendation !== undefined) {
-    if (typeof data.tradingRecommendation !== 'object') return false;
-    
-    // These fields are optional, but if present must be of the correct type
+  if (data.tradingRecommendation === undefined || data.tradingRecommendation === null) {
+    console.log("No trading recommendation provided, creating default");
+    data.tradingRecommendation = {
+      entryPrice: null,
+      stopLoss: null,
+      takeProfit: null,
+      entryCondition: "Wait for confirmation before entering a trade",
+      timeframe: "Medium-term",
+      riskRewardRatio: null
+    };
+  } else if (typeof data.tradingRecommendation !== 'object') {
+    console.error("Invalid trading recommendation (not an object):", data.tradingRecommendation);
+    data.tradingRecommendation = {
+      entryPrice: null,
+      stopLoss: null,
+      takeProfit: null,
+      entryCondition: "Wait for confirmation before entering a trade",
+      timeframe: "Medium-term",
+      riskRewardRatio: null
+    };
+  } else {
+    // Validate entry price
     if (data.tradingRecommendation.entryPrice !== undefined && 
         data.tradingRecommendation.entryPrice !== null && 
-        typeof data.tradingRecommendation.entryPrice !== 'number') return false;
-        
+        typeof data.tradingRecommendation.entryPrice !== 'number') {
+      console.error("Invalid entry price:", data.tradingRecommendation.entryPrice);
+      data.tradingRecommendation.entryPrice = null;
+    }
+    
+    // Validate stop loss
     if (data.tradingRecommendation.stopLoss !== undefined && 
         data.tradingRecommendation.stopLoss !== null && 
-        typeof data.tradingRecommendation.stopLoss !== 'number') return false;
-        
+        typeof data.tradingRecommendation.stopLoss !== 'number') {
+      console.error("Invalid stop loss:", data.tradingRecommendation.stopLoss);
+      data.tradingRecommendation.stopLoss = null;
+    }
+    
+    // Validate take profit
     if (data.tradingRecommendation.takeProfit !== undefined && 
         data.tradingRecommendation.takeProfit !== null && 
-        typeof data.tradingRecommendation.takeProfit !== 'number') return false;
-        
+        typeof data.tradingRecommendation.takeProfit !== 'number') {
+      console.error("Invalid take profit:", data.tradingRecommendation.takeProfit);
+      data.tradingRecommendation.takeProfit = null;
+    }
+    
+    // Validate entry condition
+    if (data.tradingRecommendation.entryCondition === undefined || 
+        typeof data.tradingRecommendation.entryCondition !== 'string') {
+      console.error("Invalid entry condition:", data.tradingRecommendation.entryCondition);
+      data.tradingRecommendation.entryCondition = "In this example, a trader *might* consider waiting for confirmation before entering";
+    }
+    
+    // Validate timeframe
+    if (data.tradingRecommendation.timeframe === undefined || 
+        typeof data.tradingRecommendation.timeframe !== 'string') {
+      console.error("Invalid timeframe:", data.tradingRecommendation.timeframe);
+      data.tradingRecommendation.timeframe = "Medium-term";
+    }
+    
+    // Validate risk reward ratio
     if (data.tradingRecommendation.riskRewardRatio !== undefined && 
         data.tradingRecommendation.riskRewardRatio !== null && 
-        typeof data.tradingRecommendation.riskRewardRatio !== 'number') return false;
-        
-    if (data.tradingRecommendation.entryCondition !== undefined && 
-        typeof data.tradingRecommendation.entryCondition !== 'string') return false;
-        
-    if (data.tradingRecommendation.timeframe !== undefined && 
-        typeof data.tradingRecommendation.timeframe !== 'string') return false;
+        typeof data.tradingRecommendation.riskRewardRatio !== 'number') {
+      console.error("Invalid risk reward ratio:", data.tradingRecommendation.riskRewardRatio);
+      data.tradingRecommendation.riskRewardRatio = null;
+    }
   }
   
   return true;
@@ -242,9 +397,10 @@ export async function analyzeChartImage(base64Image: string) {
       
       // Otherwise return the patterns directly
       return Array.isArray(patterns) ? patterns : [patterns];
-    } catch (parseError) {
-      console.error("Error parsing pattern response:", parseError);
-      throw new Error(`Failed to parse pattern response: ${parseError.message}`);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error("Error parsing pattern response:", error);
+      throw new Error(`Failed to parse pattern response: ${errorMessage}`);
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
