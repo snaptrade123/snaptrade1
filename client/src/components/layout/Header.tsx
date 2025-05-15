@@ -11,7 +11,8 @@ import {
   Loader2,
   CreditCard,
   BookOpen,
-  BarChart
+  BarChart,
+  TrendingUp
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/hooks/use-auth";
@@ -80,6 +81,13 @@ const Header = () => {
             <Button variant="ghost" size="sm">
               <BookOpen className="h-4 w-4 mr-2 md:mr-1" />
               <span className="hidden md:inline">Patterns</span>
+            </Button>
+          </Link>
+          
+          <Link href="/trading-signals">
+            <Button variant="ghost" size="sm">
+              <TrendingUp className="h-4 w-4 mr-2 md:mr-1" />
+              <span className="hidden md:inline">Signals</span>
             </Button>
           </Link>
           

@@ -156,3 +156,74 @@ export const insertAnalysisUsageSchema = createInsertSchema(analysisUsage).omit(
 
 export type InsertAnalysisUsage = z.infer<typeof insertAnalysisUsageSchema>;
 export type AnalysisUsage = typeof analysisUsage.$inferSelect;
+
+// Trading Signals
+export const tradingSignals = pgTable("trading_signals", {
+  id: serial("id").primaryKey(),
+  providerId: integer("provider_id").notNull().references(() => users.id),
+  pair: text("pair").notNull(),
+  direction: text("direction").notNull(), // 'buy' or 'sell'
+  entry: text("entry").notNull(),
+  stopLoss: text("stop_loss").notNull(),
+  takeProfit1: text("take_profit_1").notNull(),
+  takeProfit2: text("take_profit_2"),
+  takeProfit3: text("take_profit_3"),
+  timeframe: text("timeframe").notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  isPremium: boolean("is_premium").default(false).notNull(),
+  price: integer("price"), // Monthly subscription price in pence/cents
+});
+
+export const insertTradingSignalSchema = createInsertSchema(tradingSignals).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Signal Subscriptions for premium signals
+export const signalSubscriptions = pgTable("signal_subscriptions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  providerId: integer("provider_id").notNull().references(() => users.id),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  status: text("status").notNull(), // 'active', 'cancelled', 'past_due'
+  startDate: timestamp("start_date").defaultNow().notNull(),
+  endDate: timestamp("end_date"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertSignalSubscriptionSchema = createInsertSchema(signalSubscriptions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Signal Payouts to track payments to signal providers
+export const signalPayouts = pgTable("signal_payouts", {
+  id: serial("id").primaryKey(),
+  providerId: integer("provider_id").notNull().references(() => users.id),
+  amount: integer("amount").notNull(), // Amount in pence/cents
+  currency: text("currency").default("GBP").notNull(),
+  stripeTransferId: text("stripe_transfer_id"), 
+  status: text("status").notNull(), // 'pending', 'paid', 'failed'
+  periodStart: timestamp("period_start").notNull(),
+  periodEnd: timestamp("period_end").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertSignalPayoutSchema = createInsertSchema(signalPayouts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertTradingSignal = z.infer<typeof insertTradingSignalSchema>;
+export type TradingSignal = typeof tradingSignals.$inferSelect;
+export type InsertSignalSubscription = z.infer<typeof insertSignalSubscriptionSchema>;
+export type SignalSubscription = typeof signalSubscriptions.$inferSelect;
+export type InsertSignalPayout = z.infer<typeof insertSignalPayoutSchema>;
+export type SignalPayout = typeof signalPayouts.$inferSelect;

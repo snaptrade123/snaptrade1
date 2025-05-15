@@ -25,7 +25,8 @@ import Features from "./pages/Features";
 import ChartPatternDetection from "./pages/features/ChartPatternDetection";
 import SentimentAnalysis from "./pages/features/SentimentAnalysis";
 import MarketPredictions from "./pages/features/MarketPredictions";
-import TradingSignals from "./pages/features/TradingSignals";
+import FeatureTradingSignals from "./pages/features/TradingSignals";
+import TradingSignals from "./pages/TradingSignals";
 
 function Router() {
   return (
@@ -50,7 +51,9 @@ function Router() {
       <Route path="/features/chart-pattern-detection" component={ChartPatternDetection} />
       <Route path="/features/sentiment-analysis" component={SentimentAnalysis} />
       <Route path="/features/market-predictions" component={MarketPredictions} />
-      <Route path="/features/trading-signals" component={TradingSignals} />
+      <Route path="/features/trading-signals" component={FeatureTradingSignals} />
+      
+      <Route path="/trading-signals" component={TradingSignals} />
       
       <ProtectedRoute path="/profile" component={UserProfile} />
       {/* Fallback to 404 */}
