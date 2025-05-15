@@ -19,6 +19,13 @@ import PatternGuide from "./pages/PatternGuide";
 import UserProfile from "./pages/UserProfile";
 import TradingTutorials from "./pages/TradingTutorials";
 import KnowledgeBase from "./pages/KnowledgeBase";
+import Features from "./pages/Features";
+
+// Feature pages
+import ChartPatternDetection from "./pages/features/ChartPatternDetection";
+import SentimentAnalysis from "./pages/features/SentimentAnalysis";
+import MarketPredictions from "./pages/features/MarketPredictions";
+import TradingSignals from "./pages/features/TradingSignals";
 
 function Router() {
   return (
@@ -37,6 +44,13 @@ function Router() {
       <Route path="/knowledge-base" component={KnowledgeBase} />
       <Route path="/knowledge" component={KnowledgeBase} />
       <Route path="/subscription-success" component={SubscriptionSuccess} />
+      <Route path="/features" component={Features} />
+      
+      {/* Feature pages */}
+      <Route path="/features/chart-pattern-detection" component={ChartPatternDetection} />
+      <Route path="/features/sentiment-analysis" component={SentimentAnalysis} />
+      <Route path="/features/market-predictions" component={MarketPredictions} />
+      <Route path="/features/trading-signals" component={TradingSignals} />
       
       <ProtectedRoute path="/profile" component={UserProfile} />
       {/* Fallback to 404 */}

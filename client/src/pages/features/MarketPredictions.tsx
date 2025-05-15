@@ -311,7 +311,7 @@ export default function MarketPredictions() {
                       
                       <div>
                         <div className="flex justify-between mb-1">
-                          <span className="text-sm font-medium">Low confidence (<60%)</span>
+                          <span className="text-sm font-medium">Low confidence (&lt;60%)</span>
                           <span className="text-sm font-medium">55%</span>
                         </div>
                         <div className="w-full bg-slate-800 rounded-full h-2">
