@@ -53,7 +53,7 @@ function Router() {
       <Route path="/features/market-predictions" component={MarketPredictions} />
       <Route path="/features/trading-signals" component={FeatureTradingSignals} />
       
-      <Route path="/trading-signals" component={TradingSignals} />
+      <ProtectedRoute path="/trading-signals" component={TradingSignals} />
       
       <ProtectedRoute path="/profile" component={UserProfile} />
       {/* Fallback to 404 */}
