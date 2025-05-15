@@ -40,13 +40,18 @@ export default function TermsOfService() {
           <section>
             <h2 className="text-2xl font-bold mt-8 mb-4">2. Subscription and Billing</h2>
             <p>
-              SnapTrade may offer subscription-based features.
+              SnapTrade offers subscription-based features on Standard and Premium tiers.
             </p>
             <p className="mt-4">
               You may cancel your subscription at any time. Once cancelled, you will not be billed again.
             </p>
             <p className="mt-4">
-              We do not offer refunds for any paid subscription periods. However, you will retain full access to premium features 
+              <strong className="text-destructive">
+                All subscriptions are non-refundable. No partial or prorated refunds will be provided under any circumstances.
+              </strong>
+            </p>
+            <p className="mt-4">
+              By subscribing to SnapTrade services, you acknowledge and agree to this strict no-refund policy. However, you will retain full access to premium features 
               for the remainder of the billing cycle that has already been paid.
             </p>
             <p className="mt-4">

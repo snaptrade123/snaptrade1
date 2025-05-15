@@ -35,6 +35,7 @@ export default function Pricing() {
   const { toast } = useToast();
   const { user } = useAuth();
   const [applyReferralCredit, setApplyReferralCredit] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   // Get user referral info
   const { data: referralInfo, isLoading: referralLoading } = useQuery({
@@ -94,6 +95,15 @@ export default function Pricing() {
   });
 
   const handleSubscribe = (selectedPlan: "monthly" | "yearly" | "monthly-premium" | "yearly-premium") => {
+    if (!acceptedTerms) {
+      toast({
+        title: "Terms Acceptance Required",
+        description: "You must agree to the Terms of Service before subscribing.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     const tier = selectedPlan.includes("premium") ? "premium" : "standard";
     const plan = selectedPlan.includes("monthly") ? "monthly" : "yearly";
     
@@ -387,9 +397,26 @@ export default function Pricing() {
         </Card>
       </div>
 
-      <div className="mt-12 text-center text-muted-foreground text-sm">
-        <p>All plans include a 7-day money-back guarantee. No questions asked.</p>
-        <p className="mt-2">Need help? Contact us at support@snaptrade.co.uk</p>
+      <div className="mt-12 max-w-md mx-auto">
+        <div className="flex items-center space-x-3 bg-slate-800 py-4 px-5 rounded-lg border border-slate-700 mb-6">
+          <Checkbox 
+            id="acceptTerms" 
+            checked={acceptedTerms}
+            onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+            className="border-primary/60 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+          />
+          <Label 
+            htmlFor="acceptTerms" 
+            className="cursor-pointer font-medium"
+          >
+            I have read and agree to the <Link to="/terms-of-service" className="text-primary hover:underline">Terms of Service</Link>, including the no-refund policy
+          </Label>
+        </div>
+        
+        <div className="text-center text-muted-foreground text-sm">
+          <p className="text-amber-500 font-semibold mb-3">All subscriptions are non-refundable as stated in our Terms of Service.</p>
+          <p className="mt-2">Need help? Contact us at support@snaptrade.co.uk</p>
+        </div>
       </div>
     </div>
   );
