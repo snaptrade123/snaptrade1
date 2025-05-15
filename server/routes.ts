@@ -1248,6 +1248,440 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Trading Signals API
+  
+  // Get all free trading signals
+  app.get("/api/trading-signals/free", async (req, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+      const signals = await storage.getFreeTradingSignals({ limit });
+      res.json(signals);
+    } catch (error) {
+      console.error("Error fetching free trading signals:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Get all premium trading signals
+  app.get("/api/trading-signals/premium", async (req, res) => {
+    try {
+      // Check if user is authenticated
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Authentication required to view premium signals" });
+      }
+      
+      const userId = req.user.id;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+      
+      // Get all premium signals
+      const signals = await storage.getPremiumTradingSignals({ limit });
+      
+      // Get user's subscriptions
+      const subscriptions = await storage.getUserSignalSubscriptions(userId);
+      const subscribedProviderIds = new Set(
+        subscriptions
+          .filter(sub => sub.status === 'active')
+          .map(sub => sub.providerId)
+      );
+      
+      // Mark which signals the user has access to
+      const enhancedSignals = signals.map(signal => ({
+        ...signal,
+        hasAccess: !signal.isPremium || subscribedProviderIds.has(signal.providerId)
+      }));
+      
+      res.json(enhancedSignals);
+    } catch (error) {
+      console.error("Error fetching premium trading signals:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Get a specific trading signal by ID
+  app.get("/api/trading-signals/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const signal = await storage.getTradingSignal(id);
+      
+      if (!signal) {
+        return res.status(404).json({ message: "Trading signal not found" });
+      }
+      
+      // For premium signals, verify user subscription
+      if (signal.isPremium) {
+        if (!req.isAuthenticated()) {
+          return res.status(401).json({ message: "Authentication required to view premium signals" });
+        }
+        
+        const userId = req.user.id;
+        
+        // If user is the provider, allow access
+        if (userId === signal.providerId) {
+          return res.json(signal);
+        }
+        
+        // Check if user has an active subscription to this provider
+        const subscriptions = await storage.getUserSignalSubscriptions(userId);
+        const hasSubscription = subscriptions.some(
+          sub => sub.providerId === signal.providerId && sub.status === 'active'
+        );
+        
+        if (!hasSubscription) {
+          return res.status(403).json({ 
+            message: "Subscription required to view this premium signal",
+            isPremium: true,
+            providerId: signal.providerId
+          });
+        }
+      }
+      
+      res.json(signal);
+    } catch (error) {
+      console.error("Error fetching trading signal:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Get signals posted by a specific provider
+  app.get("/api/trading-signals/provider/:providerId", async (req, res) => {
+    try {
+      const providerId = parseInt(req.params.providerId);
+      const signals = await storage.getProviderTradingSignals(providerId);
+      
+      // If user is authenticated and is the provider, return all signals
+      if (req.isAuthenticated() && req.user.id === providerId) {
+        return res.json(signals);
+      }
+      
+      // For other users, only return free signals or premium ones they've subscribed to
+      let filteredSignals = signals.filter(signal => !signal.isPremium);
+      
+      if (req.isAuthenticated()) {
+        const userId = req.user.id;
+        const subscriptions = await storage.getUserSignalSubscriptions(userId);
+        const hasSubscription = subscriptions.some(
+          sub => sub.providerId === providerId && sub.status === 'active'
+        );
+        
+        if (hasSubscription) {
+          // Include all signals if subscribed
+          filteredSignals = signals;
+        }
+      }
+      
+      res.json(filteredSignals);
+    } catch (error) {
+      console.error("Error fetching provider trading signals:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Create a new trading signal
+  app.post("/api/trading-signals", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Authentication required to create signals" });
+      }
+      
+      const userId = req.user.id;
+      
+      // Check if premium - only subscribers can create premium signals
+      if (req.body.isPremium) {
+        const subscriptionStatus = await storage.getUserSubscriptionStatus(userId);
+        if (!subscriptionStatus.active) {
+          return res.status(403).json({ 
+            message: "You must be a SnapTrade subscriber to create premium signals" 
+          });
+        }
+      }
+      
+      const signalData = {
+        ...req.body,
+        providerId: userId
+      };
+      
+      const newSignal = await storage.createTradingSignal(signalData);
+      res.status(201).json(newSignal);
+    } catch (error) {
+      console.error("Error creating trading signal:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Update a trading signal
+  app.patch("/api/trading-signals/:id", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Authentication required to update signals" });
+      }
+      
+      const id = parseInt(req.params.id);
+      const userId = req.user.id;
+      
+      // Get the signal
+      const signal = await storage.getTradingSignal(id);
+      
+      if (!signal) {
+        return res.status(404).json({ message: "Trading signal not found" });
+      }
+      
+      // Check if user owns the signal
+      if (userId !== signal.providerId) {
+        return res.status(403).json({ message: "You can only update your own signals" });
+      }
+      
+      // Update the signal
+      const updatedSignal = await storage.updateTradingSignal(id, req.body);
+      res.json(updatedSignal);
+    } catch (error) {
+      console.error("Error updating trading signal:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Delete a trading signal
+  app.delete("/api/trading-signals/:id", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Authentication required to delete signals" });
+      }
+      
+      const id = parseInt(req.params.id);
+      const userId = req.user.id;
+      
+      // Get the signal
+      const signal = await storage.getTradingSignal(id);
+      
+      if (!signal) {
+        return res.status(404).json({ message: "Trading signal not found" });
+      }
+      
+      // Check if user owns the signal
+      if (userId !== signal.providerId) {
+        return res.status(403).json({ message: "You can only delete your own signals" });
+      }
+      
+      // Delete the signal
+      await storage.deleteTradingSignal(id);
+      res.sendStatus(204);
+    } catch (error) {
+      console.error("Error deleting trading signal:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Subscribe to a provider's signals
+  app.post("/api/signal-subscriptions", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Authentication required to subscribe" });
+      }
+      
+      const userId = req.user.id;
+      const { providerId } = req.body;
+      
+      if (!providerId) {
+        return res.status(400).json({ message: "Provider ID is required" });
+      }
+      
+      // Check if already subscribed
+      const subscriptions = await storage.getUserSignalSubscriptions(userId);
+      const existingSubscription = subscriptions.find(
+        sub => sub.providerId === providerId && sub.status === 'active'
+      );
+      
+      if (existingSubscription) {
+        return res.status(400).json({ message: "You are already subscribed to this provider" });
+      }
+      
+      // Create a Stripe checkout session
+      // Get the first premium signal from this provider to determine price
+      const providerSignals = await storage.getProviderTradingSignals(providerId);
+      const premiumSignal = providerSignals.find(signal => signal.isPremium);
+      
+      if (!premiumSignal) {
+        return res.status(400).json({ message: "This provider does not offer premium signals" });
+      }
+      
+      // Get the provider's user info for the Stripe description
+      const provider = await storage.getUser(providerId);
+      
+      if (!provider) {
+        return res.status(404).json({ message: "Provider not found" });
+      }
+      
+      // Create a subscription through Stripe
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: 'gbp',
+              product_data: {
+                name: `${provider.username}'s Premium Trading Signals`,
+                description: `Monthly subscription to ${provider.username}'s premium trading signals`,
+              },
+              unit_amount: premiumSignal.price * 100, // Price in pence
+              recurring: {
+                interval: 'month',
+              },
+            },
+            quantity: 1,
+          },
+        ],
+        mode: 'subscription',
+        success_url: `${req.protocol}://${req.get('host')}/subscription-success?provider=${provider.username}`,
+        cancel_url: `${req.protocol}://${req.get('host')}/trading-signals`,
+        client_reference_id: `${userId}_${providerId}`, // To identify the subscription later
+        metadata: {
+          userId: userId.toString(),
+          providerId: providerId.toString()
+        },
+      });
+      
+      res.json({
+        sessionId: session.id,
+        url: session.url
+      });
+    } catch (error) {
+      console.error("Error creating signal subscription:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Get user's signal subscriptions
+  app.get("/api/signal-subscriptions", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      const userId = req.user.id;
+      const subscriptions = await storage.getUserSignalSubscriptions(userId);
+      
+      // Enhance with provider information
+      const enhancedSubscriptions = await Promise.all(
+        subscriptions.map(async (sub) => {
+          const provider = await storage.getUser(sub.providerId);
+          return {
+            ...sub,
+            providerUsername: provider ? provider.username : 'Unknown'
+          };
+        })
+      );
+      
+      res.json(enhancedSubscriptions);
+    } catch (error) {
+      console.error("Error fetching signal subscriptions:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Get provider's subscribers
+  app.get("/api/signal-subscribers", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      const providerId = req.user.id;
+      const subscribers = await storage.getProviderSubscribers(providerId);
+      
+      // Enhance with basic user information (username only)
+      const enhancedSubscribers = await Promise.all(
+        subscribers.map(async (sub) => {
+          const user = await storage.getUser(sub.userId);
+          return {
+            ...sub,
+            username: user ? user.username : 'Unknown'
+          };
+        })
+      );
+      
+      // Also return provider's revenue metrics
+      const signalPayouts = await storage.getProviderPayouts(providerId);
+      const totalRevenue = signalPayouts.reduce((sum, payout) => sum + payout.amount, 0);
+      const pendingRevenue = signalPayouts
+        .filter(payout => payout.status === 'pending')
+        .reduce((sum, payout) => sum + payout.amount, 0);
+      
+      res.json({
+        subscribers: enhancedSubscribers,
+        metrics: {
+          subscriberCount: subscribers.length,
+          totalRevenue,
+          pendingRevenue
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching signal subscribers:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Cancel a signal subscription
+  app.post("/api/signal-subscriptions/:id/cancel", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      const userId = req.user.id;
+      const subscriptionId = parseInt(req.params.id);
+      
+      // Get the subscription
+      const [subscription] = await db.select()
+        .from(signalSubscriptions)
+        .where(eq(signalSubscriptions.id, subscriptionId));
+      
+      if (!subscription) {
+        return res.status(404).json({ message: "Subscription not found" });
+      }
+      
+      // Check if user owns the subscription
+      if (userId !== subscription.userId) {
+        return res.status(403).json({ message: "You can only cancel your own subscriptions" });
+      }
+      
+      // Cancel in Stripe if there's a Stripe subscription ID
+      if (subscription.stripeSubscriptionId) {
+        await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+          cancel_at_period_end: true
+        });
+      }
+      
+      // Update the subscription status
+      const updatedSubscription = await storage.cancelSignalSubscription(subscriptionId);
+      
+      res.json(updatedSubscription);
+    } catch (error) {
+      console.error("Error canceling signal subscription:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
