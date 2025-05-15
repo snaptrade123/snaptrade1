@@ -93,6 +93,9 @@ export default function TradingSignals() {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [selectedSignalId, setSelectedSignalId] = useState<number | null>(null);
   const [subscribing, setSubscribing] = useState(false);
+  
+  // Get the current user ID for API calls (for development)
+  const userId = user?.id;
 
   // Check if user is a premium subscriber
   const isPremiumProvider = !!user?.subscriptionTier;
@@ -112,7 +115,7 @@ export default function TradingSignals() {
     isLoading: premiumSignalsLoading 
   } = useQuery({
     queryKey: ['/api/trading-signals/premium'],
-    queryFn: () => getPremiumTradingSignals(),
+    queryFn: () => getPremiumTradingSignals(undefined, userId),
   });
 
   // Query to get signal details when selected
@@ -143,7 +146,7 @@ export default function TradingSignals() {
 
   // Create signal mutation
   const createSignalMutation = useMutation({
-    mutationFn: (signalData: any) => createSignalApi(signalData),
+    mutationFn: (signalData: any) => createSignalApi(signalData, userId),
     onSuccess: () => {
       toast({
         title: "Signal Published",
