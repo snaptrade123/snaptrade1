@@ -240,32 +240,14 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, isLoading }) 
                     </div>
                   </div>
                   
-                  {/* Visual Trading Levels Chart based on active tab */}
-                  {activeTab === 'quick' && result.prediction.tradingRecommendation.quickTrade && (
-                    <TradingLevelsChart 
-                      tradingRecommendation={{
-                        ...result.prediction.tradingRecommendation,
-                        entryPrice: result.prediction.tradingRecommendation.quickTrade.entryPrice,
-                        stopLoss: result.prediction.tradingRecommendation.quickTrade.stopLoss,
-                        takeProfit: result.prediction.tradingRecommendation.quickTrade.takeProfit
-                      }}
-                      direction={result.prediction.direction}
-                    />
-                  )}
-                  
-                  {activeTab === 'swing' && (
-                    <TradingLevelsChart 
-                      tradingRecommendation={result.prediction.tradingRecommendation}
-                      direction={result.prediction.direction}
-                    />
-                  )}
+                  {/* Removed Visual Trading Levels Chart due to UI issues */}
                   
                   {/* Price Levels Grid - Show quick or swing trade based on active tab */}
                   <div className="grid grid-cols-3 gap-3 mb-3">
                     {/* Entry Price */}
-                    <div className="bg-secondary/30 p-3 rounded-md">
-                      <p className="text-xs text-muted-foreground mb-1">Entry Price</p>
-                      <p className={`text-lg font-medium ${result.prediction.direction === 'bullish' ? 'text-emerald-500' : 'text-red-500'}`}>
+                    <div className="bg-background border border-primary/30 shadow-md p-4 rounded-md">
+                      <p className="text-xs text-muted-foreground mb-2 uppercase font-semibold tracking-wide">Entry Price</p>
+                      <p className={`text-xl font-bold ${result.prediction.direction === 'bullish' ? 'text-emerald-500' : 'text-red-500'}`}>
                         {activeTab === 'quick' && result.prediction.tradingRecommendation.quickTrade?.entryPrice
                           ? result.prediction.tradingRecommendation.quickTrade.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 })
                           : activeTab === 'swing' && result.prediction.tradingRecommendation.swingTrade?.entryPrice
@@ -275,9 +257,9 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, isLoading }) 
                     </div>
                     
                     {/* Stop Loss */}
-                    <div className="bg-secondary/30 p-3 rounded-md">
-                      <p className="text-xs text-muted-foreground mb-1">Stop Loss</p>
-                      <p className="text-lg font-medium text-red-500">
+                    <div className="bg-background border border-red-500/30 shadow-md p-4 rounded-md">
+                      <p className="text-xs text-muted-foreground mb-2 uppercase font-semibold tracking-wide">Stop Loss</p>
+                      <p className="text-xl font-bold text-red-500">
                         {activeTab === 'quick' && result.prediction.tradingRecommendation.quickTrade?.stopLoss
                           ? result.prediction.tradingRecommendation.quickTrade.stopLoss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 })
                           : activeTab === 'swing' && result.prediction.tradingRecommendation.swingTrade?.stopLoss
@@ -287,9 +269,9 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, isLoading }) 
                     </div>
                     
                     {/* Take Profit */}
-                    <div className="bg-secondary/30 p-3 rounded-md">
-                      <p className="text-xs text-muted-foreground mb-1">Take Profit</p>
-                      <p className="text-lg font-medium text-emerald-500">
+                    <div className="bg-background border border-emerald-500/30 shadow-md p-4 rounded-md">
+                      <p className="text-xs text-muted-foreground mb-2 uppercase font-semibold tracking-wide">Take Profit</p>
+                      <p className="text-xl font-bold text-emerald-500">
                         {activeTab === 'quick' && result.prediction.tradingRecommendation.quickTrade?.takeProfit
                           ? result.prediction.tradingRecommendation.quickTrade.takeProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 })
                           : activeTab === 'swing' && result.prediction.tradingRecommendation.swingTrade?.takeProfit
