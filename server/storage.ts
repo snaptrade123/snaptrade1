@@ -1,4 +1,4 @@
-import { analysis, namedAnalysis, users, referrals, assetLists, type Analysis, type NamedAnalysis, type InsertAnalysis, type InsertNamedAnalysis, type User, type InsertUser, type InsertReferral, type Referral, type AssetList, type InsertAssetList } from "@shared/schema";
+import { analysis, namedAnalysis, users, referrals, assetLists, analysisUsage, type Analysis, type NamedAnalysis, type InsertAnalysis, type InsertNamedAnalysis, type User, type InsertUser, type InsertReferral, type Referral, type AssetList, type InsertAssetList, type AnalysisUsage, type InsertAnalysisUsage } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 import session from "express-session";
@@ -25,7 +25,12 @@ export interface IStorage {
   // Stripe subscription methods
   updateStripeCustomerId(userId: number, stripeCustomerId: string): Promise<User>;
   updateUserSubscription(userId: number, stripeSubscriptionId: string, status: string, tier: string, endDate?: Date): Promise<User>;
-  getUserSubscriptionStatus(userId: number): Promise<{ active: boolean, tier?: string, endDate?: Date }>;
+  getUserSubscriptionStatus(userId: number): Promise<{ active: boolean, tier?: string, endDate?: Date, dailyLimit?: number, usageCount?: number }>;
+  
+  // Analysis usage methods
+  trackAnalysisUsage(userId: number): Promise<AnalysisUsage>;
+  getDailyAnalysisUsage(userId: number): Promise<number>;
+  getUserDailyLimit(userId: number): Promise<number>;
   
   // Referral methods
   getUserByReferralCode(referralCode: string): Promise<User | undefined>;

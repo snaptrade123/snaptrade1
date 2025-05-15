@@ -141,3 +141,18 @@ export type InsertReferral = z.infer<typeof insertReferralSchema>;
 export type Referral = typeof referrals.$inferSelect;
 export type InsertAssetList = z.infer<typeof insertAssetListSchema>;
 export type AssetList = typeof assetLists.$inferSelect;
+
+// Analysis Usage tracking
+export const analysisUsage = pgTable("analysis_usage", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  date: timestamp("date").defaultNow().notNull(),
+  count: integer("count").default(1).notNull(),
+});
+
+export const insertAnalysisUsageSchema = createInsertSchema(analysisUsage).omit({
+  id: true,
+});
+
+export type InsertAnalysisUsage = z.infer<typeof insertAnalysisUsageSchema>;
+export type AnalysisUsage = typeof analysisUsage.$inferSelect;
