@@ -50,38 +50,39 @@ const Home = () => {
   });
 
   const handleUpload = async (file: File, asset: string) => {
-    // TEMPORARY TESTING MODE: Skip subscription check for testing
     // Check if the user has an active subscription
-    // if (subscriptionData?.active) {
+    if (subscriptionData?.active) {
       analyzeChartMutation.mutate({ file, asset });
-    // } else {
-    //   toast({
-    //     title: "Subscription Required",
-    //     description: "You need a subscription to analyze charts. Please subscribe to continue.",
-    //     variant: "destructive",
-    //   });
+    } else {
+      toast({
+        title: "Subscription Required",
+        description: "You need a subscription to analyze charts. Please subscribe to continue.",
+        variant: "destructive",
+      });
       
-    //   // Redirect to pricing page after a short delay
-    //   setTimeout(() => {
-    //     setLocation("/pricing");
-    //   }, 1500);
-    // }
+      // Redirect to pricing page after a short delay
+      setTimeout(() => {
+        setLocation("/pricing");
+      }, 1500);
+    }
   };
 
   return (
     <div className="container mx-auto px-4 py-6">
-      {/* TESTING MODE: Always show active subscription banner */}
-      <div className="mb-8 p-4 border-2 border-emerald-500/50 bg-emerald-500/5 rounded-lg flex items-center justify-between">
-        <div className="flex items-center">
-          <ZapIcon className="h-6 w-6 text-emerald-500 mr-3" />
-          <div>
-            <h3 className="font-semibold text-lg">Testing Mode Active</h3>
-            <p className="text-sm text-muted-foreground">
-              Premium features unlocked for testing purposes
-            </p>
+      {/* Subscription banner - only shown when active */}
+      {subscriptionData?.active && (
+        <div className="mb-8 p-4 border-2 border-emerald-500/50 bg-emerald-500/5 rounded-lg flex items-center justify-between">
+          <div className="flex items-center">
+            <ZapIcon className="h-6 w-6 text-emerald-500 mr-3" />
+            <div>
+              <h3 className="font-semibold text-lg">Premium Subscription Active</h3>
+              <p className="text-sm text-muted-foreground">
+                {subscriptionData.tier === 'yearly' ? 'Annual' : 'Monthly'} plan - Expires: {subscriptionData.endDate ? new Date(subscriptionData.endDate).toLocaleDateString() : 'N/A'}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="mb-8">
         <h2 className="text-2xl font-semibold mb-2">Chart Pattern Analysis</h2>
