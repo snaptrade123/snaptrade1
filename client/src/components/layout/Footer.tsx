@@ -35,10 +35,10 @@ const Footer = () => {
           <div>
             <h4 className="font-medium mb-4">Features</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-foreground transition-colors">Chart Pattern Detection</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Sentiment Analysis</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Market Predictions</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Trading Signals</a></li>
+              <li><Link href="/features/chart-pattern-detection" className="hover:text-foreground transition-colors">Chart Pattern Detection</Link></li>
+              <li><Link href="/features/sentiment-analysis" className="hover:text-foreground transition-colors">Sentiment Analysis</Link></li>
+              <li><Link href="/features/market-predictions" className="hover:text-foreground transition-colors">Market Predictions</Link></li>
+              <li><Link href="/features/trading-signals" className="hover:text-foreground transition-colors">Trading Signals</Link></li>
             </ul>
           </div>
           
@@ -46,9 +46,9 @@ const Footer = () => {
             <h4 className="font-medium mb-4">Resources</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><Link href="/pattern-guide" className="hover:text-foreground transition-colors">Pattern Guide</Link></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">API Documentation</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Trading Tutorials</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Knowledge Base</a></li>
+              <li><Link href="/trading-tutorials" className="hover:text-foreground transition-colors">Trading Tutorials</Link></li>
+              <li><Link href="/knowledge-base" className="hover:text-foreground transition-colors">Knowledge Base</Link></li>
+              <li><Link href="/api-docs" className="hover:text-foreground transition-colors">API Documentation</Link></li>
             </ul>
           </div>
           

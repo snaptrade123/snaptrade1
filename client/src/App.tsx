@@ -17,6 +17,8 @@ import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import PatternGuide from "./pages/PatternGuide";
 import UserProfile from "./pages/UserProfile";
+import TradingTutorials from "./pages/TradingTutorials";
+import KnowledgeBase from "./pages/KnowledgeBase";
 
 function Router() {
   return (
@@ -30,7 +32,12 @@ function Router() {
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/patterns" component={PatternGuide} />
       <Route path="/pattern-guide" component={PatternGuide} />
+      <Route path="/tutorials" component={TradingTutorials} />
+      <Route path="/trading-tutorials" component={TradingTutorials} />
+      <Route path="/knowledge-base" component={KnowledgeBase} />
+      <Route path="/knowledge" component={KnowledgeBase} />
       <Route path="/subscription-success" component={SubscriptionSuccess} />
+      
       <ProtectedRoute path="/profile" component={UserProfile} />
       {/* Fallback to 404 */}
       <Route component={NotFound} />
