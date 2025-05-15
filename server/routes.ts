@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { analyzeChartImage, analyzeNewsSentiment, generateCombinedPrediction } from "./openai";
@@ -9,6 +9,44 @@ import { db } from "./db";
 import { users, referrals } from "@shared/schema";
 import * as schema from "@shared/schema";
 import { eq, desc, and } from "drizzle-orm";
+
+// Extend the Express Request interface to include userId
+declare global {
+  namespace Express {
+    interface Request {
+      userId?: number;
+    }
+  }
+}
+
+// Authentication middleware that supports both session and header-based auth
+const authOrIdHeader = async (req: Request, res: Response, next: NextFunction) => {
+  // If already authenticated via session, use that
+  if (req.isAuthenticated()) {
+    req.userId = req.user.id;
+    return next();
+  }
+  
+  // Check for header-based auth (for development/testing)
+  const userId = req.header('X-User-ID');
+  if (userId) {
+    try {
+      const id = parseInt(userId, 10);
+      const user = await storage.getUser(id);
+      
+      if (user) {
+        // Attach user ID to request for use in route handlers
+        req.userId = id;
+        return next();
+      }
+    } catch (err) {
+      console.error('Error parsing user ID from header:', err);
+    }
+  }
+  
+  // No valid authentication
+  return res.status(401).json({ message: 'Authentication required' });
+};
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
@@ -1249,29 +1287,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Trading Signals API
-
-  // Authentication middleware with fallback to X-User-ID header for development
-  const authOrIdHeader = (req: any, res: any, next: any) => {
-    // For session-based authentication
-    if (req.isAuthenticated()) {
-      req.userId = req.user.id;
-      console.log("Using authenticated user ID:", req.userId);
-      next();
-      return;
-    }
-    
-    // For development - allow direct user ID header
-    const authHeader = req.header('X-User-ID');
-    if (authHeader) {
-      req.userId = parseInt(authHeader);
-      console.log("Using user ID from header:", req.userId);
-      next();
-      return;
-    }
-    
-    console.log("Not authenticated and no user ID header provided");
-    res.status(401).json({ message: "Authentication required to create signal" });
-  };
   
   // Get all free trading signals - no auth required
   app.get("/api/trading-signals/free", async (req, res) => {
