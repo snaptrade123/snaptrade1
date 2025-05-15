@@ -35,6 +35,7 @@ const Footer = () => {
           <div>
             <h4 className="font-medium mb-4">Features</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
+              <li><Link href="/features" className="hover:text-foreground transition-colors">All Features</Link></li>
               <li><Link href="/features/chart-pattern-detection" className="hover:text-foreground transition-colors">Chart Pattern Detection</Link></li>
               <li><Link href="/features/sentiment-analysis" className="hover:text-foreground transition-colors">Sentiment Analysis</Link></li>
               <li><Link href="/features/market-predictions" className="hover:text-foreground transition-colors">Market Predictions</Link></li>
