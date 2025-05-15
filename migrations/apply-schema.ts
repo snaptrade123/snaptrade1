@@ -96,25 +96,20 @@ async function main() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS trading_signals (
       id SERIAL PRIMARY KEY,
-      "providerId" INTEGER NOT NULL,
-      title TEXT NOT NULL,
-      asset TEXT NOT NULL,
+      provider_id INTEGER NOT NULL,
+      pair TEXT NOT NULL,
+      direction TEXT NOT NULL, 
+      entry TEXT NOT NULL,
+      stop_loss TEXT NOT NULL,
+      take_profit_1 TEXT NOT NULL,
+      take_profit_2 TEXT,
+      take_profit_3 TEXT,
       timeframe TEXT NOT NULL,
-      direction TEXT NOT NULL,
-      "entryPrice" DOUBLE PRECISION NOT NULL,
-      "stopLoss" DOUBLE PRECISION NOT NULL,
-      "takeProfit" DOUBLE PRECISION NOT NULL,
-      "riskRewardRatio" DOUBLE PRECISION NOT NULL,
-      analysis TEXT,
-      "imageUrl" TEXT,
-      "isPremium" BOOLEAN DEFAULT FALSE,
-      price DOUBLE PRECISION,
-      "expiresAt" TIMESTAMP,
-      status TEXT DEFAULT 'active',
-      outcome TEXT,
-      "actualPips" DOUBLE PRECISION,
-      "createdAt" TIMESTAMP DEFAULT NOW(),
-      "updatedAt" TIMESTAMP DEFAULT NOW()
+      notes TEXT,
+      created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+      updated_at TIMESTAMP DEFAULT NOW() NOT NULL,
+      is_premium BOOLEAN DEFAULT FALSE NOT NULL,
+      price INTEGER
     );
   `);
   
@@ -122,13 +117,14 @@ async function main() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS signal_subscriptions (
       id SERIAL PRIMARY KEY,
-      "userId" INTEGER NOT NULL,
-      "providerId" INTEGER NOT NULL,
-      price DOUBLE PRECISION NOT NULL,
-      status TEXT DEFAULT 'active',
-      "stripeSubscriptionId" TEXT,
-      "createdAt" TIMESTAMP DEFAULT NOW(),
-      "updatedAt" TIMESTAMP DEFAULT NOW()
+      user_id INTEGER NOT NULL,
+      provider_id INTEGER NOT NULL,
+      stripe_subscription_id TEXT,
+      status TEXT NOT NULL,
+      start_date TIMESTAMP DEFAULT NOW() NOT NULL,
+      end_date TIMESTAMP,
+      created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+      updated_at TIMESTAMP DEFAULT NOW() NOT NULL
     );
   `);
   
@@ -136,12 +132,15 @@ async function main() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS signal_payouts (
       id SERIAL PRIMARY KEY,
-      "providerId" INTEGER NOT NULL,
-      amount DOUBLE PRECISION NOT NULL,
-      status TEXT DEFAULT 'pending',
-      "payoutDate" TIMESTAMP,
-      "createdAt" TIMESTAMP DEFAULT NOW(),
-      "updatedAt" TIMESTAMP DEFAULT NOW()
+      provider_id INTEGER NOT NULL,
+      amount INTEGER NOT NULL,
+      currency TEXT DEFAULT 'GBP' NOT NULL,
+      stripe_transfer_id TEXT,
+      status TEXT NOT NULL,
+      period_start TIMESTAMP NOT NULL,
+      period_end TIMESTAMP NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+      updated_at TIMESTAMP DEFAULT NOW() NOT NULL
     );
   `);
 
