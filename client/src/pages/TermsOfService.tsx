@@ -76,7 +76,42 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mt-8 mb-4">4. Image Upload and Data Handling</h2>
+            <h2 className="text-2xl font-bold mt-8 mb-4">4. Trading Signals Marketplace</h2>
+            <p>
+              SnapTrade provides a platform for users to share trading signals with the community. All users can view free signals, while paid signals 
+              require a separate payment to the signal provider.
+            </p>
+            <p className="mt-4">
+              <strong>Signal Provider Terms:</strong>
+            </p>
+            <ul className="list-disc pl-6 mt-2 space-y-2">
+              <li>All users may provide free trading signals through our platform.</li>
+              <li>Only subscribers to our Standard or Premium plans may offer paid trading signals.</li>
+              <li>Signal providers set their own monthly subscription prices for access to their signals.</li>
+              <li>A service fee of <strong>15%</strong> is retained by SnapTrade from all revenue generated through paid signals.</li>
+              <li>Payments are processed through our platform using Stripe, and providers receive payouts according to our payment schedule.</li>
+              <li>Providers are responsible for the quality, accuracy, and legality of their signal content.</li>
+              <li>SnapTrade reserves the right to remove any signals or suspend provider accounts that violate our terms.</li>
+            </ul>
+            <p className="mt-4">
+              <strong>Signal Recipient Terms:</strong>
+            </p>
+            <ul className="list-disc pl-6 mt-2 space-y-2">
+              <li>Signals are provided for educational and informational purposes only and do not constitute financial advice.</li>
+              <li>SnapTrade does not guarantee the accuracy or profitability of any signals shared on the platform.</li>
+              <li>Subscription payments for paid signals are non-refundable once processed.</li>
+              <li>Users subscribe to signals at their own risk and are solely responsible for their trading decisions.</li>
+            </ul>
+            <p className="mt-4">
+              <strong className="text-amber-500">
+                Trading signals, whether free or paid, are created by individual users, not by SnapTrade. 
+                We do not endorse any particular signals or providers.
+              </strong>
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold mt-8 mb-4">5. Image Upload and Data Handling</h2>
             <p>
               SnapTrade allows users to upload chart images for analysis. By uploading an image:
             </p>
@@ -91,7 +126,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mt-8 mb-4">5. Intellectual Property</h2>
+            <h2 className="text-2xl font-bold mt-8 mb-4">6. Intellectual Property</h2>
             <p>
               All content and services provided on SnapTrade, including logos, models, algorithms, text, and visuals, 
               are the intellectual property of SnapTrade or its licensors. Unauthorized reproduction, redistribution, 
@@ -100,7 +135,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mt-8 mb-4">6. AI Analysis Variability and Results</h2>
+            <h2 className="text-2xl font-bold mt-8 mb-4">7. AI Analysis Variability and Results</h2>
             <p>
               SnapTrade utilizes artificial intelligence to analyze charts and news sentiment. By using our platform, you acknowledge and accept:
             </p>
@@ -121,7 +156,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mt-8 mb-4">7. Limitation of Liability</h2>
+            <h2 className="text-2xl font-bold mt-8 mb-4">8. Limitation of Liability</h2>
             <p>
               To the maximum extent permitted by law, SnapTrade and its operators shall not be liable for any direct, 
               indirect, incidental, or consequential damages arising from:
@@ -129,7 +164,7 @@ export default function TermsOfService() {
             <ul className="list-disc pl-6 mt-4 space-y-2">
               <li>Use or misuse of the platform.</li>
               <li>Inaccuracies or errors in pattern detection or news analysis.</li>
-              <li>Variability in AI analysis results as described in Section 6.</li>
+              <li>Variability in AI analysis results as described in Section 7.</li>
               <li>Trading decisions made based on SnapTrade outputs.</li>
             </ul>
             <p className="mt-4">
