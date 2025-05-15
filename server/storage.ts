@@ -1,4 +1,4 @@
-import { analysis, namedAnalysis, users, referrals, assetLists, analysisUsage, type Analysis, type NamedAnalysis, type InsertAnalysis, type InsertNamedAnalysis, type User, type InsertUser, type InsertReferral, type Referral, type AssetList, type InsertAssetList, type AnalysisUsage, type InsertAnalysisUsage } from "@shared/schema";
+import { analysis, namedAnalysis, users, referrals, assetLists, analysisUsage, tradingSignals, signalSubscriptions, signalPayouts, type Analysis, type NamedAnalysis, type InsertAnalysis, type InsertNamedAnalysis, type User, type InsertUser, type InsertReferral, type Referral, type AssetList, type InsertAssetList, type AnalysisUsage, type InsertAnalysisUsage, type TradingSignal, type InsertTradingSignal, type SignalSubscription, type InsertSignalSubscription, type SignalPayout, type InsertSignalPayout } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 import session from "express-session";
@@ -49,6 +49,29 @@ export interface IStorage {
   updateAssetList(id: number, updates: Partial<InsertAssetList>): Promise<AssetList>;
   deleteAssetList(id: number): Promise<void>;
   setDefaultAssetList(userId: number, assetListId: number): Promise<AssetList>;
+  
+  // Trading Signal methods
+  createTradingSignal(signal: InsertTradingSignal): Promise<TradingSignal>;
+  getTradingSignal(id: number): Promise<TradingSignal | undefined>;
+  getAllTradingSignals(options?: { limit?: number, includeExpired?: boolean }): Promise<TradingSignal[]>;
+  getFreeTradingSignals(options?: { limit?: number }): Promise<TradingSignal[]>;
+  getPremiumTradingSignals(options?: { limit?: number }): Promise<TradingSignal[]>;
+  getUserTradingSignals(userId: number): Promise<TradingSignal[]>;
+  getProviderTradingSignals(providerId: number): Promise<TradingSignal[]>;
+  updateTradingSignal(id: number, updates: Partial<InsertTradingSignal>): Promise<TradingSignal>;
+  deleteTradingSignal(id: number): Promise<void>;
+  
+  // Signal Subscription methods
+  createSignalSubscription(subscription: InsertSignalSubscription): Promise<SignalSubscription>;
+  getUserSignalSubscriptions(userId: number): Promise<SignalSubscription[]>;
+  getProviderSubscribers(providerId: number): Promise<SignalSubscription[]>;
+  updateSignalSubscription(id: number, updates: Partial<InsertSignalSubscription>): Promise<SignalSubscription>;
+  cancelSignalSubscription(id: number): Promise<SignalSubscription>;
+  
+  // Signal Payout methods
+  createSignalPayout(payout: InsertSignalPayout): Promise<SignalPayout>;
+  getProviderPayouts(providerId: number): Promise<SignalPayout[]>;
+  updateSignalPayout(id: number, updates: Partial<InsertSignalPayout>): Promise<SignalPayout>;
   
   // Session store
   sessionStore: session.Store;
@@ -491,6 +514,159 @@ export class DatabaseStorage implements IStorage {
     }
     
     return result;
+  }
+
+  // Trading Signal methods
+  async createTradingSignal(signal: InsertTradingSignal): Promise<TradingSignal> {
+    const [newSignal] = await db.insert(tradingSignals)
+      .values(signal)
+      .returning();
+    return newSignal;
+  }
+
+  async getTradingSignal(id: number): Promise<TradingSignal | undefined> {
+    const [signal] = await db.select()
+      .from(tradingSignals)
+      .where(eq(tradingSignals.id, id));
+    return signal;
+  }
+
+  async getAllTradingSignals(options?: { limit?: number, includeExpired?: boolean }): Promise<TradingSignal[]> {
+    const query = db.select()
+      .from(tradingSignals)
+      .orderBy(desc(tradingSignals.createdAt));
+    
+    if (options?.limit) {
+      query.limit(options.limit);
+    }
+    
+    return await query;
+  }
+
+  async getFreeTradingSignals(options?: { limit?: number }): Promise<TradingSignal[]> {
+    const query = db.select()
+      .from(tradingSignals)
+      .where(eq(tradingSignals.isPremium, false))
+      .orderBy(desc(tradingSignals.createdAt));
+    
+    if (options?.limit) {
+      query.limit(options.limit);
+    }
+    
+    return await query;
+  }
+
+  async getPremiumTradingSignals(options?: { limit?: number }): Promise<TradingSignal[]> {
+    const query = db.select()
+      .from(tradingSignals)
+      .where(eq(tradingSignals.isPremium, true))
+      .orderBy(desc(tradingSignals.createdAt));
+    
+    if (options?.limit) {
+      query.limit(options.limit);
+    }
+    
+    return await query;
+  }
+
+  async getUserTradingSignals(userId: number): Promise<TradingSignal[]> {
+    return await db.select()
+      .from(tradingSignals)
+      .where(eq(tradingSignals.providerId, userId))
+      .orderBy(desc(tradingSignals.createdAt));
+  }
+
+  async getProviderTradingSignals(providerId: number): Promise<TradingSignal[]> {
+    return await db.select()
+      .from(tradingSignals)
+      .where(eq(tradingSignals.providerId, providerId))
+      .orderBy(desc(tradingSignals.createdAt));
+  }
+
+  async updateTradingSignal(id: number, updates: Partial<InsertTradingSignal>): Promise<TradingSignal> {
+    const [updatedSignal] = await db.update(tradingSignals)
+      .set({
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(tradingSignals.id, id))
+      .returning();
+    return updatedSignal;
+  }
+
+  async deleteTradingSignal(id: number): Promise<void> {
+    await db.delete(tradingSignals)
+      .where(eq(tradingSignals.id, id));
+  }
+
+  // Signal Subscription methods
+  async createSignalSubscription(subscription: InsertSignalSubscription): Promise<SignalSubscription> {
+    const [newSubscription] = await db.insert(signalSubscriptions)
+      .values(subscription)
+      .returning();
+    return newSubscription;
+  }
+
+  async getUserSignalSubscriptions(userId: number): Promise<SignalSubscription[]> {
+    return await db.select()
+      .from(signalSubscriptions)
+      .where(eq(signalSubscriptions.userId, userId))
+      .orderBy(desc(signalSubscriptions.createdAt));
+  }
+
+  async getProviderSubscribers(providerId: number): Promise<SignalSubscription[]> {
+    return await db.select()
+      .from(signalSubscriptions)
+      .where(eq(signalSubscriptions.providerId, providerId))
+      .orderBy(desc(signalSubscriptions.createdAt));
+  }
+
+  async updateSignalSubscription(id: number, updates: Partial<InsertSignalSubscription>): Promise<SignalSubscription> {
+    const [updatedSubscription] = await db.update(signalSubscriptions)
+      .set({
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(signalSubscriptions.id, id))
+      .returning();
+    return updatedSubscription;
+  }
+
+  async cancelSignalSubscription(id: number): Promise<SignalSubscription> {
+    const [cancelledSubscription] = await db.update(signalSubscriptions)
+      .set({
+        status: 'cancelled',
+        updatedAt: new Date()
+      })
+      .where(eq(signalSubscriptions.id, id))
+      .returning();
+    return cancelledSubscription;
+  }
+
+  // Signal Payout methods
+  async createSignalPayout(payout: InsertSignalPayout): Promise<SignalPayout> {
+    const [newPayout] = await db.insert(signalPayouts)
+      .values(payout)
+      .returning();
+    return newPayout;
+  }
+
+  async getProviderPayouts(providerId: number): Promise<SignalPayout[]> {
+    return await db.select()
+      .from(signalPayouts)
+      .where(eq(signalPayouts.providerId, providerId))
+      .orderBy(desc(signalPayouts.createdAt));
+  }
+
+  async updateSignalPayout(id: number, updates: Partial<InsertSignalPayout>): Promise<SignalPayout> {
+    const [updatedPayout] = await db.update(signalPayouts)
+      .set({
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(signalPayouts.id, id))
+      .returning();
+    return updatedPayout;
   }
 }
 
