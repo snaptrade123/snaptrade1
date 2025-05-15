@@ -1,23 +1,57 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { ArrowRight, TrendingUp, Info, Clock, DollarSign, PiggyBank, AlertTriangle, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  TradingSignal, 
-  SignalSubscription,
-  SubscriberData,
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  ArrowRight,
+  Clock,
+  DollarSign,
+  Info,
+  Loader2,
+  PiggyBank,
+  TrendingUp,
+} from "lucide-react";
+import {
   getFreeTradingSignals,
   getPremiumTradingSignals,
   getTradingSignal,
@@ -233,7 +267,21 @@ export default function TradingSignals() {
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="pair"
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Signal Title</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g. EUR/USD Bullish Setup" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="asset"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Trading Pair/Instrument</FormLabel>
@@ -244,7 +292,9 @@ export default function TradingSignals() {
                       </FormItem>
                     )}
                   />
-                  
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="direction"
@@ -269,83 +319,7 @@ export default function TradingSignals() {
                       </FormItem>
                     )}
                   />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="entry"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Entry Price/Range</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. 1.0685 or 1.0685-1.0695" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                   
-                  <FormField
-                    control={form.control}
-                    name="stopLoss"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Stop Loss</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. 1.0650" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <div className="grid grid-cols-3 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="takeProfit1"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Take Profit 1</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. 1.0725" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="takeProfit2"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Take Profit 2 (Optional)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. 1.0750" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="takeProfit3"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Take Profit 3 (Optional)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. 1.0775" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="timeframe"
@@ -375,63 +349,67 @@ export default function TradingSignals() {
                       </FormItem>
                     )}
                   />
-                  
-                  {user?.subscriptionTier && ( // Only show for subscribers
-                    <FormField
-                      control={form.control}
-                      name="isPremium"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between space-y-0 rounded-md border p-4">
-                          <div className="space-y-0.5">
-                            <FormLabel>Premium Signal</FormLabel>
-                            <FormDescription>
-                              Charge for access to this signal
-                            </FormDescription>
-                          </div>
-                          <FormControl>
-                            <input
-                              type="checkbox"
-                              checked={field.value}
-                              onChange={field.onChange}
-                              className="accent-primary h-4 w-4"
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  )}
                 </div>
                 
-                {form.watch("isPremium") && (
+                <div className="grid grid-cols-3 gap-4">
                   <FormField
                     control={form.control}
-                    name="price"
+                    name="entryPrice"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Monthly Subscription Price (£)</FormLabel>
+                        <FormLabel>Entry Price</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="Enter price (min £5, max £100)" 
-                            onChange={e => field.onChange(Number(e.target.value))}
-                            value={field.value}
-                          />
+                          <Input type="number" step="0.0001" placeholder="e.g. 1.0685" {...field} />
                         </FormControl>
-                        <FormDescription>
-                          15% service fee applies to all premium signals. You will receive 85% of the subscription revenue.
-                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+                  
+                  <FormField
+                    control={form.control}
+                    name="stopLoss"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Stop Loss</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="0.0001" placeholder="e.g. 1.0650" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="takeProfit"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Take Profit</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="0.0001" placeholder="e.g..0725" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                {riskRewardRatio > 0 && (
+                  <div className="p-3 bg-secondary/50 rounded-md">
+                    <p className="text-sm font-medium">Risk/Reward Ratio: {riskRewardRatio}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {riskRewardRatio >= 1.5 ? "Good risk/reward ratio" : "Consider adjusting your setup for better risk/reward"}
+                    </p>
+                  </div>
                 )}
                 
                 <FormField
                   control={form.control}
-                  name="notes"
+                  name="analysis"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Notes (Optional)</FormLabel>
+                      <FormLabel>Analysis</FormLabel>
                       <FormControl>
                         <Textarea 
                           placeholder="Add details about setups, patterns, conditions, etc."
@@ -444,8 +422,65 @@ export default function TradingSignals() {
                   )}
                 />
                 
+                {isPremiumProvider && (
+                  <FormField
+                    control={form.control}
+                    name="isPremium"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between space-y-0 rounded-md border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel>Premium Signal</FormLabel>
+                          <FormDescription>
+                            Charge for access to this signal
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <input
+                            type="checkbox"
+                            checked={field.value}
+                            onChange={field.onChange}
+                            className="accent-primary h-4 w-4"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                )}
+                
+                {isPremiumSignal && (
+                  <FormField
+                    control={form.control}
+                    name="price"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Monthly Subscription Price (£)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            placeholder="Enter price (min £5, max £100)" 
+                            onChange={e => field.onChange(Number(e.target.value) || undefined)}
+                            value={field.value || ""}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          15% service fee applies to all premium signals. You will receive 85% of the subscription revenue.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+                
                 <DialogFooter>
-                  <Button type="submit">Share Signal</Button>
+                  <Button 
+                    type="submit"
+                    disabled={createSignalMutation.isPending}
+                  >
+                    {createSignalMutation.isPending && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    Share Signal
+                  </Button>
                 </DialogFooter>
               </form>
             </Form>
@@ -460,56 +495,159 @@ export default function TradingSignals() {
         </TabsList>
         
         <TabsContent value="free" className="space-y-4">
-          {signals.filter(signal => !signal.isPremium).map(signal => (
-            <SignalCard key={signal.id} signal={signal} />
-          ))}
-          
-          {signals.filter(signal => !signal.isPremium).length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Info className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium">No free signals available</h3>
-              <p className="text-muted-foreground mt-2">
-                Be the first to share a free trading signal with the community.
-              </p>
+          {freeSignalsLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
+          ) : (
+            <>
+              {freeSignals.map((signal) => (
+                <SignalCard 
+                  key={signal.id} 
+                  signal={signal} 
+                  onViewDetails={() => openSignalDetails(signal.id)}
+                />
+              ))}
+              
+              {freeSignals.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <Info className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium">No free signals available</h3>
+                  <p className="text-muted-foreground mt-2">
+                    Be the first to share a free trading signal with the community.
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </TabsContent>
         
         <TabsContent value="premium" className="space-y-4">
-          {signals.filter(signal => signal.isPremium).map(signal => (
-            <SignalCard key={signal.id} signal={signal} />
-          ))}
-          
-          {signals.filter(signal => signal.isPremium).length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Info className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium">No premium signals available</h3>
-              <p className="text-muted-foreground mt-2">
-                Premium signals from expert traders will appear here.
-              </p>
+          {premiumSignalsLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
+          ) : (
+            <>
+              {premiumSignals.map((signal) => (
+                <SignalCard 
+                  key={signal.id} 
+                  signal={signal} 
+                  onViewDetails={() => openSignalDetails(signal.id)}
+                  onSubscribe={() => handleSubscribe(signal.providerId)}
+                  isSubscribing={subscribing}
+                />
+              ))}
+              
+              {premiumSignals.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <Info className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium">No premium signals available</h3>
+                  <p className="text-muted-foreground mt-2">
+                    Premium signals require a subscription to access. Subscribe to a signal provider to view their signals.
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </TabsContent>
       </Tabs>
       
-      <div className="mt-12 p-5 bg-slate-900 rounded-lg border border-slate-800">
-        <div className="flex items-start space-x-3">
-          <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5" />
-          <div>
-            <h3 className="font-medium">Important Disclaimer</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              All trading signals shared on this platform are for educational purposes only and do not constitute financial advice. 
-              Trading signals are created by individual users, not by SnapTrade. Always do your own research and trade at your own risk.
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Signal Detail Dialog */}
+      <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
+        <DialogContent className="sm:max-w-[650px]">
+          {signalDetailsLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : selectedSignal ? (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-2">
+                  <DialogTitle>{selectedSignal.title}</DialogTitle>
+                  {selectedSignal.isPremium && (
+                    <Badge className="bg-amber-500 hover:bg-amber-600">Premium</Badge>
+                  )}
+                </div>
+                <DialogDescription>
+                  {selectedSignal.asset} • {selectedSignal.timeframe} • Posted by Provider #{selectedSignal.providerId}
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="grid grid-cols-3 gap-4 my-4">
+                <div className="p-3 rounded-md bg-secondary/30 flex flex-col items-center justify-center">
+                  <p className="text-xs uppercase text-muted-foreground">Entry</p>
+                  <p className="font-medium">{selectedSignal.entryPrice}</p>
+                </div>
+                <div className="p-3 rounded-md bg-red-500/10 flex flex-col items-center justify-center">
+                  <p className="text-xs uppercase text-muted-foreground">Stop Loss</p>
+                  <p className="font-medium">{selectedSignal.stopLoss}</p>
+                </div>
+                <div className="p-3 rounded-md bg-green-500/10 flex flex-col items-center justify-center">
+                  <p className="text-xs uppercase text-muted-foreground">Take Profit</p>
+                  <p className="font-medium">{selectedSignal.takeProfit}</p>
+                </div>
+              </div>
+              
+              <div className="my-4">
+                <h4 className="text-sm font-medium mb-2">Analysis</h4>
+                <div className="p-4 rounded-md bg-muted whitespace-pre-line text-sm">
+                  {selectedSignal.analysis}
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between mt-4">
+                <div className="flex items-center gap-2">
+                  <Badge variant={selectedSignal.direction === 'buy' ? 'default' : 'destructive'}>
+                    {selectedSignal.direction === 'buy' ? 'BUY' : 'SELL'}
+                  </Badge>
+                  <Badge variant="outline">
+                    R:R {selectedSignal.riskRewardRatio}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Posted {new Date(selectedSignal.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+              
+              {selectedSignal.isPremium && !selectedSignal.hasAccess && (
+                <div className="p-4 rounded-md bg-amber-500/10 mt-4">
+                  <h4 className="text-sm font-semibold flex items-center gap-2">
+                    <PiggyBank className="h-4 w-4" />
+                    Premium Signal
+                  </h4>
+                  <p className="text-sm mt-1">
+                    Subscribe to this provider for £{selectedSignal.price}/month to access all their premium signals.
+                  </p>
+                  <Button 
+                    className="mt-2 w-full" 
+                    onClick={() => handleSubscribe(selectedSignal.providerId)}
+                    disabled={subscribing}
+                  >
+                    {subscribing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Subscribe Now
+                  </Button>
+                </div>
+              )}
+            </>
+          ) : (
+            <p>Signal not found</p>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
 
-// Signal card component
-function SignalCard({ signal }: { signal: any }) {
+// Signal Card Component
+interface SignalCardProps {
+  signal: any;
+  onViewDetails?: () => void;
+  onSubscribe?: () => void;
+  isSubscribing?: boolean;
+}
+
+function SignalCard({ signal, onViewDetails, onSubscribe, isSubscribing }: SignalCardProps) {
   const directionColor = signal.direction === "buy" ? "text-emerald-500" : "text-rose-500";
   const directionBg = signal.direction === "buy" ? "bg-emerald-500/10" : "bg-rose-500/10";
   
@@ -519,7 +657,7 @@ function SignalCard({ signal }: { signal: any }) {
         <div className="flex justify-between items-start">
           <div>
             <div className="flex items-center space-x-2 mb-1">
-              <CardTitle className="text-lg">{signal.pair}</CardTitle>
+              <CardTitle className="text-lg">{signal.title || signal.asset}</CardTitle>
               <Badge className={`uppercase ${directionBg} ${directionColor}`}>
                 {signal.direction}
               </Badge>
@@ -532,9 +670,9 @@ function SignalCard({ signal }: { signal: any }) {
             </div>
             <CardDescription className="flex items-center">
               <Clock className="h-3 w-3 mr-1" />
-              {new Date(signal.timestamp).toLocaleString()}
+              {new Date(signal.createdAt).toLocaleString()}
               <span className="mx-2">•</span>
-              Provider: {signal.provider}
+              Provider #{signal.providerId}
             </CardDescription>
           </div>
           <Badge variant="outline">{signal.timeframe}</Badge>
@@ -542,48 +680,51 @@ function SignalCard({ signal }: { signal: any }) {
       </CardHeader>
       
       <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <div className="grid grid-cols-3 gap-3 mb-4">
           <div>
             <p className="text-sm text-muted-foreground">Entry</p>
-            <p className="font-medium">{signal.entry}</p>
+            <p className="font-medium">{signal.entryPrice}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Stop Loss</p>
             <p className="font-medium text-rose-500">{signal.stopLoss}</p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">Take Profit 1</p>
-            <p className="font-medium text-emerald-500">{signal.takeProfit1}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">
-              Take Profit {signal.takeProfit3 ? "2 & 3" : "2"}
-            </p>
-            <p className="font-medium text-emerald-500">
-              {signal.takeProfit2}
-              {signal.takeProfit3 && ` & ${signal.takeProfit3}`}
-            </p>
+            <p className="text-sm text-muted-foreground">Take Profit</p>
+            <p className="font-medium text-emerald-500">{signal.takeProfit}</p>
           </div>
         </div>
         
-        {signal.notes && (
+        {signal.analysis && (
           <div className="mt-2 text-sm border-t border-border pt-3">
-            <p className="text-muted-foreground mb-1">Notes:</p>
-            <p>{signal.notes}</p>
+            <p className="text-muted-foreground mb-1">Analysis:</p>
+            <p className="line-clamp-2">{signal.analysis}</p>
           </div>
         )}
       </CardContent>
       
       <CardFooter className="pt-1">
-        {signal.isPremium ? (
-          <Button className="w-full">
-            <PiggyBank className="h-4 w-4 mr-2" />
-            Subscribe to {signal.provider}'s Signals
+        {signal.isPremium && !signal.hasAccess ? (
+          <Button 
+            className="w-full"
+            onClick={onSubscribe}
+            disabled={isSubscribing}
+          >
+            {isSubscribing ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <PiggyBank className="h-4 w-4 mr-2" />
+            )}
+            Subscribe to Provider #{signal.providerId}'s Signals
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
         ) : (
-          <Button variant="outline" className="w-full">
-            View {signal.provider}'s Profile
+          <Button 
+            variant="outline" 
+            className="w-full"
+            onClick={onViewDetails}
+          >
+            View Details
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
         )}
