@@ -50,59 +50,38 @@ const Home = () => {
   });
 
   const handleUpload = async (file: File, asset: string) => {
+    // TEMPORARY TESTING MODE: Skip subscription check for testing
     // Check if the user has an active subscription
-    if (subscriptionData?.active) {
+    // if (subscriptionData?.active) {
       analyzeChartMutation.mutate({ file, asset });
-    } else {
-      toast({
-        title: "Subscription Required",
-        description: "You need a subscription to analyze charts. Please subscribe to continue.",
-        variant: "destructive",
-      });
+    // } else {
+    //   toast({
+    //     title: "Subscription Required",
+    //     description: "You need a subscription to analyze charts. Please subscribe to continue.",
+    //     variant: "destructive",
+    //   });
       
-      // Redirect to pricing page after a short delay
-      setTimeout(() => {
-        setLocation("/pricing");
-      }, 1500);
-    }
+    //   // Redirect to pricing page after a short delay
+    //   setTimeout(() => {
+    //     setLocation("/pricing");
+    //   }, 1500);
+    // }
   };
 
   return (
     <div className="container mx-auto px-4 py-6">
-      {/* Subscription Status Banner */}
-      {!isLoadingSubscription && !subscriptionData?.active && (
-        <div className="mb-8 p-4 border-2 border-primary/50 bg-primary/5 rounded-lg flex flex-col sm:flex-row items-center justify-between">
-          <div className="flex items-center mb-4 sm:mb-0">
-            <LockIcon className="h-6 w-6 text-primary mr-3" />
-            <div>
-              <h3 className="font-semibold text-lg">Premium Features Locked</h3>
-              <p className="text-sm text-muted-foreground">Subscribe to unlock advanced chart analysis and predictions</p>
-            </div>
-          </div>
-          <Link href="/pricing">
-            <Button className="w-full sm:w-auto" size="lg">
-              <ZapIcon className="mr-2 h-4 w-4" />
-              Get Premium
-            </Button>
-          </Link>
-        </div>
-      )}
-      
-      {/* Subscription Active Banner */}
-      {!isLoadingSubscription && subscriptionData?.active && (
-        <div className="mb-8 p-4 border-2 border-emerald-500/50 bg-emerald-500/5 rounded-lg flex items-center justify-between">
-          <div className="flex items-center">
-            <ZapIcon className="h-6 w-6 text-emerald-500 mr-3" />
-            <div>
-              <h3 className="font-semibold text-lg">Premium Subscription Active</h3>
-              <p className="text-sm text-muted-foreground">
-                {subscriptionData.tier === 'yearly' ? 'Annual Plan' : 'Monthly Plan'} 
-                {subscriptionData.endDate ? ` · Renews ${new Date(subscriptionData.endDate).toLocaleDateString()}` : ''}
-              </p>
-            </div>
+      {/* TESTING MODE: Always show active subscription banner */}
+      <div className="mb-8 p-4 border-2 border-emerald-500/50 bg-emerald-500/5 rounded-lg flex items-center justify-between">
+        <div className="flex items-center">
+          <ZapIcon className="h-6 w-6 text-emerald-500 mr-3" />
+          <div>
+            <h3 className="font-semibold text-lg">Testing Mode Active</h3>
+            <p className="text-sm text-muted-foreground">
+              Premium features unlocked for testing purposes
+            </p>
           </div>
         </div>
-      )}
+      </div>
 
       <div className="mb-8">
         <h2 className="text-2xl font-semibold mb-2">Chart Pattern Analysis</h2>

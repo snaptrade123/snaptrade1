@@ -795,8 +795,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "User ID is required" });
       }
       
-      const subscriptionStatus = await storage.getUserSubscriptionStatus(parseInt(userId));
+      // TEMPORARY TESTING MODE: Always return active subscription
+      // const subscriptionStatus = await storage.getUserSubscriptionStatus(parseInt(userId));
+      const subscriptionStatus = {
+        active: true,
+        tier: "monthly",
+        endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+      };
       
+      console.log("TESTING MODE: Returning active subscription status for testing");
       res.json(subscriptionStatus);
     } catch (error) {
       console.error("Error getting subscription status:", error);
