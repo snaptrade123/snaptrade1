@@ -1814,29 +1814,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create provider profile
   app.post("/api/provider/profile", requireAuth, async (req, res) => {
     try {
+      // Double check authentication
       if (!req.user) {
+        console.log("Provider profile creation failed: User not authenticated");
         return res.status(401).json({ message: "Authentication required" });
       }
+      
+      console.log("Attempting to create provider profile for user:", req.user.id);
       
       const userId = req.user.id;
       const { displayName, bio, signalFee, isProvider = true } = req.body;
       
+      console.log("Provider profile data:", { displayName, bio, signalFee, isProvider });
+      
       if (!bio || bio.length < 20) {
+        console.log("Provider profile creation failed: Bio too short");
         return res.status(400).json({ message: "Bio must be at least 20 characters" });
       }
       
       const fee = Number(signalFee);
       if (isNaN(fee) || fee < 5 || fee > 50) {
+        console.log("Provider profile creation failed: Invalid fee");
         return res.status(400).json({ message: "Fee must be between £5 and £50" });
       }
       
       // Update user to become a provider
+      console.log("Updating user to become a provider with data:", {
+        isProvider: true,
+        providerDisplayName: displayName || undefined,
+        bio,
+        signalFee: fee
+      });
+      
       const updatedUser = await storage.updateProviderProfile(userId, {
         isProvider: true,
         providerDisplayName: displayName || undefined,
         bio,
         signalFee: fee
       });
+      
+      console.log("Provider profile created successfully");
       
       // Return updated user data without sensitive information
       const { password, ...user } = updatedUser;

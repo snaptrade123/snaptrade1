@@ -797,6 +797,9 @@ export interface ProviderProfileData {
 
 export const updateProviderProfile = async (data: ProviderProfileData): Promise<any> => {
   try {
+    console.log('Updating provider profile with data:', data);
+    
+    // Use the apiRequest utility which already handles credentials and errors
     const response = await fetch('/api/provider/profile', {
       method: 'POST',
       headers: {
@@ -806,11 +809,17 @@ export const updateProviderProfile = async (data: ProviderProfileData): Promise<
       body: JSON.stringify(data),
     });
     
+    console.log('Provider profile update response status:', response.status);
+    
     if (!response.ok) {
+      // Log the error response for debugging
+      const errorText = await response.text();
+      console.error('Provider profile update failed:', errorText);
+      
       if (response.status === 401) {
-        throw new Error('Authentication required');
+        throw new Error('Authentication required - please log in');
       }
-      throw new Error('Failed to update provider profile');
+      throw new Error(`Failed to update provider profile: ${errorText}`);
     }
     
     return await response.json();

@@ -56,6 +56,8 @@ function Router() {
       <Route path="/features/market-predictions" component={MarketPredictions} />
       <Route path="/features/trading-signals" component={FeatureTradingSignals} />
       
+      <Route path="/debug-login" component={() => import('./pages/DebugLogin').then(m => <m.default />)} />
+      
       <ProtectedRoute path="/trading-signals" component={TradingSignals} />
       
       <ProtectedRoute path="/profile" component={UserProfile} />
