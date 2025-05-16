@@ -38,14 +38,7 @@ const ProviderProfile = () => {
   } = useQuery({
     queryKey: ['/api/user', providerId],
     queryFn: () => getUser(providerId),
-    enabled: !isNaN(providerId),
-    onError: (error: Error) => {
-      toast({
-        title: "Error loading provider profile",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
+    enabled: !isNaN(providerId)
   });
 
   // Fetch provider's signals
@@ -56,14 +49,7 @@ const ProviderProfile = () => {
   } = useQuery({
     queryKey: ['/api/trading-signals/provider', providerId],
     queryFn: () => getProviderSignals(providerId),
-    enabled: !isNaN(providerId),
-    onError: (error: Error) => {
-      toast({
-        title: "Error loading provider signals",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
+    enabled: !isNaN(providerId)
   });
 
   // Fetch provider ratings
@@ -74,14 +60,7 @@ const ProviderProfile = () => {
   } = useQuery({
     queryKey: ['/api/provider/ratings', providerId],
     queryFn: () => getProviderRatings(providerId),
-    enabled: !isNaN(providerId),
-    onError: (error: Error) => {
-      toast({
-        title: "Error loading provider ratings",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
+    enabled: !isNaN(providerId)
   });
 
   // Fetch the current user's data to see if they're logged in
@@ -98,11 +77,7 @@ const ProviderProfile = () => {
   } = useQuery({
     queryKey: ['/api/provider/user-rating', providerId],
     queryFn: () => getUserRatingForProvider(providerId),
-    enabled: !isNaN(providerId) && !!currentUser,
-    onError: (error: Error) => {
-      console.error("Error fetching user rating:", error);
-      // Don't show a toast for this one, as it's not critical
-    }
+    enabled: !isNaN(providerId) && !!currentUser
   });
 
   // Submit a rating mutation

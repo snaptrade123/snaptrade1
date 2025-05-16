@@ -128,17 +128,25 @@ export default function ProviderEarnings() {
     const loadEarningsData = async () => {
       setIsLoading(true);
       try {
-        const earningsData = await getProviderEarnings();
-        const payoutsData = await getProviderPayouts();
-        
-        setEarnings(earningsData);
-        setPayouts(payoutsData);
-      } catch (error) {
-        toast({
-          title: "Error loading earnings data",
-          description: error instanceof Error ? error.message : "An unknown error occurred",
-          variant: "destructive"
+        // First check if user is authenticated
+        const authResponse = await fetch('/api/user', { 
+          credentials: 'include' 
         });
+        
+        // If authenticated, load earnings data
+        if (authResponse.ok) {
+          const earningsData = await getProviderEarnings();
+          const payoutsData = await getProviderPayouts();
+          
+          setEarnings(earningsData);
+          setPayouts(payoutsData);
+        } else {
+          // If not authenticated, use default empty values and don't show error
+          console.log("User not authenticated, using default values for provider earnings");
+        }
+      } catch (error) {
+        console.error("Error loading earnings data:", error);
+        // Don't show toast for auth errors, just use default values
       } finally {
         setIsLoading(false);
       }
