@@ -21,6 +21,13 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserProfile(userId: number, updates: { bio?: string; email?: string }): Promise<User>;
+  updateProviderProfile(userId: number, updates: { 
+    isProvider?: boolean;
+    providerDisplayName?: string;
+    bio?: string;
+    signalFee?: number;
+  }): Promise<User>;
   
   // User Rating methods
   rateProvider(userId: number, providerId: number, isPositive: boolean): Promise<UserRating>;
@@ -244,6 +251,39 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
       
+    return updatedUser;
+  }
+  
+  async updateProviderProfile(userId: number, updates: { 
+    isProvider?: boolean;
+    providerDisplayName?: string;
+    bio?: string;
+    signalFee?: number;
+  }): Promise<User> {
+    const updateData: Partial<typeof users.$inferInsert> = {};
+    
+    if (updates.isProvider !== undefined) {
+      updateData.isProvider = updates.isProvider;
+    }
+    
+    if (updates.providerDisplayName !== undefined) {
+      updateData.providerDisplayName = updates.providerDisplayName;
+    }
+    
+    if (updates.bio !== undefined) {
+      updateData.bio = updates.bio;
+    }
+    
+    if (updates.signalFee !== undefined) {
+      updateData.signalFee = updates.signalFee;
+    }
+    
+    const [updatedUser] = await db
+      .update(users)
+      .set(updateData)
+      .where(eq(users.id, userId))
+      .returning();
+    
     return updatedUser;
   }
   

@@ -22,6 +22,7 @@ import KnowledgeBase from "./pages/KnowledgeBase";
 import Features from "./pages/Features";
 import ProviderDashboard from "./pages/ProviderDashboard";
 import ProviderProfile from "./pages/ProviderProfile";
+import BecomeProvider from "./pages/BecomeProvider";
 
 // Feature pages
 import ChartPatternDetection from "./pages/features/ChartPatternDetection";
@@ -60,6 +61,8 @@ function Router() {
       <ProtectedRoute path="/profile" component={UserProfile} />
       
       <ProtectedRoute path="/provider-dashboard" component={ProviderDashboard} />
+      
+      <ProtectedRoute path="/become-provider" component={BecomeProvider} />
       
       <Route path="/provider/:providerId" component={ProviderProfile} />
       {/* Fallback to 404 */}
