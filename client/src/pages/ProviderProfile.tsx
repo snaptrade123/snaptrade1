@@ -446,6 +446,17 @@ const ProviderProfile = () => {
                         </div>
                       </div>
                     </div>
+                    
+                    <div>
+                      <div className="text-sm font-medium text-muted-foreground mb-2">Bio</div>
+                      {provider?.bio ? (
+                        <p className="text-sm">{provider.bio}</p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground italic">
+                          This provider hasn't added a bio yet.
+                        </p>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
                 

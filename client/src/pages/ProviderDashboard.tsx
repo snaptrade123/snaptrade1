@@ -1,10 +1,14 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { Redirect } from 'wouter';
 import ProviderEarnings from '@/components/ProviderEarnings';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getProviderSubscribers, SubscriberData } from '@/lib/api';
-import { useQuery } from '@tanstack/react-query';
+import { getProviderSubscribers, SubscriberData, updateUserProfile } from '@/lib/api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ProviderDashboard() {
   const { user, isLoading } = useAuth();

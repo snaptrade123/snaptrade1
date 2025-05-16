@@ -94,6 +94,7 @@ export const users = pgTable("users", {
   referralBonusBalance: integer("referral_bonus_balance").default(0),
   thumbsUp: integer("thumbs_up").default(0).notNull(),
   thumbsDown: integer("thumbs_down").default(0).notNull(),
+  bio: text("bio"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
