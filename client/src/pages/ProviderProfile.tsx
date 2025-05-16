@@ -193,12 +193,29 @@ const ProviderProfile = () => {
     return (
       <div className="container py-6">
         <div className="flex items-center mb-6">
-          <Button variant="outline" size="icon" onClick={() => navigate('/trading-signals')}>
+          <Button variant="outline" size="icon" onClick={() => navigate('/signals')}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <h1 className="text-2xl font-bold ml-2">Error</h1>
         </div>
-        <p>An error occurred while loading the provider profile. Please try again later.</p>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center justify-center py-8">
+              <h2 className="text-xl font-bold mb-4">Error Loading Provider Profile</h2>
+              <p className="text-muted-foreground mb-6">An error occurred while loading the provider profile. Please try again later.</p>
+              <Button 
+                onClick={() => {
+                  queryClient.invalidateQueries({queryKey: ['/api/user', providerId]});
+                  queryClient.invalidateQueries({queryKey: ['/api/trading-signals/provider', providerId]});
+                  queryClient.invalidateQueries({queryKey: ['/api/provider/ratings', providerId]});
+                  window.location.reload();
+                }}
+              >
+                Retry
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }

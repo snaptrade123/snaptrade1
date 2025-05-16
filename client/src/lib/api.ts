@@ -32,11 +32,16 @@ export async function updateUserProfile(updates: { bio?: string; email?: string 
 }
 
 export async function getUser(userId: number) {
-  const response = await apiRequest("GET", `/api/users/${userId}`);
-  if (!response.ok) {
-    throw new Error(`Error ${response.status}: ${await response.text()}`);
+  try {
+    const response = await apiRequest("GET", `/api/users/${userId}`);
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${await response.text()}`);
+    }
+    return response.json();
+  } catch (error) {
+    console.error(`Error fetching user with ID ${userId}:`, error);
+    throw error;
   }
-  return response.json();
 }
 
 // Subscriber data interface for provider dashboard
