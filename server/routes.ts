@@ -1838,8 +1838,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Create provider profile (with fallback authentication)
-  app.post("/api/provider/profile", async (req, res) => {
+  // Direct endpoint for provider profile creation without authentication middleware
+  app.post("/api/provider/profile-direct", async (req, res) => {
     console.log("Provider profile request received. Auth status:", req.isAuthenticated());
     console.log("Session ID:", req.sessionID);
     

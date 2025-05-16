@@ -75,35 +75,31 @@ export default function BecomeProvider() {
     },
   });
   
+  // Update form values when user data changes
+  useEffect(() => {
+    if (user) {
+      form.reset({
+        displayName: user.providerDisplayName || user.username || "",
+        bio: user.bio || "",
+        signalFee: user.signalFee || 10,
+      });
+    }
+  }, [user, form]);
+  
   // Create provider profile mutation
   const providerMutation = useMutation({
-    mutationFn: async (data: ProviderFormValues) => {
-      console.log("Submitting provider profile data:", data);
-      
-      // We need to make sure user is available
+    mutationFn: async (values: ProviderFormValues) => {
       if (!user || !user.id) {
-        throw new Error("User information not available. Please log in again.");
+        throw new Error("You must be logged in to become a provider");
       }
       
-      // Use direct fetch call with user ID in header for authentication fallback
-      const response = await fetch('/api/provider/profile', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'x-user-id': user.id.toString() // Add user ID as header
-        },
-        credentials: 'include', // Still include session credentials as primary auth
-        body: JSON.stringify({
-          ...data,
-          userId: user.id // Also include in body as fallback
-        }),
+      const response = await updateProviderProfile({
+        displayName: values.displayName,
+        bio: values.bio,
+        signalFee: values.signalFee,
+        userId: user.id,
+        username: user.username
       });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Provider profile creation failed:', errorText);
-        throw new Error(`Failed to create provider profile: ${errorText}`);
-      }
       
       return await response.json();
     },
