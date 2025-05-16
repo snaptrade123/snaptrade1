@@ -152,9 +152,31 @@ export default function TradingSignals() {
     }
   });
 
-  // Create signal mutation
+  // Create signal mutation with better error handling
   const createSignalMutation = useMutation({
-    mutationFn: (signalData: any) => createSignalApi(signalData, userId),
+    mutationFn: async (signalData: any) => {
+      if (!userId) {
+        throw new Error("You must be logged in to create signals");
+      }
+      
+      // Ensure price field is properly set
+      if (signalData.isPremium && (!signalData.price || signalData.price < 5)) {
+        throw new Error("Premium signals require a price of at least £5");
+      }
+      
+      // Make the API call with proper error handling
+      try {
+        const response = await createSignalApi(signalData);
+        if (!response.ok) {
+          const errorData = await response.text();
+          throw new Error(errorData || "Failed to create signal");
+        }
+        return response.json();
+      } catch (error) {
+        console.error("Signal creation error:", error);
+        throw error instanceof Error ? error : new Error("Unknown error creating signal");
+      }
+    },
     onSuccess: () => {
       toast({
         title: "Signal Published",

@@ -40,30 +40,25 @@ const ProviderProfile = () => {
       .then(res => res.ok ? res.json() : null),
   });
 
-  // Fetch provider data with retry and fallback
+  // Fetch provider data with the new specific endpoint
   const {
     data: provider,
     isLoading: isLoadingProvider,
     error: providerError,
     refetch: refetchProvider
   } = useQuery({
-    queryKey: ['/api/user', providerId],
+    queryKey: ['/api/provider-details', providerId],
     queryFn: async () => {
       try {
-        return await getUser(providerId);
+        // Try using the new provider-details endpoint which guarantees correct data
+        const response = await apiRequest("GET", `/api/provider-details/${providerId}`);
+        if (response.ok) {
+          return response.json();
+        }
+        throw new Error(`Provider details endpoint failed with status: ${response.status}`);
       } catch (error) {
         console.error('Error fetching provider:', error);
-        // Return a fallback provider with minimal data
-        return {
-          id: providerId,
-          username: "Provider",
-          isProvider: true,
-          providerDisplayName: "Provider",
-          bio: "Provider information temporarily unavailable",
-          createdAt: new Date().toISOString(),
-          thumbsUp: 0,
-          thumbsDown: 0
-        };
+        throw error;
       }
     },
     staleTime: 60000, // 1 minute
