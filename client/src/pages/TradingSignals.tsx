@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "wouter";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -50,6 +51,9 @@ import {
   Loader2,
   PiggyBank,
   TrendingUp,
+  ThumbsUp,
+  ThumbsDown,
+  User,
 } from "lucide-react";
 import {
   getFreeTradingSignals,
@@ -671,19 +675,30 @@ function SignalCard({ signal, onViewDetails, onSubscribe, isSubscribing }: Signa
                 </Badge>
               )}
             </div>
-            <CardDescription className="flex items-center">
+            <CardDescription className="flex items-center flex-wrap">
               <Clock className="h-3 w-3 mr-1" />
               {new Date(signal.createdAt).toLocaleString()}
               <span className="mx-2">•</span>
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  window.location.href = `/provider/${signal.providerId}`;
-                }}
-                className="text-primary hover:underline font-medium"
+              <Link 
+                to={`/provider/${signal.providerId}`}
+                onClick={(e) => e.stopPropagation()}
+                className="text-primary hover:underline font-medium flex items-center"
               >
+                <User className="h-3 w-3 mr-1" />
                 {signal.providerName || `Provider #${signal.providerId}`}
-              </button>
+              </Link>
+              
+              {signal.providerRating && (
+                <>
+                  <span className="mx-2">•</span>
+                  <div className="flex items-center text-muted-foreground">
+                    <ThumbsUp className="h-3 w-3 mr-1 text-emerald-500" />
+                    <span className="mr-2">{signal.providerRating.thumbsUp || 0}</span>
+                    <ThumbsDown className="h-3 w-3 mr-1 text-rose-500" />
+                    <span>{signal.providerRating.thumbsDown || 0}</span>
+                  </div>
+                </>
+              )}
             </CardDescription>
           </div>
           <Badge variant="outline">{signal.timeframe}</Badge>
@@ -716,28 +731,56 @@ function SignalCard({ signal, onViewDetails, onSubscribe, isSubscribing }: Signa
       
       <CardFooter className="pt-1">
         {signal.isPremium && !signal.hasAccess ? (
-          <Button 
-            className="w-full"
-            onClick={onSubscribe}
-            disabled={isSubscribing}
-          >
-            {isSubscribing ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <PiggyBank className="h-4 w-4 mr-2" />
-            )}
-            Subscribe to {signal.providerName || `Provider #${signal.providerId}`}'s Signals
-            <ArrowRight className="h-4 w-4 ml-2" />
-          </Button>
+          <div className="w-full space-y-2">
+            <Button 
+              className="w-full"
+              onClick={onSubscribe}
+              disabled={isSubscribing}
+            >
+              {isSubscribing ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <PiggyBank className="h-4 w-4 mr-2" />
+              )}
+              Subscribe to Signals (£{signal.price}/mo)
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+            
+            <Link to={`/provider/${signal.providerId}`} className="w-full block">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                size="sm"
+              >
+                <User className="h-4 w-4 mr-2" />
+                View Provider Profile
+              </Button>
+            </Link>
+          </div>
         ) : (
-          <Button 
-            variant="outline" 
-            className="w-full"
-            onClick={onViewDetails}
-          >
-            View Details
-            <ArrowRight className="h-4 w-4 ml-2" />
-          </Button>
+          <div className="w-full space-y-2">
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={onViewDetails}
+            >
+              View Details
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+            
+            {signal.providerId && (
+              <Link to={`/provider/${signal.providerId}`} className="w-full block">
+                <Button 
+                  variant="ghost" 
+                  className="w-full"
+                  size="sm"
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  View Provider Profile
+                </Button>
+              </Link>
+            )}
+          </div>
         )}
       </CardFooter>
     </Card>
