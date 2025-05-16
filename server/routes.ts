@@ -1464,19 +1464,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Adapt field names to match schema
+      // Map request fields to actual database columns from the SQL query we ran
       const signal = {
         providerId: userId,
-        pair: req.body.asset || req.body.pair,
+        title: req.body.title,
+        asset: req.body.asset || req.body.pair,
         direction: req.body.direction,
-        entry: req.body.entry || req.body.entryPrice?.toString(),
-        stopLoss: req.body.stopLoss?.toString(),
-        takeProfit1: req.body.takeProfit1 || req.body.takeProfit?.toString(),
-        takeProfit2: req.body.takeProfit2,
-        takeProfit3: req.body.takeProfit3,
+        entryPrice: parseFloat(req.body.entryPrice || req.body.entry || 0),
+        stopLoss: parseFloat(req.body.stopLoss || 0),
+        takeProfit: parseFloat(req.body.takeProfit || req.body.takeProfit1 || 0),
         timeframe: req.body.timeframe,
-        notes: req.body.notes || req.body.analysis,
-        isPremium: req.body.isPremium === true
+        analysis: req.body.analysis || req.body.notes,
+        riskRewardRatio: parseFloat(req.body.riskRewardRatio || 1),
+        isPremium: req.body.isPremium === true,
+        status: 'active'
       };
       
       console.log("Creating trading signal with data:", signal);
