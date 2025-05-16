@@ -32,7 +32,11 @@ export async function updateUserProfile(updates: { bio?: string; email?: string 
 }
 
 export async function getUser(userId: number) {
-  return apiRequest("GET", `/api/users/${userId}`);
+  const response = await apiRequest("GET", `/api/users/${userId}`);
+  if (!response.ok) {
+    throw new Error(`Error ${response.status}: ${await response.text()}`);
+  }
+  return response.json();
 }
 
 // Subscriber data interface for provider dashboard
@@ -121,25 +125,49 @@ export async function setDefaultAssetList(userId: number, assetListId: number) {
 
 // Provider rating API functions
 export async function rateProvider(providerId: number, isPositive: boolean) {
-  return apiRequest("POST", `/api/providers/${providerId}/rate`, {
+  const response = await apiRequest("POST", `/api/providers/${providerId}/rate`, {
     isPositive
   });
+  if (!response.ok) {
+    throw new Error(`Error ${response.status}: ${await response.text()}`);
+  }
+  return response.json();
 }
 
 export async function deleteRating(providerId: number) {
-  return apiRequest("DELETE", `/api/providers/${providerId}/rate`);
+  const response = await apiRequest("DELETE", `/api/providers/${providerId}/rate`);
+  if (!response.ok) {
+    throw new Error(`Error ${response.status}: ${await response.text()}`);
+  }
+  return response.json();
 }
 
 export async function removeProviderRating(providerId: number) {
-  return apiRequest("DELETE", `/api/providers/${providerId}/rate`);
+  const response = await apiRequest("DELETE", `/api/providers/${providerId}/rate`);
+  if (!response.ok) {
+    throw new Error(`Error ${response.status}: ${await response.text()}`);
+  }
+  return response.json();
 }
 
 export async function getProviderRatings(providerId: number) {
-  return apiRequest("GET", `/api/providers/${providerId}/ratings`);
+  const response = await apiRequest("GET", `/api/providers/${providerId}/ratings`);
+  if (!response.ok) {
+    throw new Error(`Error ${response.status}: ${await response.text()}`);
+  }
+  return response.json();
 }
 
 export async function getUserRatingForProvider(providerId: number) {
-  return apiRequest("GET", `/api/providers/${providerId}/user-rating`);
+  const response = await apiRequest("GET", `/api/providers/${providerId}/user-rating`);
+  if (!response.ok) {
+    // 404 means no rating yet, which is a valid state
+    if (response.status === 404) {
+      return null;
+    }
+    throw new Error(`Error ${response.status}: ${await response.text()}`);
+  }
+  return response.json();
 }
 
 export async function subscribeToProvider(providerId: number) {
