@@ -27,6 +27,7 @@ const ProviderProfile = () => {
   const providerId = parseInt(params.providerId);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [subscribeDialogOpen, setSubscribeDialogOpen] = useState(false);
