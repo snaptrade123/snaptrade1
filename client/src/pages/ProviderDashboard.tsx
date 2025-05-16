@@ -13,6 +13,10 @@ import { useToast } from '@/hooks/use-toast';
 export default function ProviderDashboard() {
   const { user, isLoading } = useAuth();
   
+  const [bio, setBio] = useState<string>('');
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
   const { 
     data: subscribersData,
     isLoading: isLoadingSubscribers,
@@ -22,6 +26,32 @@ export default function ProviderDashboard() {
     queryFn: getProviderSubscribers,
     enabled: !!user,
   });
+  
+  // Bio update mutation
+  const updateBioMutation = useMutation({
+    mutationFn: (bio: string) => updateUserProfile({ bio }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+      toast({
+        title: "Profile updated",
+        description: "Your bio has been updated successfully.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error updating profile",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+  
+  // When user data is loaded, set bio state
+  useEffect(() => {
+    if (user?.bio) {
+      setBio(user.bio);
+    }
+  }, [user]);
 
   // Protected route handling
   if (isLoading) {

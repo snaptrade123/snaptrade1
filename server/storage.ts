@@ -227,6 +227,26 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
   
+  async updateUserProfile(userId: number, updates: { bio?: string; email?: string }): Promise<User> {
+    const updateData: Partial<typeof users.$inferInsert> = {};
+    
+    if (updates.bio !== undefined) {
+      updateData.bio = updates.bio;
+    }
+    
+    if (updates.email !== undefined) {
+      updateData.email = updates.email;
+    }
+    
+    const [updatedUser] = await db
+      .update(users)
+      .set(updateData)
+      .where(eq(users.id, userId))
+      .returning();
+      
+    return updatedUser;
+  }
+  
   async getUserByUsername(username: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.username, username));
     return user;

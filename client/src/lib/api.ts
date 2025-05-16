@@ -593,6 +593,37 @@ export const requestPayout = async (amount: number): Promise<{ payout: ProviderP
   }
 };
 
+// Function to update user profile
+export interface ProfileUpdateData {
+  bio?: string;
+  email?: string;
+}
+
+export const updateUserProfile = async (data: ProfileUpdateData): Promise<any> => {
+  try {
+    const response = await fetch('/api/user/profile', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required');
+      }
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to update profile');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error updating user profile:', error);
+    throw error;
+  }
+};
+
 // Get a single user by ID
 export const getUser = async (userId: number): Promise<any> => {
   try {
