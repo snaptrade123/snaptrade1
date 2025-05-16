@@ -260,6 +260,7 @@ export class DatabaseStorage implements IStorage {
     bio?: string;
     signalFee?: number;
   }): Promise<User> {
+    // Use the users schema object to ensure proper column mapping
     const updateData: Partial<typeof users.$inferInsert> = {};
     
     if (updates.isProvider !== undefined) {
@@ -278,13 +279,18 @@ export class DatabaseStorage implements IStorage {
       updateData.signalFee = updates.signalFee;
     }
     
-    const [updatedUser] = await db
-      .update(users)
-      .set(updateData)
-      .where(eq(users.id, userId))
-      .returning();
-    
-    return updatedUser;
+    try {
+      const [updatedUser] = await db
+        .update(users)
+        .set(updateData)
+        .where(eq(users.id, userId))
+        .returning();
+      
+      return updatedUser;
+    } catch (error) {
+      console.error("Error updating provider profile:", error);
+      throw error;
+    }
   }
   
   async getUserByUsername(username: string): Promise<User | undefined> {

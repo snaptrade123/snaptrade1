@@ -1814,6 +1814,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create provider profile
   app.post("/api/provider/profile", requireAuth, async (req, res) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
       const userId = req.user.id;
       const { displayName, bio, signalFee, isProvider = true } = req.body;
       
