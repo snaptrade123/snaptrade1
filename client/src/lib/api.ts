@@ -19,6 +19,39 @@ export async function checkSubscription() {
   return apiRequest("GET", "/api/check-subscription");
 }
 
+// Provider earnings API functions
+export async function getProviderEarnings() {
+  return apiRequest("GET", "/api/provider/earnings");
+}
+
+export async function getProviderPayouts() {
+  return apiRequest("GET", "/api/provider/payouts");
+}
+
+// Define provider earnings types
+export interface ProviderEarning {
+  id: number;
+  providerId: number;
+  amount: number;
+  currency: string;
+  status: string;
+  createdAt: string;
+  signalSubscriptionId?: number;
+  subscriber?: {
+    id: number;
+    username: string;
+  };
+}
+
+export interface ProviderPayout {
+  id: number;
+  providerId: number;
+  amount: number;
+  status: string;
+  createdAt: string;
+  processedAt?: string;
+}
+
 // Trading signal API functions
 export async function createTradingSignal(signalData: any) {
   return apiRequest("POST", "/api/trading-signals", signalData);
