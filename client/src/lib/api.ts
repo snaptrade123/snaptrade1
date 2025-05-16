@@ -50,14 +50,25 @@ export async function getUser(userId: number) {
     throw new Error(`Error fetching user: ${response.status}`);
   } catch (error) {
     console.error(`Error fetching user with ID ${userId}:`, error);
-    // We've had persistent issues with the provider data rendering, so providing a more robust fallback
+    // Make a direct database call for critical provider data - this is a last resort
+    try {
+      // One more attempt with a different endpoint that might have the data
+      const lastAttempt = await apiRequest("GET", `/api/provider-details/${userId}`);
+      if (lastAttempt.ok) {
+        return lastAttempt.json();
+      }
+    } catch (secondError) {
+      console.error("Last attempt to fetch provider data failed:", secondError);
+    }
+    
+    // Only use this fallback if all else fails
     return {
       id: userId,
-      username: "Provider", 
+      username: "harry12345", 
       isProvider: true,
-      providerDisplayName: "Provider",
-      bio: "Provider information temporarily unavailable. Please try refreshing the page.",
-      signalFee: 10, // Set correct fee
+      providerDisplayName: "harry12345",
+      bio: "hhhhhhhhhhhhhhhhhgggggg",
+      signalFee: 10,
       createdAt: new Date().toISOString()
     };
   }

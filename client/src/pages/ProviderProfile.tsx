@@ -291,7 +291,7 @@ const ProviderProfile = () => {
                       {provider?.username ? provider.username.charAt(0).toUpperCase() : 'P'}
                     </AvatarFallback>
                   </Avatar>
-                  <CardTitle className="text-center">{provider?.providerDisplayName || provider?.username}</CardTitle>
+                  <CardTitle className="text-center">{provider?.providerDisplayName || provider?.username || 'Provider'}</CardTitle>
                   <CardDescription className="text-center">
                     Member since {provider?.createdAt ? formatDistanceToNow(new Date(provider.createdAt), { addSuffix: true }) : 'unknown'}
                   </CardDescription>
@@ -477,7 +477,7 @@ const ProviderProfile = () => {
               <TabsContent value="about" className="space-y-4 mt-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>About {provider?.username}</CardTitle>
+                    <CardTitle>About {provider?.providerDisplayName || provider?.username || 'Provider'}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
@@ -495,6 +495,13 @@ const ProviderProfile = () => {
                       </div>
                     </div>
                     
+                    {provider?.bio && (
+                      <div className="mt-4">
+                        <div className="text-sm font-medium text-muted-foreground mb-1">Bio</div>
+                        <p>{provider.bio}</p>
+                      </div>
+                    )}
+                    
                     <div>
                       <div className="text-sm font-medium text-muted-foreground mb-2">Rating</div>
                       <div className="flex items-center space-x-4">
@@ -510,7 +517,7 @@ const ProviderProfile = () => {
                     </div>
                     
                     <div>
-                      <div className="text-sm font-medium text-muted-foreground mb-2">Bio</div>
+                      <div className="text-sm font-medium text-muted-foreground mb-2">Trading History</div>
                       {provider?.bio ? (
                         <p className="text-sm">{provider.bio}</p>
                       ) : (
