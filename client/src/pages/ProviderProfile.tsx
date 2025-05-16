@@ -346,7 +346,7 @@ const ProviderProfile = () => {
                       <Card key={signal.id} className="overflow-hidden">
                         <div className="flex justify-between items-center p-4 bg-muted">
                           <div className="flex items-center space-x-2">
-                            <Badge variant={signal.direction === 'buy' ? 'success' : 'destructive'}>
+                            <Badge variant={signal.direction === 'buy' ? 'secondary' : 'destructive'}>
                               {signal.direction.toUpperCase()}
                             </Badge>
                             <span className="font-semibold">{signal.asset}</span>
