@@ -906,6 +906,122 @@ export class DatabaseStorage implements IStorage {
     
     return payout;
   }
+  
+  // Provider Rating methods
+  async getUserRating(userId: number, providerId: number): Promise<UserRating | undefined> {
+    const results = await db
+      .select()
+      .from(userRatings)
+      .where(and(
+        eq(userRatings.userId, userId),
+        eq(userRatings.providerId, providerId)
+      ));
+    
+    if (results.length > 0) {
+      return results[0];
+    }
+    
+    return undefined;
+  }
+  
+  async getProviderRatings(providerId: number): Promise<{ thumbsUp: number, thumbsDown: number }> {
+    const provider = await this.getUser(providerId);
+    
+    if (!provider) {
+      return { thumbsUp: 0, thumbsDown: 0 };
+    }
+    
+    return {
+      thumbsUp: provider.thumbsUp || 0,
+      thumbsDown: provider.thumbsDown || 0
+    };
+  }
+  
+  async rateProvider(userId: number, providerId: number, isPositive: boolean): Promise<UserRating> {
+    // Check if user already rated this provider
+    const existingRating = await this.getUserRating(userId, providerId);
+    
+    if (existingRating) {
+      // If the rating changed, update it
+      if (existingRating.rating !== isPositive) {
+        const updatedRatings = await db
+          .update(userRatings)
+          .set({ 
+            rating: isPositive,
+            updatedAt: new Date()
+          })
+          .where(and(
+            eq(userRatings.userId, userId),
+            eq(userRatings.providerId, providerId)
+          ))
+          .returning();
+        
+        // Update the provider's thumbs up/down counts
+        await this.updateUserRatingCounts(providerId);
+        
+        return updatedRatings[0];
+      }
+      
+      // If rating didn't change, return existing
+      return existingRating;
+    }
+    
+    // Otherwise create a new rating
+    const newRatings = await db
+      .insert(userRatings)
+      .values({
+        userId,
+        providerId,
+        rating: isPositive
+      })
+      .returning();
+    
+    // Update the provider's thumbs up/down counts
+    await this.updateUserRatingCounts(providerId);
+    
+    return newRatings[0];
+  }
+  
+  async deleteUserRating(userId: number, providerId: number): Promise<void> {
+    await db
+      .delete(userRatings)
+      .where(and(
+        eq(userRatings.userId, userId),
+        eq(userRatings.providerId, providerId)
+      ));
+    
+    // Update the provider's thumbs up/down counts
+    await this.updateUserRatingCounts(providerId);
+  }
+  
+  async updateUserRatingCounts(providerId: number): Promise<void> {
+    // Count positive ratings (thumbs up)
+    const thumbsUpResults = await db
+      .select()
+      .from(userRatings)
+      .where(and(
+        eq(userRatings.providerId, providerId),
+        eq(userRatings.rating, true)
+      ));
+    
+    // Count negative ratings (thumbs down)
+    const thumbsDownResults = await db
+      .select()
+      .from(userRatings)
+      .where(and(
+        eq(userRatings.providerId, providerId),
+        eq(userRatings.rating, false)
+      ));
+    
+    // Update the provider's user record with the new counts
+    await db
+      .update(users)
+      .set({
+        thumbsUp: thumbsUpResults.length,
+        thumbsDown: thumbsDownResults.length
+      })
+      .where(eq(users.id, providerId));
+  }
 }
 
 // Export a singleton instance

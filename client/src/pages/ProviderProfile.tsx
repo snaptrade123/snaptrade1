@@ -1,391 +1,576 @@
-import { useState, useEffect } from "react";
-import { useParams } from "wouter";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/use-auth";
-import { useToast } from "@/hooks/use-toast";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
-import {
-  ThumbsUp,
-  ThumbsDown,
-  Loader2,
-  Clock,
-  Users,
-  Award,
-  ArrowRight,
-  ExternalLink,
-} from "lucide-react";
-import {
-  getUser,
-  getProviderRatings,
-  getUserRatingForProvider,
-  rateProvider,
-  removeProviderRating,
-  getProviderSignals,
-  subscribeToProvider
-} from "@/lib/api";
+import { useState, useEffect } from 'react';
+import { useParams, useLocation } from 'wouter';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { ThumbsUp, ThumbsDown, User, ChevronLeft, Clock, Info, Award, ArrowRight } from 'lucide-react';
 
-export default function ProviderProfile() {
-  const { providerId } = useParams();
-  const { user } = useAuth();
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
+
+import { getUser, getProviderSignals, getProviderRatings, getUserRatingForProvider, rateProvider, removeProviderRating, subscribeToProvider } from '@/lib/api';
+import { formatDistanceToNow } from 'date-fns';
+
+const ProviderProfile = () => {
+  const [location, navigate] = useLocation();
+  const params = useParams<{ providerId: string }>();
+  const providerId = parseInt(params.providerId);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState("signals");
-  const [subscribing, setSubscribing] = useState(false);
   
-  const numericProviderId = providerId ? parseInt(providerId) : 0;
-  
-  // Query provider info
-  const { data: provider, isLoading: providerLoading } = useQuery({
-    queryKey: ['/api/user', numericProviderId],
-    queryFn: () => getUser(numericProviderId),
-    enabled: !!numericProviderId
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [subscribeDialogOpen, setSubscribeDialogOpen] = useState(false);
+
+  // Fetch provider data
+  const {
+    data: provider,
+    isLoading: isLoadingProvider,
+    error: providerError
+  } = useQuery({
+    queryKey: ['/api/user', providerId],
+    queryFn: () => getUser(providerId),
+    enabled: !isNaN(providerId),
+    onError: (error: Error) => {
+      toast({
+        title: "Error loading provider profile",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   });
-  
-  // Query provider signals
-  const { data: signals = [], isLoading: signalsLoading } = useQuery({
-    queryKey: ['/api/trading-signals/provider', numericProviderId],
-    queryFn: () => getProviderSignals(numericProviderId),
-    enabled: !!numericProviderId
+
+  // Fetch provider's signals
+  const {
+    data: signals,
+    isLoading: isLoadingSignals,
+    error: signalsError
+  } = useQuery({
+    queryKey: ['/api/trading-signals/provider', providerId],
+    queryFn: () => getProviderSignals(providerId),
+    enabled: !isNaN(providerId),
+    onError: (error: Error) => {
+      toast({
+        title: "Error loading provider signals",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   });
-  
-  // Get provider ratings
-  const { data: ratings, isLoading: ratingsLoading } = useQuery({
-    queryKey: ['/api/provider/ratings', numericProviderId],
-    queryFn: () => getProviderRatings(numericProviderId),
-    enabled: !!numericProviderId
+
+  // Fetch provider ratings
+  const {
+    data: ratings,
+    isLoading: isLoadingRatings,
+    error: ratingsError
+  } = useQuery({
+    queryKey: ['/api/provider/ratings', providerId],
+    queryFn: () => getProviderRatings(providerId),
+    enabled: !isNaN(providerId),
+    onError: (error: Error) => {
+      toast({
+        title: "Error loading provider ratings",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   });
-  
-  // Get user's current rating for this provider
-  const { data: userRating, isLoading: userRatingLoading } = useQuery({
-    queryKey: ['/api/provider/user-rating', numericProviderId],
-    queryFn: () => getUserRatingForProvider(numericProviderId),
-    enabled: !!numericProviderId && !!user
+
+  // Fetch current user's rating for this provider
+  const {
+    data: userRating,
+    isLoading: isLoadingUserRating,
+    error: userRatingError
+  } = useQuery({
+    queryKey: ['/api/provider/user-rating', providerId],
+    queryFn: () => getUserRatingForProvider(providerId),
+    enabled: !isNaN(providerId),
+    onError: (error: Error) => {
+      console.error("Error fetching user rating:", error);
+      // Don't show a toast for this one, as it's not critical
+    }
   });
-  
-  // Rate provider mutation
+
+  // Submit a rating mutation
   const rateMutation = useMutation({
-    mutationFn: ({ providerId, isPositive }: { providerId: number, isPositive: boolean }) => 
+    mutationFn: ({ isPositive }: { isPositive: boolean }) => 
       rateProvider(providerId, isPositive),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/provider/ratings', providerId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/provider/user-rating', providerId] });
       toast({
-        title: "Rating Submitted",
-        description: "Thank you for your feedback!"
+        title: "Rating submitted",
+        description: "Thank you for your feedback!",
       });
-      // Invalidate relevant queries
-      queryClient.invalidateQueries({ queryKey: ['/api/provider/ratings', numericProviderId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/provider/user-rating', numericProviderId] });
     },
     onError: (error: Error) => {
       toast({
-        title: "Rating Failed",
+        title: "Error submitting rating",
         description: error.message,
         variant: "destructive"
       });
     }
   });
-  
+
   // Remove rating mutation
   const removeRatingMutation = useMutation({
-    mutationFn: (providerId: number) => removeProviderRating(providerId),
+    mutationFn: () => removeProviderRating(providerId),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/provider/ratings', providerId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/provider/user-rating', providerId] });
       toast({
-        title: "Rating Removed",
-        description: "Your rating has been removed."
+        title: "Rating removed",
+        description: "Your rating has been removed",
       });
-      // Invalidate relevant queries
-      queryClient.invalidateQueries({ queryKey: ['/api/provider/ratings', numericProviderId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/provider/user-rating', numericProviderId] });
     },
     onError: (error: Error) => {
       toast({
-        title: "Failed to Remove Rating",
+        title: "Error removing rating",
         description: error.message,
         variant: "destructive"
       });
     }
   });
-  
+
   // Subscribe to provider mutation
   const subscribeMutation = useMutation({
-    mutationFn: (providerId: number) => subscribeToProvider(providerId),
+    mutationFn: () => subscribeToProvider(providerId),
     onSuccess: (data) => {
-      // Open Stripe checkout in a new window
-      window.open(data.url, '_blank');
-      setSubscribing(false);
+      // Redirect to Stripe checkout
+      window.location.href = data.url;
     },
     onError: (error: Error) => {
       toast({
-        title: "Subscription Failed",
+        title: "Error subscribing",
         description: error.message,
         variant: "destructive"
       });
-      setSubscribing(false);
+      setSubscribeDialogOpen(false);
     }
   });
-  
-  // Handle rating the provider
+
+  // Handle rating submission
   const handleRate = (isPositive: boolean) => {
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to rate providers.",
-        variant: "destructive"
-      });
-      return;
+    if (userRating?.rating === isPositive) {
+      // If clicking the same rating again, remove it
+      removeRatingMutation.mutate();
+    } else {
+      // Otherwise submit the new rating
+      rateMutation.mutate({ isPositive });
     }
-    
-    if (user.id === numericProviderId) {
-      toast({
-        title: "Invalid Action",
-        description: "You cannot rate yourself.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    rateMutation.mutate({ providerId: numericProviderId, isPositive });
   };
-  
-  // Handle removing rating
-  const handleRemoveRating = () => {
-    if (!user) return;
-    removeRatingMutation.mutate(numericProviderId);
-  };
-  
-  // Handle subscription
+
+  // Handle subscribe button click
   const handleSubscribe = () => {
-    if (!user) {
+    if (!termsAccepted) {
       toast({
-        title: "Authentication Required",
-        description: "Please log in to subscribe to premium signals.",
+        title: "Terms not accepted",
+        description: "Please accept the terms and conditions before subscribing",
         variant: "destructive"
       });
       return;
     }
     
-    setSubscribing(true);
-    subscribeMutation.mutate(numericProviderId);
+    subscribeMutation.mutate();
   };
-  
-  // Loading state
-  if (providerLoading) {
+
+  const isLoading = isLoadingProvider || isLoadingSignals || isLoadingRatings;
+  const hasError = providerError || signalsError || ratingsError;
+
+  if (isNaN(providerId)) {
     return (
-      <div className="container max-w-4xl mx-auto px-4 py-12 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="container py-6">
+        <div className="flex items-center mb-6">
+          <Button variant="outline" size="icon" onClick={() => navigate('/trading-signals')}>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-2xl font-bold ml-2">Invalid Provider ID</h1>
+        </div>
+        <p>The provider ID is invalid. Please check the URL and try again.</p>
       </div>
     );
   }
-  
-  // Provider not found
-  if (!provider) {
+
+  if (hasError) {
     return (
-      <div className="container max-w-4xl mx-auto px-4 py-12">
-        <Card className="border-destructive">
-          <CardHeader>
-            <CardTitle>Provider Not Found</CardTitle>
-            <CardDescription>The provider you are looking for doesn't exist.</CardDescription>
-          </CardHeader>
-        </Card>
+      <div className="container py-6">
+        <div className="flex items-center mb-6">
+          <Button variant="outline" size="icon" onClick={() => navigate('/trading-signals')}>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-2xl font-bold ml-2">Error</h1>
+        </div>
+        <p>An error occurred while loading the provider profile. Please try again later.</p>
       </div>
     );
   }
-  
-  // Determine if the user has already subscribed to this provider
-  const isSubscribed = false; // This would need to be determined based on actual subscription data
-  
+
   return (
-    <div className="container max-w-4xl mx-auto px-4 py-12">
-      <Card className="mb-8 overflow-hidden">
-        <div className="h-36 bg-gradient-to-r from-primary/20 to-secondary/20"></div>
-        <CardHeader className="pt-0">
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-4 -mt-12">
-            <Avatar className="h-24 w-24 border-4 border-background">
-              <AvatarFallback className="text-2xl font-bold">
-                {provider.username ? provider.username.charAt(0).toUpperCase() : 'P'}
-              </AvatarFallback>
-            </Avatar>
-            <div className="space-y-1">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <CardTitle className="text-2xl">{provider.username || `Provider #${provider.id}`}</CardTitle>
-                {isSubscribed && (
-                  <Badge className="bg-primary/20 text-primary">Subscribed</Badge>
-                )}
-              </div>
-              <CardDescription className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                <span>{signals.length} signals published</span>
-                <span className="mx-1">•</span>
-                <Clock className="h-4 w-4" />
-                <span>Joined {new Date(provider.createdAt).toLocaleDateString()}</span>
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-4 mb-6">
-            <div className="flex items-center gap-1">
-              <ThumbsUp className={`h-5 w-5 ${userRating?.rating === true ? 'text-primary fill-primary' : ''}`} />
-              <span className="font-medium">{ratings?.thumbsUp || 0}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <ThumbsDown className={`h-5 w-5 ${userRating?.rating === false ? 'text-primary fill-primary' : ''}`} />
-              <span className="font-medium">{ratings?.thumbsDown || 0}</span>
-            </div>
-            
-            {user && user.id !== numericProviderId && (
-              <div className="flex ml-auto gap-2">
-                {userRating?.rating !== undefined ? (
-                  <>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="gap-1"
-                      onClick={handleRemoveRating}
-                      disabled={removeRatingMutation.isPending}
-                    >
-                      {removeRatingMutation.isPending && <Loader2 className="h-3 w-3 animate-spin" />}
-                      Remove Rating
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="gap-1"
-                      onClick={() => handleRate(true)}
-                      disabled={rateMutation.isPending}
-                    >
-                      <ThumbsUp className="h-4 w-4" />
-                      Like
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="gap-1"
-                      onClick={() => handleRate(false)}
-                      disabled={rateMutation.isPending}
-                    >
-                      <ThumbsDown className="h-4 w-4" />
-                      Dislike
-                    </Button>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-          
-          {!isSubscribed && (
-            <Button 
-              className="w-full"
-              onClick={handleSubscribe}
-              disabled={subscribing || user?.id === numericProviderId}
-            >
-              {subscribing ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Award className="h-4 w-4 mr-2" />
-              )}
-              Subscribe to {provider.username || `Provider #${provider.id}`}'s Signals
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-          )}
-        </CardContent>
-      </Card>
-      
-      <Tabs defaultValue="signals" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-4">
-          <TabsTrigger value="signals">Signals</TabsTrigger>
-          <TabsTrigger value="stats">Stats</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="signals">
-          {signalsLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-border" />
-            </div>
-          ) : signals.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2">
-              {signals.map((signal) => (
-                <Card key={signal.id}>
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-base">{signal.title || signal.asset}</CardTitle>
-                        <CardDescription className="flex items-center text-xs">
-                          <Clock className="h-3 w-3 mr-1" />
-                          {new Date(signal.createdAt).toLocaleString()}
-                        </CardDescription>
-                      </div>
-                      <Badge variant="outline">{signal.timeframe}</Badge>
+    <div className="container py-6">
+      <div className="flex items-center mb-6">
+        <Button variant="outline" size="icon" onClick={() => navigate('/trading-signals')}>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <h1 className="text-2xl font-bold ml-2">Provider Profile</h1>
+      </div>
+
+      {isLoading ? (
+        <ProviderProfileSkeleton />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-1">
+            <Card>
+              <CardHeader className="relative pb-0">
+                <div className="flex flex-col items-center">
+                  <Avatar className="h-16 w-16 mb-2">
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      {provider?.username.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <CardTitle className="text-center">{provider?.username}</CardTitle>
+                  <CardDescription className="text-center">
+                    Member since {provider?.createdAt ? formatDistanceToNow(new Date(provider.createdAt), { addSuffix: true }) : 'unknown'}
+                  </CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="flex justify-center space-x-4 mb-6">
+                  <Button 
+                    variant={userRating?.rating === true ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => handleRate(true)}
+                    disabled={rateMutation.isPending || removeRatingMutation.isPending}
+                    className="flex items-center"
+                  >
+                    <ThumbsUp className="h-4 w-4 mr-1" />
+                    <span>{ratings?.thumbsUp || 0}</span>
+                  </Button>
+                  <Button 
+                    variant={userRating?.rating === false ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => handleRate(false)}
+                    disabled={rateMutation.isPending || removeRatingMutation.isPending}
+                    className="flex items-center"
+                  >
+                    <ThumbsDown className="h-4 w-4 mr-1" />
+                    <span>{ratings?.thumbsDown || 0}</span>
+                  </Button>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <div className="text-sm font-medium mb-1">Active Signals</div>
+                    <div className="font-bold text-2xl">
+                      {signals?.filter(s => s.status === 'active').length || 0}
                     </div>
+                  </div>
+                  
+                  <div>
+                    <div className="text-sm font-medium mb-1">Total Signals</div>
+                    <div className="font-bold text-2xl">
+                      {signals?.length || 0}
+                    </div>
+                  </div>
+                  
+                  <Separator />
+
+                  <Dialog open={subscribeDialogOpen} onOpenChange={setSubscribeDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="w-full" size="lg">
+                        Subscribe to Signals
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Subscribe to {provider?.username}'s Signals</DialogTitle>
+                        <DialogDescription>
+                          Get access to all premium signals from this provider.
+                        </DialogDescription>
+                      </DialogHeader>
+                      
+                      <div className="space-y-4 py-4">
+                        <div className="flex items-start space-x-2">
+                          <Info className="h-5 w-5 text-muted-foreground mt-0.5" />
+                          <div className="text-sm text-muted-foreground">
+                            Subscription costs £5 per month. You can cancel at any time.
+                          </div>
+                        </div>
+                        
+                        <div className="bg-muted p-3 rounded-md">
+                          <div className="flex items-top space-x-2">
+                            <Checkbox 
+                              id="terms" 
+                              checked={termsAccepted}
+                              onCheckedChange={(checked) => setTermsAccepted(checked === true)}
+                            />
+                            <div className="grid gap-1.5">
+                              <Label htmlFor="terms" className="text-sm font-medium">
+                                I accept the terms and conditions
+                              </Label>
+                              <p className="text-xs text-muted-foreground">
+                                By subscribing, you agree that all trading signals are for educational purposes only and not financial advice. 
+                                Subscriptions are non-refundable and no partial refunds will be provided.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setSubscribeDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button 
+                          onClick={handleSubscribe}
+                          disabled={!termsAccepted || subscribeMutation.isPending}
+                        >
+                          {subscribeMutation.isPending ? "Processing..." : "Subscribe"}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="md:col-span-2">
+            <Tabs defaultValue="signals" className="w-full">
+              <TabsList className="w-full grid grid-cols-2">
+                <TabsTrigger value="signals">Signals</TabsTrigger>
+                <TabsTrigger value="about">About</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="signals" className="p-0 mt-6">
+                {signals && signals.length > 0 ? (
+                  <div className="space-y-4">
+                    {signals.map(signal => (
+                      <Card key={signal.id} className="overflow-hidden">
+                        <div className="flex justify-between items-center p-4 bg-muted">
+                          <div className="flex items-center space-x-2">
+                            <Badge variant={signal.direction === 'buy' ? 'success' : 'destructive'}>
+                              {signal.direction.toUpperCase()}
+                            </Badge>
+                            <span className="font-semibold">{signal.asset}</span>
+                            <span className="text-muted-foreground text-sm">{signal.timeframe}</span>
+                          </div>
+                          <Badge variant={signal.status === 'active' ? 'outline' : 'secondary'}>
+                            {signal.status.toUpperCase()}
+                          </Badge>
+                        </div>
+                        <CardContent className="p-4">
+                          <div className="grid grid-cols-3 gap-4">
+                            <div>
+                              <div className="text-sm font-medium text-muted-foreground">Entry</div>
+                              <div className="font-semibold">{signal.entryPrice}</div>
+                            </div>
+                            <div>
+                              <div className="text-sm font-medium text-muted-foreground">Stop Loss</div>
+                              <div className="font-semibold">{signal.stopLoss}</div>
+                            </div>
+                            <div>
+                              <div className="text-sm font-medium text-muted-foreground">Take Profit</div>
+                              <div className="font-semibold">{signal.takeProfit}</div>
+                            </div>
+                          </div>
+                          {signal.analysis && (
+                            <div className="mt-4">
+                              <div className="text-sm font-medium text-muted-foreground">Analysis</div>
+                              <p className="text-sm mt-1">{signal.analysis}</p>
+                            </div>
+                          )}
+                        </CardContent>
+                        <CardFooter className="flex justify-between p-4 pt-0 text-xs text-muted-foreground">
+                          <div className="flex items-center">
+                            <Clock className="h-3 w-3 mr-1" />
+                            <span>
+                              {signal.createdAt ? formatDistanceToNow(new Date(signal.createdAt), { addSuffix: true }) : 'unknown'}
+                            </span>
+                          </div>
+                          <div className="flex items-center">
+                            <span className="mr-1">Risk/Reward:</span>
+                            <span className="font-medium">{signal.riskRewardRatio?.toFixed(2) || 'N/A'}</span>
+                          </div>
+                        </CardFooter>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-10 px-4">
+                    <div className="mb-2 text-lg font-semibold">No signals yet</div>
+                    <p className="text-muted-foreground">
+                      This provider hasn't published any signals yet.
+                    </p>
+                  </div>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="about" className="space-y-4 mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>About {provider?.username}</CardTitle>
                   </CardHeader>
-                  <CardContent className="pb-2">
-                    <div className="grid grid-cols-3 gap-2 text-sm">
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <p className="text-xs text-muted-foreground">Entry</p>
-                        <p className="font-medium">{signal.entryPrice}</p>
+                        <div className="text-sm font-medium text-muted-foreground">Member Since</div>
+                        <div className="font-semibold">
+                          {provider?.createdAt ? new Date(provider.createdAt).toLocaleDateString() : 'Unknown'}
+                        </div>
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground">Stop Loss</p>
-                        <p className="font-medium text-rose-500">{signal.stopLoss}</p>
+                        <div className="text-sm font-medium text-muted-foreground">Subscription Tier</div>
+                        <div className="font-semibold">
+                          {provider?.subscriptionTier || 'Standard'}
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Take Profit</p>
-                        <p className="font-medium text-emerald-500">{signal.takeProfit}</p>
+                    </div>
+                    
+                    <div>
+                      <div className="text-sm font-medium text-muted-foreground mb-2">Rating</div>
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center">
+                          <ThumbsUp className="h-4 w-4 mr-1 text-green-500" />
+                          <span className="font-semibold">{ratings?.thumbsUp || 0}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <ThumbsDown className="h-4 w-4 mr-1 text-red-500" />
+                          <span className="font-semibold">{ratings?.thumbsDown || 0}</span>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
-                  <CardFooter className="pt-0">
-                    <Button variant="outline" size="sm" className="w-full">
-                      View Details
-                      <ExternalLink className="h-3 w-3 ml-1" />
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Subscription Information</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center space-x-2">
+                      <Award className="h-5 w-5 text-primary" />
+                      <div className="font-semibold">Premium Signals Access</div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      By subscribing to this provider, you'll get access to all their premium trading signals as soon as they're published.
+                    </p>
+                    <div className="bg-muted p-4 rounded-md">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <div className="font-semibold">Monthly subscription</div>
+                          <div className="text-sm text-muted-foreground">Billed monthly, cancel anytime</div>
+                        </div>
+                        <div className="text-xl font-bold">£5<span className="text-sm font-normal text-muted-foreground">/month</span></div>
+                      </div>
+                    </div>
+                    <Button className="w-full" size="lg" onClick={() => setSubscribeDialogOpen(true)}>
+                      Subscribe Now <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
-                  </CardFooter>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Skeleton loader for the provider profile
+const ProviderProfileSkeleton = () => {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="md:col-span-1">
+        <Card>
+          <CardHeader className="relative pb-0">
+            <div className="flex flex-col items-center">
+              <Skeleton className="h-16 w-16 rounded-full mb-2" />
+              <Skeleton className="h-6 w-32 mb-2" />
+              <Skeleton className="h-4 w-48" />
+            </div>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="flex justify-center space-x-4 mb-6">
+              <Skeleton className="h-8 w-16" />
+              <Skeleton className="h-8 w-16" />
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <Skeleton className="h-4 w-24 mb-1" />
+                <Skeleton className="h-8 w-12" />
+              </div>
+              
+              <div>
+                <Skeleton className="h-4 w-24 mb-1" />
+                <Skeleton className="h-8 w-12" />
+              </div>
+              
+              <Separator />
+
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="md:col-span-2">
+        <Tabs defaultValue="signals" className="w-full">
+          <TabsList className="w-full grid grid-cols-2">
+            <TabsTrigger value="signals">Signals</TabsTrigger>
+            <TabsTrigger value="about">About</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="signals" className="p-0 mt-6">
+            <div className="space-y-4">
+              {[1, 2, 3].map(i => (
+                <Card key={i} className="overflow-hidden">
+                  <div className="p-4 bg-muted">
+                    <div className="flex justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Skeleton className="h-5 w-16" />
+                        <Skeleton className="h-5 w-24" />
+                      </div>
+                      <Skeleton className="h-5 w-20" />
+                    </div>
+                  </div>
+                  <CardContent className="p-4">
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <Skeleton className="h-4 w-12 mb-1" />
+                        <Skeleton className="h-6 w-20" />
+                      </div>
+                      <div>
+                        <Skeleton className="h-4 w-16 mb-1" />
+                        <Skeleton className="h-6 w-20" />
+                      </div>
+                      <div>
+                        <Skeleton className="h-4 w-20 mb-1" />
+                        <Skeleton className="h-6 w-20" />
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <Skeleton className="h-4 w-16 mb-2" />
+                      <Skeleton className="h-4 w-full mb-1" />
+                      <Skeleton className="h-4 w-2/3" />
+                    </div>
+                  </CardContent>
                 </Card>
               ))}
             </div>
-          ) : (
-            <Card>
-              <CardHeader>
-                <CardTitle>No Signals</CardTitle>
-                <CardDescription>
-                  This provider hasn't published any signals yet.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          )}
-        </TabsContent>
-        
-        <TabsContent value="stats">
-          <Card>
-            <CardHeader>
-              <CardTitle>Performance Stats</CardTitle>
-              <CardDescription>
-                Performance metrics and statistics will be available soon.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p>More detailed statistics about this provider's performance will be added in a future update.</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
-}
+};
+
+export default ProviderProfile;
