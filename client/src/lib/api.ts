@@ -21,15 +21,18 @@ export async function checkSubscription() {
 
 // Provider earnings API functions
 export async function getProviderEarnings() {
-  return apiRequest("GET", "/api/provider/earnings");
+  const response = await apiRequest("GET", "/api/provider/earnings");
+  return response.json();
 }
 
 export async function getProviderPayouts() {
-  return apiRequest("GET", "/api/provider/payouts");
+  const response = await apiRequest("GET", "/api/provider/payouts");
+  return response.json();
 }
 
 export async function getProviderSubscribers() {
-  return apiRequest("GET", "/api/provider/subscribers");
+  const response = await apiRequest("GET", "/api/provider/subscribers");
+  return response.json();
 }
 
 export async function updateUserProfile(userId: number, updates: { bio?: string; email?: string }) {
@@ -153,7 +156,8 @@ export async function subscribeToProvider(providerId: number) {
 
 // Provider earnings API functions
 export async function requestPayout(amount: number) {
-  return apiRequest("POST", "/api/provider/request-payout", { amount });
+  const response = await apiRequest("POST", "/api/provider/request-payout", { amount });
+  return response.json();
 }
 
 // Signal subscription API functions
