@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -97,12 +97,16 @@ export default function TradingSignals() {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [selectedSignalId, setSelectedSignalId] = useState<number | null>(null);
   const [subscribing, setSubscribing] = useState(false);
+  const [, navigate] = useLocation();
   
   // Get the current user ID for API calls (for development)
   const userId = user?.id;
 
   // Check if user is a premium subscriber
   const isPremiumProvider = !!user?.subscriptionTier;
+  
+  // Check if user is already a provider
+  const isProvider = !!user?.isProvider;
 
   // Query to get free trading signals
   const { 
@@ -203,6 +207,31 @@ export default function TradingSignals() {
     form.trigger("price");
   }, [isPremiumSignal, form]);
 
+  // Handle dialog opening to check if user is already a provider
+  const handleProvideSignalClick = () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to provide trading signals.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // If user is not a provider, redirect to become-provider page
+    if (!isProvider) {
+      toast({
+        title: "Provider Setup Required",
+        description: "You need to set up your provider profile before providing signals.",
+      });
+      navigate("/become-provider");
+      return;
+    }
+    
+    // Otherwise, open the dialog
+    setShowNewSignalDialog(true);
+  };
+
   const handleSubmit = (values: z.infer<typeof signalFormSchema>) => {
     // Validate price for premium signals
     if (values.isPremium && !values.price) {
@@ -254,12 +283,13 @@ export default function TradingSignals() {
         </div>
         
         <Dialog open={showNewSignalDialog} onOpenChange={setShowNewSignalDialog}>
-          <DialogTrigger asChild>
-            <Button className="mt-4 md:mt-0">
-              <TrendingUp className="mr-2 h-4 w-4" />
-              Provide Signal
-            </Button>
-          </DialogTrigger>
+          <Button 
+            className="mt-4 md:mt-0"
+            onClick={handleProvideSignalClick}
+          >
+            <TrendingUp className="mr-2 h-4 w-4" />
+            Provide Signal
+          </Button>
           
           <DialogContent className="sm:max-w-[525px]">
             <DialogHeader>

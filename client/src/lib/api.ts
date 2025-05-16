@@ -787,3 +787,34 @@ export const cancelSubscription = async (subscriptionId: number): Promise<Signal
     throw error;
   }
 };
+
+export interface ProviderProfileData {
+  displayName: string;
+  bio: string;
+  signalFee: number;
+  isProvider?: boolean;
+}
+
+export const updateProviderProfile = async (data: ProviderProfileData): Promise<any> => {
+  try {
+    const response = await fetch('/api/provider/profile', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required');
+      }
+      throw new Error('Failed to update provider profile');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error updating provider profile:', error);
+    throw error;
+  }
+};
