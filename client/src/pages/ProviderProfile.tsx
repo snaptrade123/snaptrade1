@@ -179,16 +179,20 @@ const ProviderProfile = () => {
     }
   });
 
-  // Handle rating submission
+  // Handle rating submission with auth check
   const handleRate = (isPositive: boolean) => {
     if (!currentUser) {
+      // Redirect to login instead of just showing a toast
       toast({
         title: "Authentication required",
-        description: "Please log in to rate providers",
-        variant: "destructive"
+        description: "Please log in to rate providers"
       });
+      navigate("/auth");
       return;
     }
+    
+    // Log authentication details
+    console.log("Current user when rating:", currentUser);
     
     if (userRating?.rating === isPositive) {
       // If clicking the same rating again, remove it

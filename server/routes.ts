@@ -1448,9 +1448,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create a new trading signal - auth required
-  app.post("/api/trading-signals", authOrIdHeader, async (req: any, res) => {
+  app.post("/api/trading-signals", async (req: any, res) => {
+    // Direct authentication check to improve debugging
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    
     try {      
-      const userId = req.userId;
+      // Get userId directly from session
+      const userId = req.user.id;
+      
+      // Log the authenticated user
+      console.log("Creating signal for authenticated user:", userId);
       
       // Check if premium - only subscribers can create premium signals
       if (req.body.isPremium) {

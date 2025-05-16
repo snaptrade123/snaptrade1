@@ -255,6 +255,17 @@ export default function TradingSignals() {
   };
 
   const handleSubmit = (values: z.infer<typeof signalFormSchema>) => {
+    // First check if user is logged in
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to create trading signals",
+        variant: "destructive"
+      });
+      navigate("/auth");
+      return;
+    }
+    
     // Validate price for premium signals
     if (values.isPremium && !values.price) {
       form.setError("price", { 
@@ -270,6 +281,10 @@ export default function TradingSignals() {
       // Default to active status
       status: 'active' as const
     };
+    
+    // Log to help with debugging
+    console.log("Creating signal with data:", signalData);
+    
     createSignalMutation.mutate(signalData);
   };
   
