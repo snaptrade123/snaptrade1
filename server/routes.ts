@@ -48,6 +48,14 @@ const authOrIdHeader = async (req: Request, res: Response, next: NextFunction) =
   return res.status(401).json({ message: 'Authentication required' });
 };
 
+// Simplified auth middleware that only accepts session-based auth
+const requireAuth = (req: Request, res: Response, next: NextFunction) => {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  return res.status(401).json({ message: 'Authentication required' });
+};
+
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
 }
