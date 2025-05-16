@@ -593,6 +593,123 @@ export const requestPayout = async (amount: number): Promise<{ payout: ProviderP
   }
 };
 
+// Get a single user by ID
+export const getUser = async (userId: number): Promise<any> => {
+  try {
+    const response = await fetch(`/api/user/${userId}`);
+    
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('User not found');
+      }
+      throw new Error('Failed to fetch user data');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    throw error;
+  }
+};
+
+// Provider Rating Types
+export interface ProviderRatings {
+  thumbsUp: number;
+  thumbsDown: number;
+}
+
+export interface UserRating {
+  id?: number;
+  userId: number;
+  providerId: number;
+  rating: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Get a provider's ratings
+export const getProviderRatings = async (providerId: number): Promise<ProviderRatings> => {
+  try {
+    const response = await fetch(`/api/provider/${providerId}/ratings`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch provider ratings');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching provider ratings:', error);
+    return { thumbsUp: 0, thumbsDown: 0 };
+  }
+};
+
+// Get the current user's rating for a provider
+export const getUserRatingForProvider = async (providerId: number): Promise<UserRating | null> => {
+  try {
+    const response = await fetch(`/api/provider/${providerId}/user-rating`);
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required');
+      }
+      throw new Error('Failed to fetch user rating');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching user rating:', error);
+    return null;
+  }
+};
+
+// Rate a provider (thumbs up or down)
+export const rateProvider = async (providerId: number, isPositive: boolean): Promise<UserRating> => {
+  try {
+    const response = await fetch('/api/provider/rate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ providerId, isPositive }),
+    });
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required to rate providers');
+      }
+      if (response.status === 400) {
+        const data = await response.json();
+        throw new Error(data.message || 'Invalid rating request');
+      }
+      throw new Error('Failed to submit rating');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error rating provider:', error);
+    throw error;
+  }
+};
+
+// Remove a rating for a provider
+export const removeProviderRating = async (providerId: number): Promise<void> => {
+  try {
+    const response = await fetch(`/api/provider/rate/${providerId}`, {
+      method: 'DELETE',
+    });
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required');
+      }
+      throw new Error('Failed to remove rating');
+    }
+  } catch (error) {
+    console.error('Error removing rating:', error);
+    throw error;
+  }
+};
+
 // Function to get provider's payout history
 export const getProviderPayouts = async (): Promise<ProviderPayout[]> => {
   try {

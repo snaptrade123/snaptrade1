@@ -675,7 +675,15 @@ function SignalCard({ signal, onViewDetails, onSubscribe, isSubscribing }: Signa
               <Clock className="h-3 w-3 mr-1" />
               {new Date(signal.createdAt).toLocaleString()}
               <span className="mx-2">•</span>
-              Provider #{signal.providerId}
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.location.href = `/provider/${signal.providerId}`;
+                }}
+                className="text-primary hover:underline font-medium"
+              >
+                {signal.providerName || `Provider #${signal.providerId}`}
+              </button>
             </CardDescription>
           </div>
           <Badge variant="outline">{signal.timeframe}</Badge>
@@ -718,7 +726,7 @@ function SignalCard({ signal, onViewDetails, onSubscribe, isSubscribing }: Signa
             ) : (
               <PiggyBank className="h-4 w-4 mr-2" />
             )}
-            Subscribe to Provider #{signal.providerId}'s Signals
+            Subscribe to {signal.providerName || `Provider #${signal.providerId}`}'s Signals
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
         ) : (
