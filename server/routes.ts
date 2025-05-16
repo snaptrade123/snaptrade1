@@ -1823,10 +1823,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         authenticated: true,
         message: `Authenticated as ${req.user.username}`,
         sessionID: req.sessionID,
-        user: {
-          id: req.user.id,
-          username: req.user.username
-        }
+        user: req.user
       });
     } else {
       return res.json({

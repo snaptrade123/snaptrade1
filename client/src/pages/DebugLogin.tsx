@@ -16,13 +16,14 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
 export default function DebugLogin() {
-  const { user, loginMutation } = useAuth();
+  const { user, loginMutation, isLoading } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
   
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showStatus, setShowStatus] = useState(false);
+  const [authCheckResult, setAuthCheckResult] = useState<any>(null);
   
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +44,8 @@ export default function DebugLogin() {
         return { authenticated: false, message: "Not authenticated" };
       })
       .then(data => {
+        setAuthCheckResult(data);
+        
         toast({
           title: data.authenticated ? "Authenticated" : "Not Authenticated",
           description: data.message || (data.authenticated ? "You are logged in" : "You are not logged in"),
