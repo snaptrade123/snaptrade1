@@ -760,13 +760,14 @@ export class DatabaseStorage implements IStorage {
 
   async getProviderTradingSignals(providerId: number): Promise<TradingSignal[]> {
     try {
-      // Make sure we're using the correct column name (providerId, not provider_id)
-      const query = db.select()
-        .from(tradingSignals)
-        .where(eq(tradingSignals.providerId, providerId))
-        .orderBy(desc(tradingSignals.createdAt));
-        
-      return await query;
+      // Use raw SQL to avoid column name issues
+      const result = await db.execute(`
+        SELECT * FROM trading_signals 
+        WHERE "providerId" = $1
+        ORDER BY "createdAt" DESC
+      `, [providerId]);
+      
+      return result.rows as TradingSignal[];
     } catch (error) {
       console.error("Error getting provider trading signals:", error);
       return []; // Return empty array to avoid breaking the app
