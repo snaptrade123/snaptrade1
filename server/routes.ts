@@ -67,6 +67,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication
   setupAuth(app);
   
+  // Set up authentication check endpoint
+  setupAuthCheckEndpoint(app);
+  
   // Referral URL shortener/redirector
   app.get("/r/:referralIdentifier", async (req, res) => {
     try {
