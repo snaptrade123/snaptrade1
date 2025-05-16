@@ -24,6 +24,13 @@ export interface ProviderEarning {
   updatedAt: string;
   source: string;
   sourceId: number;
+  
+  // Additional properties used in the interface
+  earnedAt?: string;
+  netAmount?: number;
+  grossAmount?: number;
+  feeAmount?: number;
+  feePercentage?: number;
 }
 
 export interface ProviderPayout {
@@ -166,7 +173,17 @@ export default function ProviderEarnings() {
     setIsRequestingPayout(true);
     
     try {
-      const result = await requestPayout(amountInPence);
+      // Use apiRequest directly with proper error handling
+      const response = await apiRequest("POST", "/api/provider/request-payout", { amount: amountInPence });
+      
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("Authentication required. Please log in to continue.");
+        }
+        throw new Error(`Error ${response.status}: ${await response.text()}`);
+      }
+      
+      const result = await response.json();
       
       // Update the UI with the new payout
       setPayouts([result.payout, ...payouts]);
