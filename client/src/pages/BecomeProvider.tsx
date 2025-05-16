@@ -88,11 +88,7 @@ export default function BecomeProvider() {
   });
   
   const onSubmit = (data: ProviderFormValues) => {
-    providerMutation.mutate({
-      ...data,
-      // Ensure provider status is enabled
-      isProvider: true,
-    });
+    providerMutation.mutate(data);
   };
   
   const nextStep = () => {

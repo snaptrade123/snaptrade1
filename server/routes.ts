@@ -1815,19 +1815,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/provider/profile", requireAuth, async (req, res) => {
     try {
       const userId = req.user.id;
-      const { displayName, bio, signalFee, termsAccepted } = req.body;
-      
-      if (!termsAccepted) {
-        return res.status(400).json({ message: "You must accept the terms and conditions" });
-      }
+      const { displayName, bio, signalFee, isProvider = true } = req.body;
       
       if (!bio || bio.length < 20) {
         return res.status(400).json({ message: "Bio must be at least 20 characters" });
       }
       
-      const fee = parseInt(signalFee);
-      if (isNaN(fee) || fee < 1 || fee > 50) {
-        return res.status(400).json({ message: "Fee must be between £1 and £50" });
+      const fee = Number(signalFee);
+      if (isNaN(fee) || fee < 5 || fee > 50) {
+        return res.status(400).json({ message: "Fee must be between £5 and £50" });
       }
       
       // Update user to become a provider
@@ -1835,7 +1831,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isProvider: true,
         providerDisplayName: displayName || undefined,
         bio,
-        signalFee: fee * 100 // Convert to pence
+        signalFee: fee
       });
       
       // Return updated user data without sensitive information
