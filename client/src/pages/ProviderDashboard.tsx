@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { Redirect } from 'wouter';
+import { Redirect, useLocation } from 'wouter';
 import ProviderEarnings from '@/components/ProviderEarnings';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getProviderSubscribers, SubscriberData, updateUserProfile } from '@/lib/api';
@@ -90,14 +90,13 @@ export default function ProviderDashboard() {
                 Update your profile information that will be visible to potential subscribers
               </CardDescription>
               {user?.id && (
-                <a href={`/provider/${user.id}`} target="_blank" rel="noopener noreferrer">
-                  <Button 
-                    variant="outline" 
-                    className="mt-2 w-full"
-                  >
-                    View My Public Profile
-                  </Button>
-                </a>
+                <Button 
+                  variant="outline" 
+                  className="mt-2 w-full"
+                  onClick={() => navigate(`/provider/${user.id}`)}
+                >
+                  View My Public Profile
+                </Button>
               )}
             </CardHeader>
             <CardContent>

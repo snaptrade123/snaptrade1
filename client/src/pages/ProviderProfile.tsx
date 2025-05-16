@@ -231,7 +231,7 @@ const ProviderProfile = () => {
                 <div className="flex flex-col items-center">
                   <Avatar className="h-16 w-16 mb-2">
                     <AvatarFallback className="bg-primary text-primary-foreground">
-                      {provider?.username.charAt(0).toUpperCase()}
+                      {provider?.username ? provider.username.charAt(0).toUpperCase() : 'P'}
                     </AvatarFallback>
                   </Avatar>
                   <CardTitle className="text-center">{provider?.username}</CardTitle>
