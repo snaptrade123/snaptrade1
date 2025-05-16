@@ -83,7 +83,13 @@ const ProviderProfile = () => {
     }
   });
 
-  // Fetch current user's rating for this provider
+  // Fetch the current user's data to see if they're logged in
+  const { data: currentUser } = useQuery({
+    queryKey: ['/api/user'],
+    queryFn: () => apiRequest("GET", "/api/user").then(res => res.ok ? res.json() : null),
+  });
+  
+  // Fetch current user's rating for this provider (only if authenticated)
   const {
     data: userRating,
     isLoading: isLoadingUserRating,
@@ -91,7 +97,7 @@ const ProviderProfile = () => {
   } = useQuery({
     queryKey: ['/api/provider/user-rating', providerId],
     queryFn: () => getUserRatingForProvider(providerId),
-    enabled: !isNaN(providerId),
+    enabled: !isNaN(providerId) && !!currentUser,
     onError: (error: Error) => {
       console.error("Error fetching user rating:", error);
       // Don't show a toast for this one, as it's not critical
@@ -158,6 +164,15 @@ const ProviderProfile = () => {
 
   // Handle rating submission
   const handleRate = (isPositive: boolean) => {
+    if (!currentUser) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to rate providers",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     if (userRating?.rating === isPositive) {
       // If clicking the same rating again, remove it
       removeRatingMutation.mutate();

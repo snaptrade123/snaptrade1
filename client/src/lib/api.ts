@@ -125,7 +125,8 @@ export async function setDefaultAssetList(userId: number, assetListId: number) {
 
 // Provider rating API functions
 export async function rateProvider(providerId: number, isPositive: boolean) {
-  const response = await apiRequest("POST", `/api/providers/${providerId}/rate`, {
+  const response = await apiRequest("POST", `/api/provider/rate`, {
+    providerId,
     isPositive
   });
   if (!response.ok) {
@@ -135,7 +136,7 @@ export async function rateProvider(providerId: number, isPositive: boolean) {
 }
 
 export async function deleteRating(providerId: number) {
-  const response = await apiRequest("DELETE", `/api/providers/${providerId}/rate`);
+  const response = await apiRequest("DELETE", `/api/provider/rate/${providerId}`);
   if (!response.ok) {
     throw new Error(`Error ${response.status}: ${await response.text()}`);
   }
@@ -143,7 +144,7 @@ export async function deleteRating(providerId: number) {
 }
 
 export async function removeProviderRating(providerId: number) {
-  const response = await apiRequest("DELETE", `/api/providers/${providerId}/rate`);
+  const response = await apiRequest("DELETE", `/api/provider/rate/${providerId}`);
   if (!response.ok) {
     throw new Error(`Error ${response.status}: ${await response.text()}`);
   }
@@ -151,7 +152,7 @@ export async function removeProviderRating(providerId: number) {
 }
 
 export async function getProviderRatings(providerId: number) {
-  const response = await apiRequest("GET", `/api/providers/${providerId}/ratings`);
+  const response = await apiRequest("GET", `/api/provider/${providerId}/ratings`);
   if (!response.ok) {
     throw new Error(`Error ${response.status}: ${await response.text()}`);
   }
@@ -159,7 +160,7 @@ export async function getProviderRatings(providerId: number) {
 }
 
 export async function getUserRatingForProvider(providerId: number) {
-  const response = await apiRequest("GET", `/api/providers/${providerId}/user-rating`);
+  const response = await apiRequest("GET", `/api/provider/${providerId}/user-rating`);
   if (!response.ok) {
     // 404 means no rating yet, which is a valid state
     if (response.status === 404) {
