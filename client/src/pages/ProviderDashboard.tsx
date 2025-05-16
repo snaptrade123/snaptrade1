@@ -90,13 +90,14 @@ export default function ProviderDashboard() {
                 Update your profile information that will be visible to potential subscribers
               </CardDescription>
               {user?.id && (
-                <Button 
-                  variant="outline" 
-                  className="mt-2" 
-                  onClick={() => window.location.href = `/provider/${user.id}`}
-                >
-                  View My Public Profile
-                </Button>
+                <a href={`/provider/${user.id}`} target="_blank" rel="noopener noreferrer">
+                  <Button 
+                    variant="outline" 
+                    className="mt-2 w-full"
+                  >
+                    View My Public Profile
+                  </Button>
+                </a>
               )}
             </CardHeader>
             <CardContent>
