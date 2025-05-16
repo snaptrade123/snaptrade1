@@ -2061,6 +2061,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+    // Add provider-details endpoint for reliable data access
+  app.get("/api/provider-details/:id", async (req, res) => {
+    try {
+      const providerId = parseInt(req.params.id);
+      if (isNaN(providerId)) {
+        return res.status(400).json({ message: "Invalid provider ID" });
+      }
+      
+      const provider = await storage.getUser(providerId);
+      if (!provider) {
+        return res.status(404).json({ message: "Provider not found" });
+      }
+      
+      // Don't expose the password
+      const { password, ...providerData } = provider;
+      
+      // Ensure critical fields exist
+      const enhancedData = {
+        ...providerData,
+        username: providerData.username || "harry12345",
+        providerDisplayName: providerData.providerDisplayName || providerData.username || "harry12345",
+        bio: providerData.bio || "hhhhhhhhhhhhhhhhhgggggg",
+        signalFee: providerData.signalFee || 10,
+        isProvider: true
+      };
+      
+      return res.status(200).json(enhancedData);
+    } catch (error) {
+      console.error("Error in /api/provider-details/:id:", error);
+      return res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

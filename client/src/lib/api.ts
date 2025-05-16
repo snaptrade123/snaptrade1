@@ -111,7 +111,12 @@ export interface ProviderPayout {
 
 // Trading signal API functions
 export async function createTradingSignal(signalData: any) {
-  return apiRequest("POST", "/api/trading-signals", signalData);
+  const response = await apiRequest("POST", "/api/trading-signals", signalData);
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to create signal: ${errorText}`);
+  }
+  return response.json();
 }
 
 export async function getProviderSignals(providerId: number) {
