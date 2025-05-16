@@ -1670,10 +1670,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
       );
       
-      // Also return provider's revenue metrics
+      // Get provider's earnings summary
+      const earningsSummary = await storage.getProviderEarningsSummary(providerId);
+      
+      // Also return provider's payout metrics
       const signalPayouts = await storage.getProviderPayouts(providerId);
-      const totalRevenue = signalPayouts.reduce((sum, payout) => sum + payout.amount, 0);
-      const pendingRevenue = signalPayouts
+      const pendingPayouts = signalPayouts
         .filter(payout => payout.status === 'pending')
         .reduce((sum, payout) => sum + payout.amount, 0);
       
@@ -1681,13 +1683,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subscribers: enhancedSubscribers,
         metrics: {
           subscriberCount: subscribers.length,
-          totalRevenue,
-          pendingRevenue
+          availableBalance: earningsSummary.availableBalance,
+          pendingBalance: earningsSummary.pendingBalance,
+          totalEarned: earningsSummary.totalEarned,
+          totalFees: earningsSummary.totalFees,
+          pendingPayouts: pendingPayouts
         }
       });
     } catch (error) {
       console.error("Error fetching signal subscribers:", error);
       res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+  
+  // Provider Earnings API Endpoints
+  
+  // Get provider's earnings
+  app.get("/api/provider/earnings", requireAuth, async (req, res) => {
+    try {
+      const providerId = req.user!.id;
+      
+      // Get earnings summary
+      const summary = await storage.getProviderEarningsSummary(providerId);
+      
+      // Get recent earnings transactions
+      const earnings = await storage.getProviderEarnings(providerId);
+      
+      return res.status(200).json({
+        summary,
+        transactions: earnings.slice(0, 20) // Return only the most recent transactions
+      });
+    } catch (error) {
+      console.error("Error in /api/provider/earnings:", error);
+      return res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+  
+  // Request a payout
+  app.post("/api/provider/request-payout", requireAuth, async (req, res) => {
+    try {
+      const providerId = req.user!.id;
+      const { amount } = req.body;
+      
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ message: "A valid payout amount is required" });
+      }
+      
+      // Get available balance
+      const summary = await storage.getProviderEarningsSummary(providerId);
+      
+      if (summary.availableBalance < amount) {
+        return res.status(400).json({ 
+          message: `Insufficient available balance. Available: £${(summary.availableBalance / 100).toFixed(2)}` 
+        });
+      }
+      
+      // Request the payout
+      const payout = await storage.requestPayout(providerId, amount);
+      
+      return res.status(201).json({
+        payout,
+        message: "Payout request submitted successfully"
+      });
+    } catch (error) {
+      console.error("Error in /api/provider/request-payout:", error);
+      return res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+  
+  // Get provider's payout history
+  app.get("/api/provider/payouts", requireAuth, async (req, res) => {
+    try {
+      const providerId = req.user!.id;
+      const payouts = await storage.getProviderPayouts(providerId);
+      
+      return res.status(200).json(payouts);
+    } catch (error) {
+      console.error("Error in /api/provider/payouts:", error);
+      return res.status(500).json({ 
         message: error instanceof Error ? error.message : "An unknown error occurred" 
       });
     }

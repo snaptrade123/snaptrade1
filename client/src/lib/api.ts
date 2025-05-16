@@ -221,9 +221,52 @@ export interface SubscriberData {
   subscribers: SignalSubscription[];
   metrics: {
     subscriberCount: number;
-    totalRevenue: number;
-    pendingRevenue: number;
+    availableBalance: number;
+    pendingBalance: number;
+    totalEarned: number;
+    totalFees: number;
+    pendingPayouts: number;
   };
+}
+
+export interface ProviderEarning {
+  id: number;
+  providerId: number;
+  subscriptionId: number;
+  grossAmount: number;
+  feePercentage: number;
+  feeAmount: number;
+  netAmount: number;
+  currency: string;
+  status: 'available' | 'pending_payout' | 'paid_out';
+  earnedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProviderEarningsSummary {
+  availableBalance: number;
+  pendingBalance: number;
+  totalEarned: number;
+  totalFees: number;
+}
+
+export interface ProviderEarningsData {
+  summary: ProviderEarningsSummary;
+  transactions: ProviderEarning[];
+}
+
+export interface ProviderPayout {
+  id: number;
+  providerId: number;
+  amount: number;
+  currency: string;
+  stripeTransferId?: string;
+  status: 'pending' | 'paid' | 'failed';
+  periodStart: string;
+  periodEnd: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Function to get all free trading signals
@@ -487,10 +530,85 @@ export const getProviderSubscribers = async (): Promise<SubscriberData> => {
       subscribers: [],
       metrics: {
         subscriberCount: 0,
-        totalRevenue: 0,
-        pendingRevenue: 0
+        availableBalance: 0,
+        pendingBalance: 0,
+        totalEarned: 0,
+        totalFees: 0,
+        pendingPayouts: 0
       }
     };
+  }
+};
+
+// Function to get provider's earnings
+export const getProviderEarnings = async (): Promise<ProviderEarningsData> => {
+  try {
+    const response = await fetch('/api/provider/earnings');
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required');
+      }
+      throw new Error('Failed to fetch earnings data');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching provider earnings:', error);
+    return { 
+      summary: {
+        availableBalance: 0,
+        pendingBalance: 0,
+        totalEarned: 0,
+        totalFees: 0
+      },
+      transactions: []
+    };
+  }
+};
+
+// Function to request a payout
+export const requestPayout = async (amount: number): Promise<{ payout: ProviderPayout, message: string }> => {
+  try {
+    const response = await fetch('/api/provider/request-payout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ amount }),
+    });
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required');
+      }
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to request payout');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error requesting payout:', error);
+    throw error;
+  }
+};
+
+// Function to get provider's payout history
+export const getProviderPayouts = async (): Promise<ProviderPayout[]> => {
+  try {
+    const response = await fetch('/api/provider/payouts');
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required');
+      }
+      throw new Error('Failed to fetch payout history');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching provider payouts:', error);
+    return [];
   }
 };
 
