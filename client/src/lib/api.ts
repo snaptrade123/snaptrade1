@@ -28,6 +28,29 @@ export async function getProviderPayouts() {
   return apiRequest("GET", "/api/provider/payouts");
 }
 
+export async function getProviderSubscribers() {
+  return apiRequest("GET", "/api/provider/subscribers");
+}
+
+export async function updateUserProfile(userId: number, updates: { bio?: string; email?: string }) {
+  return apiRequest("PATCH", `/api/users/${userId}/profile`, updates);
+}
+
+export async function getUser(userId: number) {
+  return apiRequest("GET", `/api/users/${userId}`);
+}
+
+// Subscriber data interface for provider dashboard
+export interface SubscriberData {
+  id: number;
+  userId: number;
+  username: string;
+  signalId: number;
+  status: string;
+  createdAt: string;
+  amount: number;
+}
+
 // Define provider earnings types
 export interface ProviderEarning {
   id: number;
@@ -89,6 +112,22 @@ export async function rateProvider(providerId: number, isPositive: boolean) {
 
 export async function deleteRating(providerId: number) {
   return apiRequest("DELETE", `/api/providers/${providerId}/rate`);
+}
+
+export async function removeProviderRating(providerId: number) {
+  return apiRequest("DELETE", `/api/providers/${providerId}/rate`);
+}
+
+export async function getProviderRatings(providerId: number) {
+  return apiRequest("GET", `/api/providers/${providerId}/ratings`);
+}
+
+export async function getUserRatingForProvider(providerId: number) {
+  return apiRequest("GET", `/api/providers/${providerId}/user-rating`);
+}
+
+export async function subscribeToProvider(providerId: number) {
+  return apiRequest("POST", `/api/providers/${providerId}/subscribe`);
 }
 
 // Provider earnings API functions
