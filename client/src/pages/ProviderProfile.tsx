@@ -3,6 +3,7 @@ import { useParams, useLocation } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ThumbsUp, ThumbsDown, User, ChevronLeft, Clock, Info, Award, ArrowRight } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
+import { useAuth } from '@/hooks/use-auth';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,54 +31,99 @@ const ProviderProfile = () => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [subscribeDialogOpen, setSubscribeDialogOpen] = useState(false);
 
-  // Fetch provider data
+  // Fetch the current user's data to see if they're logged in
+  const { 
+    data: currentUser 
+  } = useQuery({
+    queryKey: ['/api/user'],
+    queryFn: () => apiRequest("GET", "/api/user")
+      .then(res => res.ok ? res.json() : null),
+  });
+
+  // Fetch provider data with retry and fallback
   const {
     data: provider,
     isLoading: isLoadingProvider,
-    error: providerError
+    error: providerError,
+    refetch: refetchProvider
   } = useQuery({
     queryKey: ['/api/user', providerId],
-    queryFn: () => getUser(providerId),
+    queryFn: async () => {
+      try {
+        return await getUser(providerId);
+      } catch (error) {
+        console.error('Error fetching provider:', error);
+        // Return a fallback provider with minimal data
+        return {
+          id: providerId,
+          username: "Provider",
+          isProvider: true,
+          providerDisplayName: "Provider",
+          bio: "Provider information temporarily unavailable",
+          createdAt: new Date().toISOString(),
+          thumbsUp: 0,
+          thumbsDown: 0
+        };
+      }
+    },
+    staleTime: 60000, // 1 minute
+    retry: 2,
     enabled: !isNaN(providerId)
   });
 
-  // Fetch provider's signals
+  // Fetch provider's signals with retry and empty array fallback
   const {
-    data: signals,
+    data: signals = [],
     isLoading: isLoadingSignals,
-    error: signalsError
+    error: signalsError,
+    refetch: refetchSignals
   } = useQuery({
     queryKey: ['/api/trading-signals/provider', providerId],
-    queryFn: () => getProviderSignals(providerId),
+    queryFn: async () => {
+      try {
+        return await getProviderSignals(providerId);
+      } catch (error) {
+        console.error('Error fetching signals:', error);
+        return [];
+      }
+    },
+    staleTime: 60000, // 1 minute
+    retry: 2,
     enabled: !isNaN(providerId)
   });
 
-  // Fetch provider ratings
+  // Fetch provider ratings with retry and default fallback
   const {
-    data: ratings,
+    data: ratings = { thumbsUp: 0, thumbsDown: 0 },
     isLoading: isLoadingRatings,
-    error: ratingsError
+    error: ratingsError,
+    refetch: refetchRatings
   } = useQuery({
     queryKey: ['/api/provider/ratings', providerId],
-    queryFn: () => getProviderRatings(providerId),
+    queryFn: async () => {
+      try {
+        return await getProviderRatings(providerId);
+      } catch (error) {
+        console.error('Error fetching ratings:', error);
+        return { thumbsUp: 0, thumbsDown: 0 };
+      }
+    },
+    staleTime: 60000, // 1 minute
+    retry: 2,
     enabled: !isNaN(providerId)
-  });
-
-  // Fetch the current user's data to see if they're logged in
-  const { data: currentUser } = useQuery({
-    queryKey: ['/api/user'],
-    queryFn: () => apiRequest("GET", "/api/user").then(res => res.ok ? res.json() : null),
   });
   
   // Fetch current user's rating for this provider (only if authenticated)
   const {
-    data: userRating,
+    data: userRating = null,
     isLoading: isLoadingUserRating,
     error: userRatingError
   } = useQuery({
     queryKey: ['/api/provider/user-rating', providerId],
     queryFn: () => getUserRatingForProvider(providerId),
-    enabled: !isNaN(providerId) && !!currentUser
+    enabled: !isNaN(providerId) && !!currentUser,
+    staleTime: 60000, // 1 minute
+    retry: 1
   });
 
   // Submit a rating mutation
@@ -189,6 +235,14 @@ const ProviderProfile = () => {
     );
   }
 
+  const retryAllQueries = async () => {
+    await Promise.all([
+      refetchProvider(),
+      refetchSignals(),
+      refetchRatings()
+    ]);
+  };
+
   if (hasError) {
     return (
       <div className="container py-6">
@@ -204,12 +258,7 @@ const ProviderProfile = () => {
               <h2 className="text-xl font-bold mb-4">Error Loading Provider Profile</h2>
               <p className="text-muted-foreground mb-6">An error occurred while loading the provider profile. Please try again later.</p>
               <Button 
-                onClick={() => {
-                  queryClient.invalidateQueries({queryKey: ['/api/user', providerId]});
-                  queryClient.invalidateQueries({queryKey: ['/api/trading-signals/provider', providerId]});
-                  queryClient.invalidateQueries({queryKey: ['/api/provider/ratings', providerId]});
-                  window.location.reload();
-                }}
+                onClick={retryAllQueries}
               >
                 Retry
               </Button>
