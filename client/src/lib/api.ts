@@ -84,6 +84,20 @@ export async function getProviderSignals(providerId: number) {
   return apiRequest("GET", `/api/trading-signals/provider/${providerId}`);
 }
 
+export async function getFreeTradingSignals(limit?: number) {
+  const url = limit ? `/api/trading-signals/free?limit=${limit}` : '/api/trading-signals/free';
+  return apiRequest("GET", url);
+}
+
+export async function getPremiumTradingSignals(limit?: number) {
+  const url = limit ? `/api/trading-signals/premium?limit=${limit}` : '/api/trading-signals/premium';
+  return apiRequest("GET", url);
+}
+
+export async function getTradingSignal(id: number) {
+  return apiRequest("GET", `/api/trading-signals/${id}`);
+}
+
 // Asset list API functions
 export async function createAssetList(assetList: any) {
   return apiRequest("POST", "/api/asset-lists", assetList);
