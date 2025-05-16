@@ -540,7 +540,7 @@ const ProviderProfile = () => {
                           <div className="font-semibold">Monthly subscription</div>
                           <div className="text-sm text-muted-foreground">Billed monthly, cancel anytime</div>
                         </div>
-                        <div className="text-xl font-bold">£5<span className="text-sm font-normal text-muted-foreground">/month</span></div>
+                        <div className="text-xl font-bold">£{provider?.signalFee || 10}<span className="text-sm font-normal text-muted-foreground">/month</span></div>
                       </div>
                     </div>
                     <Button className="w-full" size="lg" onClick={() => setSubscribeDialogOpen(true)}>
