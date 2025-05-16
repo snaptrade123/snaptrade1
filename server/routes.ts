@@ -1789,6 +1789,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Update user profile
+  app.patch("/api/user/profile", requireAuth, async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const { bio, email } = req.body;
+      
+      const updatedUser = await storage.updateUserProfile(userId, { 
+        bio: bio !== undefined ? bio : undefined,
+        email: email !== undefined ? email : undefined 
+      });
+      
+      // Return updated user data without sensitive information
+      const { password, ...user } = updatedUser;
+      return res.json(user);
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      return res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
   // Get a specific user by ID
   app.get("/api/user/:userId", async (req, res) => {
     try {

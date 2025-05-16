@@ -72,13 +72,57 @@ export default function ProviderDashboard() {
       <h1 className="text-3xl font-bold mb-6">Provider Dashboard</h1>
       
       <Tabs defaultValue="earnings" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="earnings">Earnings & Payouts</TabsTrigger>
           <TabsTrigger value="subscribers">Subscribers</TabsTrigger>
+          <TabsTrigger value="profile">Profile</TabsTrigger>
         </TabsList>
         
         <TabsContent value="earnings">
           <ProviderEarnings />
+        </TabsContent>
+        
+        <TabsContent value="profile">
+          <Card>
+            <CardHeader>
+              <CardTitle>Provider Profile</CardTitle>
+              <CardDescription>
+                Update your profile information that will be visible to potential subscribers
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium">Your Bio</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Tell subscribers about your trading experience and expertise. This will appear on your public profile.
+                  </p>
+                  <Textarea
+                    placeholder="I am a professional trader with 5+ years of experience specializing in forex and cryptocurrency markets..."
+                    className="min-h-[150px]"
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                  />
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <Button variant="outline" onClick={() => setBio(user?.bio || '')}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={() => updateBioMutation.mutate(bio)}
+                disabled={updateBioMutation.isPending}
+              >
+                {updateBioMutation.isPending ? (
+                  <>
+                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-foreground" />
+                    Saving...
+                  </>
+                ) : "Save Changes"}
+              </Button>
+            </CardFooter>
+          </Card>
         </TabsContent>
         
         <TabsContent value="subscribers">
