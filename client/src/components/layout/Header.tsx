@@ -12,7 +12,9 @@ import {
   CreditCard,
   BookOpen,
   BarChart,
-  TrendingUp
+  TrendingUp,
+  BarChart3,
+  DollarSign
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/hooks/use-auth";
@@ -46,6 +48,10 @@ const Header = () => {
 
   const handleProfileClick = () => {
     setLocation("/profile");
+  };
+  
+  const handleProviderDashboardClick = () => {
+    setLocation("/provider-dashboard");
   };
 
   if (!mounted) {
@@ -139,6 +145,10 @@ const Header = () => {
                 <DropdownMenuItem onClick={handleProfileClick}>
                   <User className="h-4 w-4 mr-2" />
                   Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleProviderDashboardClick}>
+                  <DollarSign className="h-4 w-4 mr-2" />
+                  Provider Earnings
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>

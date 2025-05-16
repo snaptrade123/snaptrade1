@@ -20,6 +20,7 @@ import UserProfile from "./pages/UserProfile";
 import TradingTutorials from "./pages/TradingTutorials";
 import KnowledgeBase from "./pages/KnowledgeBase";
 import Features from "./pages/Features";
+import ProviderDashboard from "./pages/ProviderDashboard";
 
 // Feature pages
 import ChartPatternDetection from "./pages/features/ChartPatternDetection";
@@ -56,6 +57,8 @@ function Router() {
       <ProtectedRoute path="/trading-signals" component={TradingSignals} />
       
       <ProtectedRoute path="/profile" component={UserProfile} />
+      
+      <ProtectedRoute path="/provider-dashboard" component={ProviderDashboard} />
       {/* Fallback to 404 */}
       <Route component={NotFound} />
     </Switch>
