@@ -146,35 +146,7 @@ export async function subscribeToProvider(providerId: number) {
   return apiRequest("POST", `/api/providers/${providerId}/subscribe`);
 }
 
-// Provider earnings API functions
-export async function getProviderEarnings() {
-  try {
-    const response = await apiRequest("GET", "/api/provider/earnings");
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${await response.text()}`);
-    }
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching provider earnings:", error);
-    return { 
-      summary: { availableBalance: 0, pendingBalance: 0, totalEarned: 0, totalFees: 0 },
-      transactions: []
-    };
-  }
-}
-
-export async function getProviderPayouts() {
-  try {
-    const response = await apiRequest("GET", "/api/provider/payouts");
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${await response.text()}`);
-    }
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching provider payouts:", error);
-    return [];
-  }
-}
+// Provider earnings API functions are handled elsewhere
 
 export async function requestPayout(amount: number) {
   try {

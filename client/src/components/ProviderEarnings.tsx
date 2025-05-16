@@ -10,7 +10,84 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
-import { getProviderEarnings, getProviderPayouts, requestPayout, ProviderEarning, ProviderPayout } from '@/lib/api';
+// Import requestPayout separately to avoid the dependency issues
+import { apiRequest } from '@/lib/queryClient';
+
+// Define the types here since we're having issues with the API import
+export interface ProviderEarning {
+  id: number;
+  providerId: number;
+  amount: number;
+  currency: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  source: string;
+  sourceId: number;
+}
+
+export interface ProviderPayout {
+  id: number;
+  providerId: number;
+  amount: number;
+  currency: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  notes?: string;
+}
+
+// Define these API functions locally since we're having issues with imports
+async function getProviderEarnings() {
+  try {
+    const response = await fetch('/api/provider/earnings', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required');
+      }
+      throw new Error(`Error ${response.status}: ${await response.text()}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching provider earnings:", error);
+    return { 
+      summary: { availableBalance: 0, pendingBalance: 0, totalEarned: 0, totalFees: 0 },
+      transactions: []
+    };
+  }
+}
+
+async function getProviderPayouts() {
+  try {
+    const response = await fetch('/api/provider/payouts', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Authentication required');
+      }
+      throw new Error(`Error ${response.status}: ${await response.text()}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching provider payouts:", error);
+    return [];
+  }
+}
 
 export default function ProviderEarnings() {
   const [activeTab, setActiveTab] = useState('overview');
