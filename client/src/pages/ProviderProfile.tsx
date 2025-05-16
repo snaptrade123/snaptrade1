@@ -291,10 +291,15 @@ const ProviderProfile = () => {
                       {provider?.username ? provider.username.charAt(0).toUpperCase() : 'P'}
                     </AvatarFallback>
                   </Avatar>
-                  <CardTitle className="text-center">{provider?.username}</CardTitle>
+                  <CardTitle className="text-center">{provider?.providerDisplayName || provider?.username}</CardTitle>
                   <CardDescription className="text-center">
                     Member since {provider?.createdAt ? formatDistanceToNow(new Date(provider.createdAt), { addSuffix: true }) : 'unknown'}
                   </CardDescription>
+                  {provider?.bio && (
+                    <p className="text-center text-sm mt-3 text-muted-foreground px-4">
+                      {provider.bio}
+                    </p>
+                  )}
                 </div>
               </CardHeader>
               <CardContent className="pt-6">
@@ -346,7 +351,7 @@ const ProviderProfile = () => {
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>Subscribe to {provider?.username}'s Signals</DialogTitle>
+                        <DialogTitle>Subscribe to {provider?.providerDisplayName || provider?.username}'s Signals</DialogTitle>
                         <DialogDescription>
                           Get access to all premium signals from this provider.
                         </DialogDescription>
@@ -356,7 +361,7 @@ const ProviderProfile = () => {
                         <div className="flex items-start space-x-2">
                           <Info className="h-5 w-5 text-muted-foreground mt-0.5" />
                           <div className="text-sm text-muted-foreground">
-                            Subscription costs £5 per month. You can cancel at any time.
+                            Subscription costs £{provider?.signalFee || 10} per month. You can cancel at any time.
                           </div>
                         </div>
                         
