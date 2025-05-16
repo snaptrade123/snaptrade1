@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { queryClient } from "@/lib/queryClient";
 
 export default function DebugLogin() {
   const { user, loginMutation, isLoading } = useAuth();
@@ -27,7 +28,54 @@ export default function DebugLogin() {
   
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    loginMutation.mutate({ username, password });
+    
+    console.log('Attempting login with:', { username, password });
+    
+    fetch('/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ username, password }),
+    })
+      .then(async (res) => {
+        console.log('Login response status:', res.status);
+        
+        if (res.ok) {
+          const userData = await res.json();
+          console.log('Login successful, user data:', userData);
+          
+          // Refresh the auth context
+          queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+          
+          toast({
+            title: 'Login successful',
+            description: `Logged in as ${userData.username}`,
+          });
+          
+          // Immediately check auth status
+          checkAuthStatus();
+        } else {
+          const errorData = await res.json();
+          console.error('Login failed:', errorData);
+          
+          toast({
+            title: 'Login failed',
+            description: errorData.error || 'Invalid credentials',
+            variant: 'destructive',
+          });
+        }
+      })
+      .catch((err) => {
+        console.error('Login error:', err);
+        
+        toast({
+          title: 'Login error',
+          description: err.message,
+          variant: 'destructive',
+        });
+      });
   };
   
   const checkAuthStatus = () => {
@@ -123,8 +171,21 @@ export default function DebugLogin() {
                   <span className="font-medium">User in React context:</span> {user ? "Available" : "Not available"}
                 </div>
                 <div>
-                  <span className="font-medium">Session status:</span> Loading...
+                  <span className="font-medium">Context loading state:</span> {isLoading ? "Loading..." : "Finished loading"}
                 </div>
+                <div>
+                  <span className="font-medium">Server session status:</span> {authCheckResult 
+                    ? (authCheckResult.authenticated ? "Authenticated" : "Not authenticated") 
+                    : "Not checked"}
+                </div>
+                {authCheckResult && (
+                  <div className="mt-2">
+                    <span className="font-medium">Session details:</span>
+                    <pre className="bg-background p-3 mt-1 rounded-md text-xs overflow-auto">
+                      {JSON.stringify(authCheckResult, null, 2)}
+                    </pre>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -147,6 +208,69 @@ export default function DebugLogin() {
               Try Become Provider
             </Button>
           )}
+          
+          <Button
+            onClick={() => {
+              const testUsername = `test${Math.floor(Math.random() * 10000)}`;
+              const testPassword = "password123";
+              
+              fetch('/api/register', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                  username: testUsername,
+                  password: testPassword,
+                  email: `${testUsername}@example.com`
+                }),
+              })
+                .then(async (res) => {
+                  if (res.ok) {
+                    const userData = await res.json();
+                    console.log('Test account created:', userData);
+                    
+                    // Update form fields with the test credentials
+                    setUsername(testUsername);
+                    setPassword(testPassword);
+                    
+                    // Refresh the auth context
+                    queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+                    
+                    toast({
+                      title: 'Test account created',
+                      description: `Username: ${testUsername}, Password: ${testPassword}`,
+                    });
+                    
+                    // Immediately check auth status
+                    checkAuthStatus();
+                  } else {
+                    const errorData = await res.json();
+                    console.error('Failed to create test account:', errorData);
+                    
+                    toast({
+                      title: 'Failed to create test account',
+                      description: errorData.error || 'Unknown error',
+                      variant: 'destructive',
+                    });
+                  }
+                })
+                .catch((err) => {
+                  console.error('Error creating test account:', err);
+                  
+                  toast({
+                    title: 'Error',
+                    description: err.message,
+                    variant: 'destructive',
+                  });
+                });
+            }}
+            variant="outline"
+            className="w-full"
+          >
+            Create Test Account
+          </Button>
         </CardFooter>
       </Card>
     </div>

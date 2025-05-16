@@ -32,15 +32,16 @@ async function comparePasswords(supplied: string, stored: string) {
 export function setupAuth(app: Express) {
   // Use the session store from storage.ts with more secure settings
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || "snaptrade-session-secret-key-" + Math.random().toString(36).substring(2),
-    resave: true,
-    saveUninitialized: true,
+    secret: process.env.SESSION_SECRET || "snaptrade-session-secret-key-12345",
+    resave: false,
+    saveUninitialized: false,
     store: storage.sessionStore,
     cookie: {
       secure: false, // set to true in production with HTTPS
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
       httpOnly: true,
-      path: '/'
+      path: '/',
+      sameSite: 'lax'
     }
   };
 
