@@ -27,6 +27,7 @@ export interface IStorage {
   getUserRating(userId: number, providerId: number): Promise<UserRating | undefined>;
   getProviderRatings(providerId: number): Promise<{ thumbsUp: number, thumbsDown: number }>;
   deleteUserRating(userId: number, providerId: number): Promise<void>;
+  updateUserRatingCounts(providerId: number): Promise<void>;
   
   // Stripe subscription methods
   updateStripeCustomerId(userId: number, stripeCustomerId: string): Promise<User>;

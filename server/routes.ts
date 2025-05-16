@@ -1706,6 +1706,125 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Provider Ratings API Endpoints
+  
+  // Get provider's ratings
+  app.get("/api/provider/:providerId/ratings", async (req, res) => {
+    try {
+      const providerId = parseInt(req.params.providerId);
+      
+      if (isNaN(providerId)) {
+        return res.status(400).json({ message: "Invalid provider ID" });
+      }
+      
+      const ratings = await storage.getProviderRatings(providerId);
+      res.json(ratings);
+    } catch (error) {
+      console.error("Error in /api/provider/ratings:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+  
+  // Get user's rating for a specific provider
+  app.get("/api/provider/:providerId/user-rating", requireAuth, async (req, res) => {
+    try {
+      const providerId = parseInt(req.params.providerId);
+      
+      if (isNaN(providerId)) {
+        return res.status(400).json({ message: "Invalid provider ID" });
+      }
+      
+      const rating = await storage.getUserRating(req.user!.id, providerId);
+      res.json(rating || { rating: null });
+    } catch (error) {
+      console.error("Error in /api/provider/user-rating:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+  
+  // Submit a rating for a provider
+  app.post("/api/provider/rate", requireAuth, async (req, res) => {
+    try {
+      const { providerId, isPositive } = req.body;
+      
+      if (!providerId || typeof isPositive !== 'boolean') {
+        return res.status(400).json({ message: "Invalid request. providerId and isPositive are required." });
+      }
+      
+      // Prevent users from rating themselves
+      if (providerId === req.user!.id) {
+        return res.status(400).json({ message: "You cannot rate yourself." });
+      }
+      
+      const rating = await storage.rateProvider(req.user!.id, providerId, isPositive);
+      res.json(rating);
+    } catch (error) {
+      console.error("Error in /api/provider/rate:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+  
+  // Remove a rating for a provider
+  app.delete("/api/provider/rate/:providerId", requireAuth, async (req, res) => {
+    try {
+      const providerId = parseInt(req.params.providerId);
+      
+      if (isNaN(providerId)) {
+        return res.status(400).json({ message: "Invalid provider ID" });
+      }
+      
+      await storage.deleteUserRating(req.user!.id, providerId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error in DELETE /api/provider/rate:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+  
+  // Get a specific user by ID
+  app.get("/api/user/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Return user info without sensitive fields
+      const safeUser = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        subscriptionTier: user.subscriptionTier,
+        referralCode: user.referralCode,
+        thumbsUp: user.thumbsUp || 0,
+        thumbsDown: user.thumbsDown || 0,
+        createdAt: user.createdAt
+      };
+      
+      res.json(safeUser);
+    } catch (error) {
+      console.error("Error in /api/user/:userId:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+  
   // Provider Earnings API Endpoints
   
   // Get provider's earnings
