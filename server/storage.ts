@@ -1,4 +1,4 @@
-import { analysis, namedAnalysis, users, referrals, assetLists, analysisUsage, tradingSignals, signalSubscriptions, signalPayouts, providerEarnings, type Analysis, type NamedAnalysis, type InsertAnalysis, type InsertNamedAnalysis, type User, type InsertUser, type InsertReferral, type Referral, type AssetList, type InsertAssetList, type AnalysisUsage, type InsertAnalysisUsage, type TradingSignal, type InsertTradingSignal, type SignalSubscription, type InsertSignalSubscription, type SignalPayout, type InsertSignalPayout, type ProviderEarnings, type InsertProviderEarnings } from "@shared/schema";
+import { analysis, namedAnalysis, users, referrals, assetLists, analysisUsage, tradingSignals, signalSubscriptions, signalPayouts, providerEarnings, userRatings, type Analysis, type NamedAnalysis, type InsertAnalysis, type InsertNamedAnalysis, type User, type InsertUser, type InsertReferral, type Referral, type AssetList, type InsertAssetList, type AnalysisUsage, type InsertAnalysisUsage, type TradingSignal, type InsertTradingSignal, type SignalSubscription, type InsertSignalSubscription, type SignalPayout, type InsertSignalPayout, type ProviderEarnings, type InsertProviderEarnings, type UserRating, type InsertUserRating } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, inArray } from "drizzle-orm";
 import session from "express-session";
@@ -21,6 +21,12 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  
+  // User Rating methods
+  rateProvider(userId: number, providerId: number, isPositive: boolean): Promise<UserRating>;
+  getUserRating(userId: number, providerId: number): Promise<UserRating | undefined>;
+  getProviderRatings(providerId: number): Promise<{ thumbsUp: number, thumbsDown: number }>;
+  deleteUserRating(userId: number, providerId: number): Promise<void>;
   
   // Stripe subscription methods
   updateStripeCustomerId(userId: number, stripeCustomerId: string): Promise<User>;
@@ -98,6 +104,92 @@ export class DatabaseStorage implements IStorage {
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000 // prune expired entries every 24h
     });
+  }
+  
+  // User Rating methods
+  async rateProvider(userId: number, providerId: number, isPositive: boolean): Promise<UserRating> {
+    // Check if the user has already rated this provider
+    const existingRating = await this.getUserRating(userId, providerId);
+    
+    if (existingRating) {
+      // If rating is the same, no change needed
+      if (existingRating.rating === isPositive) {
+        return existingRating;
+      }
+      
+      // Delete the old rating first
+      await this.deleteUserRating(userId, providerId);
+      
+      // Update the provider's thumbs up/down counts
+      const updateField = existingRating.rating ? 'thumbsUp' : 'thumbsDown';
+      await db.update(users)
+        .set({ [updateField]: db.raw(`${updateField} - 1`) })
+        .where(eq(users.id, providerId));
+    }
+    
+    // Add the new rating
+    const [rating] = await db.insert(userRatings)
+      .values({
+        userId,
+        providerId,
+        rating: isPositive
+      })
+      .returning();
+    
+    // Update the provider's thumbs up/down counts
+    const updateField = isPositive ? 'thumbsUp' : 'thumbsDown';
+    await db.update(users)
+      .set({ [updateField]: db.raw(`${updateField} + 1`) })
+      .where(eq(users.id, providerId));
+    
+    return rating;
+  }
+  
+  async getUserRating(userId: number, providerId: number): Promise<UserRating | undefined> {
+    const ratings = await db.select()
+      .from(userRatings)
+      .where(and(
+        eq(userRatings.userId, userId),
+        eq(userRatings.providerId, providerId)
+      ));
+    
+    return ratings[0];
+  }
+  
+  async getProviderRatings(providerId: number): Promise<{ thumbsUp: number, thumbsDown: number }> {
+    const [provider] = await db.select({
+      thumbsUp: users.thumbsUp,
+      thumbsDown: users.thumbsDown
+    })
+      .from(users)
+      .where(eq(users.id, providerId));
+    
+    return provider ? { 
+      thumbsUp: provider.thumbsUp || 0, 
+      thumbsDown: provider.thumbsDown || 0 
+    } : { 
+      thumbsUp: 0, 
+      thumbsDown: 0 
+    };
+  }
+  
+  async deleteUserRating(userId: number, providerId: number): Promise<void> {
+    const rating = await this.getUserRating(userId, providerId);
+    
+    if (rating) {
+      // Update the provider's thumbs up/down counts before deleting
+      const updateField = rating.rating ? 'thumbsUp' : 'thumbsDown';
+      await db.update(users)
+        .set({ [updateField]: db.raw(`${updateField} - 1`) })
+        .where(eq(users.id, providerId));
+      
+      // Delete the rating
+      await db.delete(userRatings)
+        .where(and(
+          eq(userRatings.userId, userId),
+          eq(userRatings.providerId, providerId)
+        ));
+    }
   }
 
   async createAnalysis(insertAnalysis: InsertAnalysis): Promise<Analysis> {

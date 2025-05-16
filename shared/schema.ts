@@ -92,6 +92,8 @@ export const users = pgTable("users", {
   referralCode: text("referral_code").unique(),
   referralCustomName: text("referral_custom_name"),
   referralBonusBalance: integer("referral_bonus_balance").default(0),
+  thumbsUp: integer("thumbs_up").default(0).notNull(),
+  thumbsDown: integer("thumbs_down").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -251,3 +253,22 @@ export type InsertProviderEarnings = z.infer<typeof insertProviderEarningsSchema
 export type ProviderEarnings = typeof providerEarnings.$inferSelect;
 export type InsertSignalPayout = z.infer<typeof insertSignalPayoutSchema>;
 export type SignalPayout = typeof signalPayouts.$inferSelect;
+
+// User ratings table for signal providers
+export const userRatings = pgTable("user_ratings", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  providerId: integer("provider_id").notNull().references(() => users.id),
+  rating: boolean("is_positive").notNull(), // true = thumbs up, false = thumbs down
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertUserRatingSchema = createInsertSchema(userRatings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertUserRating = z.infer<typeof insertUserRatingSchema>;
+export type UserRating = typeof userRatings.$inferSelect;
