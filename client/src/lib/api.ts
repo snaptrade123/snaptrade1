@@ -81,21 +81,28 @@ export async function createTradingSignal(signalData: any) {
 }
 
 export async function getProviderSignals(providerId: number) {
-  return apiRequest("GET", `/api/trading-signals/provider/${providerId}`);
+  const response = await apiRequest("GET", `/api/trading-signals/provider/${providerId}`);
+  const data = await response.json();
+  return Array.isArray(data) ? data : [];
 }
 
 export async function getFreeTradingSignals(limit?: number) {
   const url = limit ? `/api/trading-signals/free?limit=${limit}` : '/api/trading-signals/free';
-  return apiRequest("GET", url);
+  const response = await apiRequest("GET", url);
+  const data = await response.json();
+  return Array.isArray(data) ? data : [];
 }
 
 export async function getPremiumTradingSignals(limit?: number) {
   const url = limit ? `/api/trading-signals/premium?limit=${limit}` : '/api/trading-signals/premium';
-  return apiRequest("GET", url);
+  const response = await apiRequest("GET", url);
+  const data = await response.json();
+  return Array.isArray(data) ? data : [];
 }
 
 export async function getTradingSignal(id: number) {
-  return apiRequest("GET", `/api/trading-signals/${id}`);
+  const response = await apiRequest("GET", `/api/trading-signals/${id}`);
+  return response.json();
 }
 
 // Asset list API functions
