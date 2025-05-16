@@ -1811,6 +1811,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Debug API endpoint to check authentication status
+  app.get("/api/check-auth", (req, res) => {
+    console.log("Auth check request received");
+    console.log("Is authenticated:", req.isAuthenticated());
+    console.log("Session ID:", req.sessionID);
+    
+    if (req.isAuthenticated()) {
+      console.log("User in session:", req.user.id, req.user.username);
+      return res.json({
+        authenticated: true,
+        message: `Authenticated as ${req.user.username}`,
+        sessionID: req.sessionID,
+        user: {
+          id: req.user.id,
+          username: req.user.username
+        }
+      });
+    } else {
+      return res.json({
+        authenticated: false,
+        message: "Not authenticated",
+        sessionID: req.sessionID
+      });
+    }
+  });
+  
   // Create provider profile
   app.post("/api/provider/profile", requireAuth, async (req, res) => {
     try {
