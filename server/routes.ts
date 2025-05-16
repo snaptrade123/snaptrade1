@@ -5,6 +5,7 @@ import { analyzeChartImage, analyzeNewsSentiment, generateCombinedPrediction } f
 import axios from "axios";
 import Stripe from "stripe";
 import { setupAuth } from "./auth";
+import { setupAuthCheckEndpoint } from "./check-auth";
 import { db } from "./db";
 import { users, referrals } from "@shared/schema";
 import * as schema from "@shared/schema";
