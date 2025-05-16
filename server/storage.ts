@@ -1,6 +1,6 @@
-import { analysis, namedAnalysis, users, referrals, assetLists, analysisUsage, tradingSignals, signalSubscriptions, signalPayouts, type Analysis, type NamedAnalysis, type InsertAnalysis, type InsertNamedAnalysis, type User, type InsertUser, type InsertReferral, type Referral, type AssetList, type InsertAssetList, type AnalysisUsage, type InsertAnalysisUsage, type TradingSignal, type InsertTradingSignal, type SignalSubscription, type InsertSignalSubscription, type SignalPayout, type InsertSignalPayout } from "@shared/schema";
+import { analysis, namedAnalysis, users, referrals, assetLists, analysisUsage, tradingSignals, signalSubscriptions, signalPayouts, providerEarnings, type Analysis, type NamedAnalysis, type InsertAnalysis, type InsertNamedAnalysis, type User, type InsertUser, type InsertReferral, type Referral, type AssetList, type InsertAssetList, type AnalysisUsage, type InsertAnalysisUsage, type TradingSignal, type InsertTradingSignal, type SignalSubscription, type InsertSignalSubscription, type SignalPayout, type InsertSignalPayout, type ProviderEarnings, type InsertProviderEarnings } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, inArray } from "drizzle-orm";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { pool } from "./db";
