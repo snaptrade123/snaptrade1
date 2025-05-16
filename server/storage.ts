@@ -725,7 +725,12 @@ export class DatabaseStorage implements IStorage {
       query.limit(options.limit);
     }
     
-    return await query;
+    try {
+      return await query;
+    } catch (error) {
+      console.error("Error in getFreeTradingSignals:", error);
+      return []; // Return empty array rather than error to avoid breaking the app
+    }
   }
 
   async getPremiumTradingSignals(options?: { limit?: number }): Promise<TradingSignal[]> {
@@ -738,7 +743,12 @@ export class DatabaseStorage implements IStorage {
       query.limit(options.limit);
     }
     
-    return await query;
+    try {
+      return await query;
+    } catch (error) {
+      console.error("Error in getPremiumTradingSignals:", error);
+      return []; // Return empty array rather than error to avoid breaking the app
+    }
   }
 
   async getUserTradingSignals(userId: number): Promise<TradingSignal[]> {

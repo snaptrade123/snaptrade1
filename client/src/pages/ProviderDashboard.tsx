@@ -147,7 +147,7 @@ export default function ProviderDashboard() {
               <div className="text-center py-6 text-red-500">
                 Error loading subscribers. Please try again.
               </div>
-            ) : subscribersData?.subscribers.length === 0 ? (
+            ) : !subscribersData || !subscribersData.subscribers || subscribersData.subscribers.length === 0 ? (
               <div className="text-center py-10 text-muted-foreground">
                 <p className="mb-4">You don't have any subscribers yet.</p>
                 <p>Create premium signals to attract subscribers and generate revenue.</p>
