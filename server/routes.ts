@@ -1760,20 +1760,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Submit a rating for a provider
-  app.post("/api/provider/rate", requireAuth, async (req, res) => {
+  app.post("/api/provider/rate", async (req, res) => {
     try {
+      // Check authentication directly
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
       const { providerId, isPositive } = req.body;
+      const userId = req.user!.id;
+      
+      console.log("Rating provider:", { userId, providerId, isPositive });
       
       if (!providerId || typeof isPositive !== 'boolean') {
         return res.status(400).json({ message: "Invalid request. providerId and isPositive are required." });
       }
       
       // Prevent users from rating themselves
-      if (providerId === req.user!.id) {
+      if (providerId === userId) {
         return res.status(400).json({ message: "You cannot rate yourself." });
       }
       
-      const rating = await storage.rateProvider(req.user!.id, providerId, isPositive);
+      const rating = await storage.rateProvider(userId, providerId, isPositive);
+      
+      // Update the provider's rating counts
+      await storage.updateUserRatingCounts(providerId);
+      
       res.json(rating);
     } catch (error) {
       console.error("Error in /api/provider/rate:", error);
@@ -1784,15 +1796,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Remove a rating for a provider
-  app.delete("/api/provider/rate/:providerId", requireAuth, async (req, res) => {
+  app.delete("/api/provider/rate/:providerId", async (req, res) => {
     try {
+      // Check authentication directly
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
       const providerId = parseInt(req.params.providerId);
+      const userId = req.user!.id;
+      
+      console.log("Removing rating:", { userId, providerId });
       
       if (isNaN(providerId)) {
         return res.status(400).json({ message: "Invalid provider ID" });
       }
       
-      await storage.deleteUserRating(req.user!.id, providerId);
+      await storage.deleteUserRating(userId, providerId);
+      
+      // Update the provider's rating counts
+      await storage.updateUserRatingCounts(providerId);
+      
       res.status(204).send();
     } catch (error) {
       console.error("Error in DELETE /api/provider/rate:", error);

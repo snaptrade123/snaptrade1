@@ -123,7 +123,7 @@ export default function TradingSignals() {
     isLoading: premiumSignalsLoading 
   } = useQuery({
     queryKey: ['/api/trading-signals/premium'],
-    queryFn: () => getPremiumTradingSignals(undefined, userId),
+    queryFn: () => getPremiumTradingSignals(),
   });
 
   // Query to get signal details when selected
