@@ -21,8 +21,8 @@ export default function ProviderDashboard() {
     data: subscribersData,
     isLoading: isLoadingSubscribers,
     error: subscribersError
-  } = useQuery<SubscriberData>({
-    queryKey: ['/api/signal-subscribers'],
+  } = useQuery({
+    queryKey: ['/api/provider/subscribers'],
     queryFn: getProviderSubscribers,
     enabled: !!user,
   });
@@ -148,7 +148,7 @@ export default function ProviderDashboard() {
               <div className="text-center py-6 text-red-500">
                 Error loading subscribers. Please try again.
               </div>
-            ) : !subscribersData || !subscribersData.subscribers || subscribersData.subscribers.length === 0 ? (
+            ) : !subscribersData || subscribersData.length === 0 ? (
               <div className="text-center py-10 text-muted-foreground">
                 <p className="mb-4">You don't have any subscribers yet.</p>
                 <p>Create premium signals to attract subscribers and generate revenue.</p>
@@ -158,27 +158,27 @@ export default function ProviderDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                   <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-100 dark:border-gray-800">
                     <p className="text-sm text-muted-foreground">Total Subscribers</p>
-                    <p className="text-2xl font-bold">{subscribersData?.metrics.subscriberCount || 0}</p>
+                    <p className="text-2xl font-bold">{subscribersData?.length || 0}</p>
                   </div>
                   
                   <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-100 dark:border-gray-800">
                     <p className="text-sm text-muted-foreground">Available Balance</p>
                     <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                      £{((subscribersData?.metrics.availableBalance || 0) / 100).toFixed(2)}
+                      £0.00
                     </p>
                   </div>
                   
                   <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-100 dark:border-gray-800">
                     <p className="text-sm text-muted-foreground">Total Earned</p>
                     <p className="text-2xl font-bold">
-                      £{((subscribersData?.metrics.totalEarned || 0) / 100).toFixed(2)}
+                      £0.00
                     </p>
                   </div>
                   
                   <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-100 dark:border-gray-800">
                     <p className="text-sm text-muted-foreground">Platform Fees</p>
                     <p className="text-2xl font-bold text-violet-600 dark:text-violet-400">
-                      £{((subscribersData?.metrics.totalFees || 0) / 100).toFixed(2)}
+                      £0.00
                     </p>
                   </div>
                 </div>
@@ -195,7 +195,7 @@ export default function ProviderDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {subscribersData?.subscribers.map((subscriber) => (
+                      {subscribersData?.map((subscriber) => (
                         <tr key={subscriber.id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
                           <td className="p-3 border-b border-gray-200 dark:border-gray-700">
                             {subscriber.username || 'Anonymous User'}

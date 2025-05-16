@@ -35,8 +35,9 @@ export async function getProviderSubscribers() {
   return response.json();
 }
 
-export async function updateUserProfile(userId: number, updates: { bio?: string; email?: string }) {
-  return apiRequest("PATCH", `/api/users/${userId}/profile`, updates);
+export async function updateUserProfile(updates: { bio?: string; email?: string }) {
+  const response = await apiRequest("PATCH", `/api/users/profile`, updates);
+  return response.json();
 }
 
 export async function getUser(userId: number) {
