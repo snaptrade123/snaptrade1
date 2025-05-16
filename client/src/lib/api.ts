@@ -802,6 +802,7 @@ export const updateProviderProfile = async (data: ProviderProfileData): Promise<
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include', // Include credentials for session-based auth
       body: JSON.stringify(data),
     });
     
