@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function ProviderDashboard() {
   const { user, isLoading } = useAuth();
+  const [_, navigate] = useLocation();
   
   const [bio, setBio] = useState<string>('');
   const { toast } = useToast();
