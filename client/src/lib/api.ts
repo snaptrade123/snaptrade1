@@ -799,6 +799,19 @@ export const updateProviderProfile = async (data: ProviderProfileData): Promise<
   try {
     console.log('Updating provider profile with data:', data);
     
+    // Check authentication status before making the request
+    const authCheck = await fetch('/api/check-auth', {
+      credentials: 'include',
+    });
+    
+    const authStatus = await authCheck.json();
+    console.log('Authentication status before provider update:', authStatus);
+    
+    if (!authStatus.authenticated) {
+      console.error('User is not authenticated, cannot update provider profile');
+      throw new Error('Authentication required - please log in and try again');
+    }
+    
     // Use the apiRequest utility which already handles credentials and errors
     const response = await fetch('/api/provider/profile', {
       method: 'POST',
@@ -813,13 +826,18 @@ export const updateProviderProfile = async (data: ProviderProfileData): Promise<
     
     if (!response.ok) {
       // Log the error response for debugging
-      const errorText = await response.text();
-      console.error('Provider profile update failed:', errorText);
+      let errorText = '';
+      try {
+        errorText = await response.text();
+        console.error('Provider profile update failed:', errorText);
+      } catch (e) {
+        console.error('Could not parse error response');
+      }
       
       if (response.status === 401) {
         throw new Error('Authentication required - please log in');
       }
-      throw new Error(`Failed to update provider profile: ${errorText}`);
+      throw new Error(`Failed to update provider profile: ${errorText || response.statusText}`);
     }
     
     return await response.json();

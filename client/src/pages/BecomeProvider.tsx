@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -47,11 +47,23 @@ const providerFormSchema = z.object({
 type ProviderFormValues = z.infer<typeof providerFormSchema>;
 
 export default function BecomeProvider() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
   const [currentStep, setCurrentStep] = useState(1);
+  
+  // Redirect to auth page if not logged in
+  useEffect(() => {
+    if (!isLoading && !user) {
+      toast({
+        title: "Authentication Required",
+        description: "You must be logged in to become a provider",
+        variant: "destructive"
+      });
+      navigate("/auth");
+    }
+  }, [user, isLoading, navigate, toast]);
   
   // Form setup
   const form = useForm<ProviderFormValues>({
