@@ -68,10 +68,23 @@ export interface IStorage {
   updateSignalSubscription(id: number, updates: Partial<InsertSignalSubscription>): Promise<SignalSubscription>;
   cancelSignalSubscription(id: number): Promise<SignalSubscription>;
   
+  // Provider Earnings methods
+  createProviderEarning(earning: InsertProviderEarnings): Promise<ProviderEarnings>;
+  getProviderEarnings(providerId: number, status?: string): Promise<ProviderEarnings[]>;
+  getProviderEarningsSummary(providerId: number): Promise<{
+    availableBalance: number;
+    pendingBalance: number;
+    totalEarned: number;
+    totalFees: number;
+  }>;
+  updateProviderEarningStatus(ids: number[], newStatus: string): Promise<ProviderEarnings[]>;
+  recordProviderEarning(providerId: number, subscriptionId: number, amount: number, currency?: string): Promise<ProviderEarnings>;
+  
   // Signal Payout methods
   createSignalPayout(payout: InsertSignalPayout): Promise<SignalPayout>;
   getProviderPayouts(providerId: number): Promise<SignalPayout[]>;
   updateSignalPayout(id: number, updates: Partial<InsertSignalPayout>): Promise<SignalPayout>;
+  requestPayout(providerId: number, amount: number): Promise<SignalPayout>;
   
   // Session store
   sessionStore: session.Store;
@@ -643,6 +656,98 @@ export class DatabaseStorage implements IStorage {
     return cancelledSubscription;
   }
 
+  // Provider Earnings methods
+  async createProviderEarning(earning: InsertProviderEarnings): Promise<ProviderEarnings> {
+    const [newEarning] = await db.insert(providerEarnings)
+      .values(earning)
+      .returning();
+    return newEarning;
+  }
+  
+  async getProviderEarnings(providerId: number, status?: string): Promise<ProviderEarnings[]> {
+    let query = db.select()
+      .from(providerEarnings)
+      .where(eq(providerEarnings.providerId, providerId));
+    
+    if (status) {
+      query = query.where(eq(providerEarnings.status, status));
+    }
+    
+    return await query.orderBy(desc(providerEarnings.createdAt));
+  }
+  
+  async getProviderEarningsSummary(providerId: number): Promise<{
+    availableBalance: number;
+    pendingBalance: number;
+    totalEarned: number;
+    totalFees: number;
+  }> {
+    const earnings = await this.getProviderEarnings(providerId);
+    
+    return earnings.reduce((summary, earning) => {
+      // Add to total earned and fees regardless of status
+      summary.totalEarned += earning.grossAmount;
+      summary.totalFees += earning.feeAmount;
+      
+      // Add to available balance if status is 'available'
+      if (earning.status === 'available') {
+        summary.availableBalance += earning.netAmount;
+      }
+      
+      // Add to pending balance if status is 'pending_payout'
+      if (earning.status === 'pending_payout') {
+        summary.pendingBalance += earning.netAmount;
+      }
+      
+      return summary;
+    }, {
+      availableBalance: 0,
+      pendingBalance: 0,
+      totalEarned: 0,
+      totalFees: 0
+    });
+  }
+  
+  async updateProviderEarningStatus(ids: number[], newStatus: string): Promise<ProviderEarnings[]> {
+    const updatedEarnings = await db
+      .update(providerEarnings)
+      .set({
+        status: newStatus,
+        updatedAt: new Date()
+      })
+      .where(inArray(providerEarnings.id, ids))
+      .returning();
+    
+    return updatedEarnings;
+  }
+  
+  async recordProviderEarning(
+    providerId: number, 
+    subscriptionId: number, 
+    amount: number, 
+    currency: string = 'GBP'
+  ): Promise<ProviderEarnings> {
+    // Calculate the platform fee (15%)
+    const feePercentage = 15;
+    const feeAmount = Math.round(amount * (feePercentage / 100));
+    const netAmount = amount - feeAmount;
+    
+    // Create the earning record
+    const earning = await this.createProviderEarning({
+      providerId,
+      subscriptionId,
+      grossAmount: amount,
+      feePercentage,
+      feeAmount,
+      netAmount,
+      currency,
+      status: 'available',
+      earnedAt: new Date()
+    });
+    
+    return earning;
+  }
+  
   // Signal Payout methods
   async createSignalPayout(payout: InsertSignalPayout): Promise<SignalPayout> {
     const [newPayout] = await db.insert(signalPayouts)
@@ -667,6 +772,46 @@ export class DatabaseStorage implements IStorage {
       .where(eq(signalPayouts.id, id))
       .returning();
     return updatedPayout;
+  }
+  
+  async requestPayout(providerId: number, amount: number): Promise<SignalPayout> {
+    // Get available balance
+    const summary = await this.getProviderEarningsSummary(providerId);
+    
+    if (summary.availableBalance < amount) {
+      throw new Error(`Insufficient available balance. Available: £${(summary.availableBalance / 100).toFixed(2)}`);
+    }
+    
+    // Create a payout request
+    const payout = await this.createSignalPayout({
+      providerId,
+      amount,
+      currency: 'GBP',
+      status: 'pending',
+      periodStart: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
+      periodEnd: new Date()
+    });
+    
+    // Update earnings status to pending_payout
+    // We'll need to find earnings that add up to the requested amount
+    const availableEarnings = await this.getProviderEarnings(providerId, 'available');
+    let remainingAmount = amount;
+    const earningIdsToUpdate: number[] = [];
+    
+    for (const earning of availableEarnings) {
+      if (remainingAmount <= 0) break;
+      
+      // Take as much as needed from this earning
+      earningIdsToUpdate.push(earning.id);
+      remainingAmount -= earning.netAmount;
+    }
+    
+    // Update the earnings status
+    if (earningIdsToUpdate.length > 0) {
+      await this.updateProviderEarningStatus(earningIdsToUpdate, 'pending_payout');
+    }
+    
+    return payout;
   }
 }
 

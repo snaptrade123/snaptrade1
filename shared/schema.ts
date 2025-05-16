@@ -201,6 +201,28 @@ export const insertSignalSubscriptionSchema = createInsertSchema(signalSubscript
   updatedAt: true,
 });
 
+// Provider Earnings to track revenue from signal subscriptions
+export const providerEarnings = pgTable("provider_earnings", {
+  id: serial("id").primaryKey(),
+  providerId: integer("provider_id").notNull().references(() => users.id),
+  subscriptionId: integer("subscription_id").references(() => signalSubscriptions.id),
+  grossAmount: integer("gross_amount").notNull(), // Total amount before fee in pence/cents
+  feePercentage: integer("fee_percentage").default(15).notNull(), // Platform fee percentage
+  feeAmount: integer("fee_amount").notNull(), // Amount of fee in pence/cents
+  netAmount: integer("net_amount").notNull(), // Amount after fee in pence/cents
+  currency: text("currency").default("GBP").notNull(),
+  status: text("status").notNull(), // 'available', 'pending_payout', 'paid_out'
+  earnedAt: timestamp("earned_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertProviderEarningsSchema = createInsertSchema(providerEarnings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Signal Payouts to track payments to signal providers
 export const signalPayouts = pgTable("signal_payouts", {
   id: serial("id").primaryKey(),
@@ -225,5 +247,7 @@ export type InsertTradingSignal = z.infer<typeof insertTradingSignalSchema>;
 export type TradingSignal = typeof tradingSignals.$inferSelect;
 export type InsertSignalSubscription = z.infer<typeof insertSignalSubscriptionSchema>;
 export type SignalSubscription = typeof signalSubscriptions.$inferSelect;
+export type InsertProviderEarnings = z.infer<typeof insertProviderEarningsSchema>;
+export type ProviderEarnings = typeof providerEarnings.$inferSelect;
 export type InsertSignalPayout = z.infer<typeof insertSignalPayoutSchema>;
 export type SignalPayout = typeof signalPayouts.$inferSelect;
