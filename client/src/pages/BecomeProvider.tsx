@@ -80,22 +80,23 @@ export default function BecomeProvider() {
     mutationFn: async (data: ProviderFormValues) => {
       console.log("Submitting provider profile data:", data);
       
-      // First, check if we're authenticated
-      const authCheck = await fetch('/api/check-auth', { credentials: 'include' });
-      const authStatus = await authCheck.json();
-      
-      console.log("Authentication status before submission:", authStatus);
-      
-      if (!authStatus.authenticated) {
-        throw new Error("You need to be logged in to become a provider. Please refresh the page and try again.");
+      // We need to make sure user is available
+      if (!user || !user.id) {
+        throw new Error("User information not available. Please log in again.");
       }
       
-      // Use direct fetch call with session credentials
+      // Use direct fetch call with user ID in header for authentication fallback
       const response = await fetch('/api/provider/profile', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(data),
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-user-id': user.id.toString() // Add user ID as header
+        },
+        credentials: 'include', // Still include session credentials as primary auth
+        body: JSON.stringify({
+          ...data,
+          userId: user.id // Also include in body as fallback
+        }),
       });
       
       if (!response.ok) {
