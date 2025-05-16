@@ -270,11 +270,21 @@ const ProviderProfile = () => {
 
   return (
     <div className="container py-6">
-      <div className="flex items-center mb-6">
-        <Button variant="outline" size="icon" onClick={() => navigate('/trading-signals')}>
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <h1 className="text-2xl font-bold ml-2">Provider Profile</h1>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center">
+          <Button variant="outline" size="icon" onClick={() => navigate('/trading-signals')}>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-2xl font-bold ml-2">Provider Profile</h1>
+        </div>
+        {!user && (
+          <Button 
+            onClick={() => navigate('/auth?returnTo=' + encodeURIComponent(`/provider/${providerId}`))}
+            className="bg-primary"
+          >
+            Login to Rate Provider
+          </Button>
+        )}
       </div>
 
       {isLoading ? (
