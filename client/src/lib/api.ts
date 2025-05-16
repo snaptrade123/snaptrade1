@@ -181,15 +181,22 @@ export async function getProviderRatings(providerId: number) {
 }
 
 export async function getUserRatingForProvider(providerId: number) {
-  const response = await apiRequest("GET", `/api/provider/${providerId}/user-rating`);
-  if (!response.ok) {
-    // 404 means no rating yet, which is a valid state
-    if (response.status === 404) {
+  try {
+    const response = await apiRequest("GET", `/api/provider/${providerId}/user-rating`);
+    if (!response.ok) {
+      // 404 means no rating yet, which is a valid state
+      if (response.status === 404 || response.status === 401) {
+        // 401 means not authenticated, which we should handle gracefully
+        return null;
+      }
+      console.error(`Error fetching user rating: ${response.status}`);
       return null;
     }
-    throw new Error(`Error ${response.status}: ${await response.text()}`);
+    return response.json();
+  } catch (error) {
+    console.error("Error in getUserRatingForProvider:", error);
+    return null;
   }
-  return response.json();
 }
 
 export async function subscribeToProvider(providerId: number) {
