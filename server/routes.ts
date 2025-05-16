@@ -1838,8 +1838,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Create provider profile
-  app.post("/api/provider/profile", requireAuth, async (req, res) => {
+  // Create provider profile (with enhanced debugging)
+  app.post("/api/provider/profile", async (req, res) => {
+    console.log("Provider profile request received. Auth status:", req.isAuthenticated());
+    console.log("Session ID:", req.sessionID);
+    console.log("User in session:", req.user);
+    
+    // Check authentication directly
+    if (!req.isAuthenticated()) {
+      console.log("Provider profile creation failed: Not authenticated via session");
+      return res.status(401).json({ message: "Authentication required" });
+    }
     try {
       // Double check authentication
       if (!req.user) {
