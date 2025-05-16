@@ -77,7 +77,35 @@ export default function BecomeProvider() {
   
   // Create provider profile mutation
   const providerMutation = useMutation({
-    mutationFn: (data: ProviderFormValues) => updateProviderProfile(data),
+    mutationFn: async (data: ProviderFormValues) => {
+      console.log("Submitting provider profile data:", data);
+      
+      // First, check if we're authenticated
+      const authCheck = await fetch('/api/check-auth', { credentials: 'include' });
+      const authStatus = await authCheck.json();
+      
+      console.log("Authentication status before submission:", authStatus);
+      
+      if (!authStatus.authenticated) {
+        throw new Error("You need to be logged in to become a provider. Please refresh the page and try again.");
+      }
+      
+      // Use direct fetch call with session credentials
+      const response = await fetch('/api/provider/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Provider profile creation failed:', errorText);
+        throw new Error(`Failed to create provider profile: ${errorText}`);
+      }
+      
+      return await response.json();
+    },
     onSuccess: () => {
       toast({
         title: "Provider Profile Created",
@@ -91,6 +119,7 @@ export default function BecomeProvider() {
       navigate("/provider-dashboard");
     },
     onError: (error: Error) => {
+      console.error("Provider profile creation error:", error);
       toast({
         title: "Failed to create provider profile",
         description: error.message,
