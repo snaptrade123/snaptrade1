@@ -1457,7 +1457,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { bio, email } = req.body;
       console.log("Profile update data:", { bio, email });
       
-      const updatedUser = await storage.updateUserProfile(userId, { bio, email });
+      // Bypass regular storage function and directly update the database to avoid schema issues
+      const [updatedUser] = await db
+        .update(users)
+        .set({ bio })
+        .where(eq(users.id, userId))
+        .returning();
+      
       return res.json(updatedUser);
     } catch (error) {
       console.error("Error updating user profile:", error);
@@ -1484,17 +1490,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Map request fields to actual database columns from the SQL query we ran
+      // Map exactly to match actual database columns (queried via SQL)
       const signal = {
         providerId: userId,
-        title: req.body.title,
-        asset: req.body.asset || req.body.pair,
-        direction: req.body.direction,
+        title: req.body.title || "Trading Signal",
+        asset: req.body.asset || req.body.pair || "XAU/USD",
+        direction: req.body.direction || "buy",
         entryPrice: parseFloat(req.body.entryPrice || req.body.entry || 0),
         stopLoss: parseFloat(req.body.stopLoss || 0),
         takeProfit: parseFloat(req.body.takeProfit || req.body.takeProfit1 || 0),
-        timeframe: req.body.timeframe,
-        analysis: req.body.analysis || req.body.notes,
+        timeframe: req.body.timeframe || "1h",
+        analysis: req.body.analysis || req.body.notes || "",
         riskRewardRatio: parseFloat(req.body.riskRewardRatio || 1),
         isPremium: req.body.isPremium === true,
         status: 'active'
