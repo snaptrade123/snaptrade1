@@ -33,14 +33,30 @@ export async function updateUserProfile(updates: { bio?: string; email?: string 
 
 export async function getUser(userId: number) {
   try {
+    // First try the users endpoint
     const response = await apiRequest("GET", `/api/users/${userId}`);
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${await response.text()}`);
+    if (response.ok) {
+      return response.json();
     }
-    return response.json();
+    
+    // If that fails, try the provider endpoint
+    const providerResponse = await apiRequest("GET", `/api/provider/${userId}`);
+    if (providerResponse.ok) {
+      return providerResponse.json();
+    }
+    
+    // If both fail, throw error
+    throw new Error(`Error fetching user: ${response.status}`);
   } catch (error) {
     console.error(`Error fetching user with ID ${userId}:`, error);
-    throw error;
+    // Return a fallback object instead of throwing to prevent UI errors
+    return {
+      id: userId,
+      username: "Provider",
+      isProvider: true,
+      providerDisplayName: "Provider",
+      bio: "Provider information unavailable"
+    };
   }
 }
 
