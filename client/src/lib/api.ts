@@ -19,16 +19,7 @@ export async function checkSubscription() {
   return apiRequest("GET", "/api/check-subscription");
 }
 
-// Provider earnings API functions
-export async function getProviderEarnings() {
-  const response = await apiRequest("GET", "/api/provider/earnings");
-  return response.json();
-}
-
-export async function getProviderPayouts() {
-  const response = await apiRequest("GET", "/api/provider/payouts");
-  return response.json();
-}
+// Provider earnings API functions are defined below
 
 export async function getProviderSubscribers() {
   const response = await apiRequest("GET", "/api/provider/subscribers");
@@ -156,9 +147,46 @@ export async function subscribeToProvider(providerId: number) {
 }
 
 // Provider earnings API functions
+export async function getProviderEarnings() {
+  try {
+    const response = await apiRequest("GET", "/api/provider/earnings");
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${await response.text()}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching provider earnings:", error);
+    return { 
+      summary: { availableBalance: 0, pendingBalance: 0, totalEarned: 0, totalFees: 0 },
+      transactions: []
+    };
+  }
+}
+
+export async function getProviderPayouts() {
+  try {
+    const response = await apiRequest("GET", "/api/provider/payouts");
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${await response.text()}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching provider payouts:", error);
+    return [];
+  }
+}
+
 export async function requestPayout(amount: number) {
-  const response = await apiRequest("POST", "/api/provider/request-payout", { amount });
-  return response.json();
+  try {
+    const response = await apiRequest("POST", "/api/provider/request-payout", { amount });
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${await response.text()}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error requesting payout:", error);
+    throw error;
+  }
 }
 
 // Signal subscription API functions
