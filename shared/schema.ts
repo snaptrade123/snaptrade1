@@ -95,6 +95,9 @@ export const users = pgTable("users", {
   thumbsUp: integer("thumbs_up").default(0).notNull(),
   thumbsDown: integer("thumbs_down").default(0).notNull(),
   bio: text("bio"),
+  isProvider: boolean("is_provider").default(false),
+  providerDisplayName: text("provider_display_name"),
+  signalFee: integer("signal_fee"), // Monthly subscription fee in pence/cents
   createdAt: timestamp("created_at").defaultNow(),
 });
 
