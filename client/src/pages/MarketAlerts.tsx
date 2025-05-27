@@ -25,11 +25,19 @@ export default function MarketAlerts() {
   const { data: alerts = [], isLoading } = useQuery<MarketAlert[]>({
     queryKey: ["/api/market-alerts"],
     enabled: !!user,
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/market-alerts", undefined, {
+        userId: user?.id
+      });
+      return res.json();
+    },
   });
 
   const createAlertMutation = useMutation({
     mutationFn: async (alertData: InsertMarketAlert) => {
-      const res = await apiRequest("POST", "/api/market-alerts", alertData);
+      const res = await apiRequest("POST", "/api/market-alerts", alertData, {
+        userId: user?.id
+      });
       return res.json();
     },
     onSuccess: () => {

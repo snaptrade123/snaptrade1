@@ -21,8 +21,8 @@ export async function apiRequest(
     ...(options?.headers || {})
   };
   
-  // Add userId in header for asset lists endpoints as a fallback if session fails
-  if (options?.userId && (url.includes('/api/asset-lists'))) {
+  // Add userId in header for endpoints that need user identification as a fallback if session fails
+  if (options?.userId && (url.includes('/api/asset-lists') || url.includes('/api/market-alerts'))) {
     headers['x-user-id'] = options.userId.toString();
   }
   
