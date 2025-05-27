@@ -633,6 +633,11 @@ export default function TradingSignals() {
                   <Button 
                     type="submit"
                     disabled={createSignalMutation.isPending || updateSignalMutation.isPending}
+                    onClick={() => {
+                      console.log("Button clicked!");
+                      console.log("Form valid:", form.formState.isValid);
+                      console.log("Form errors:", form.formState.errors);
+                    }}
                   >
                     {(createSignalMutation.isPending || updateSignalMutation.isPending) && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
