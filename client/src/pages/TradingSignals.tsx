@@ -631,12 +631,12 @@ export default function TradingSignals() {
                 <DialogFooter>
                   <Button 
                     type="submit"
-                    disabled={createSignalMutation.isPending}
+                    disabled={createSignalMutation.isPending || updateSignalMutation.isPending}
                   >
-                    {createSignalMutation.isPending && (
+                    {(createSignalMutation.isPending || updateSignalMutation.isPending) && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
-                    Share Signal
+                    {editingSignal ? 'Update Signal' : 'Share Signal'}
                   </Button>
                 </DialogFooter>
               </form>
