@@ -1507,7 +1507,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       console.log("Creating trading signal with data:", signal);
-      const newSignal = await storage.createTradingSignal(signal);
+      
+      // Direct database insert to bypass storage schema issues
+      const [newSignal] = await db.insert(tradingSignals).values(signal).returning();
       res.status(201).json(newSignal);
     } catch (error) {
       console.error("Error creating trading signal:", error);
