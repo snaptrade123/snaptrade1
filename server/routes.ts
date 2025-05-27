@@ -2174,12 +2174,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Market Alerts API Endpoints
   
   // Get user's market alerts
-  app.get("/api/market-alerts", authOrIdHeader, async (req, res) => {
+  app.get("/api/market-alerts", async (req, res) => {
     try {
-      const userId = req.isAuthenticated() ? req.user!.id : req.userId;
+      let userId;
+      
+      // Try session auth first
+      if (req.isAuthenticated() && req.user) {
+        userId = req.user.id;
+      } else {
+        // Try header auth as fallback
+        const userIdHeader = req.headers['x-user-id'];
+        if (userIdHeader) {
+          userId = parseInt(userIdHeader as string, 10);
+        }
+      }
+      
       if (!userId) {
         return res.status(401).json({ message: "Authentication required" });
       }
+      
       const alerts = await storage.getMarketAlerts(userId);
       return res.status(200).json(alerts);
     } catch (error) {
@@ -2191,12 +2204,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create a new market alert
-  app.post("/api/market-alerts", authOrIdHeader, async (req, res) => {
+  app.post("/api/market-alerts", async (req, res) => {
     try {
-      const userId = req.isAuthenticated() ? req.user!.id : req.userId;
+      let userId;
+      
+      // Try session auth first
+      if (req.isAuthenticated() && req.user) {
+        userId = req.user.id;
+      } else {
+        // Try header auth as fallback
+        const userIdHeader = req.headers['x-user-id'];
+        if (userIdHeader) {
+          userId = parseInt(userIdHeader as string, 10);
+        }
+      }
+      
       if (!userId) {
         return res.status(401).json({ message: "Authentication required" });
       }
+      
       const alertData = { ...req.body, userId };
       
       const alert = await storage.createMarketAlert(alertData);
