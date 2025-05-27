@@ -12,6 +12,7 @@ import Footer from "@/components/layout/Footer";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/ProtectedRoute";
+import { AdminProtectedRoute } from "@/lib/AdminProtectedRoute";
 import AuthPage from "./pages/AuthPage";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -75,6 +76,8 @@ function Router() {
       <ProtectedRoute path="/provider-dashboard" component={ProviderDashboard} />
       
       <ProtectedRoute path="/become-provider" component={BecomeProvider} />
+      
+      <AdminProtectedRoute path="/admin" component={AdminPanel} />
       
       <Route path="/provider/:providerId" component={ProviderProfile} />
       {/* Fallback to 404 */}

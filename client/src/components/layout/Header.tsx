@@ -17,7 +17,8 @@ import {
   BarChart3,
   DollarSign,
   Info,
-  Mail
+  Mail,
+  Shield
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/hooks/use-auth";
@@ -55,6 +56,10 @@ const Header = () => {
   
   const handleProviderDashboardClick = () => {
     setLocation("/provider-dashboard");
+  };
+
+  const handleAdminPanelClick = () => {
+    setLocation("/admin");
   };
 
   if (!mounted) {
@@ -160,6 +165,12 @@ const Header = () => {
                   <DollarSign className="h-4 w-4 mr-2" />
                   Provider Earnings
                 </DropdownMenuItem>
+                {user.isAdmin && (
+                  <DropdownMenuItem onClick={handleAdminPanelClick}>
+                    <Shield className="h-4 w-4 mr-2" />
+                    Admin Panel
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="h-4 w-4 mr-2" />
