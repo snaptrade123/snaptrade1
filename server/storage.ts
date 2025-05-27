@@ -1276,7 +1276,10 @@ export class DatabaseStorage implements IStorage {
   async updateUserAdminStatus(userId: number, isAdmin: boolean, permissions: string[]): Promise<User> {
     const [updated] = await db
       .update(users)
-      .set({ isAdmin, adminPermissions: permissions })
+      .set({ 
+        isAdmin, 
+        adminPermissions: permissions.length > 0 ? permissions : null 
+      })
       .where(eq(users.id, userId))
       .returning();
     return updated;
