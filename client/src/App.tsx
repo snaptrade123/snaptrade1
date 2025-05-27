@@ -31,6 +31,8 @@ import MarketPredictions from "./pages/features/MarketPredictions";
 import FeatureTradingSignals from "./pages/features/TradingSignals";
 import TradingSignals from "./pages/TradingSignals";
 import DebugLogin from "./pages/DebugLogin";
+import AboutUs from "./pages/AboutUs";
+import Contact from "./pages/Contact";
 
 function Router() {
   return (
@@ -48,6 +50,9 @@ function Router() {
       <Route path="/trading-tutorials" component={TradingTutorials} />
       <Route path="/knowledge-base" component={KnowledgeBase} />
       <Route path="/knowledge" component={KnowledgeBase} />
+      <Route path="/about" component={AboutUs} />
+      <Route path="/about-us" component={AboutUs} />
+      <Route path="/contact" component={Contact} />
       <Route path="/subscription-success" component={SubscriptionSuccess} />
       <Route path="/features" component={Features} />
       
