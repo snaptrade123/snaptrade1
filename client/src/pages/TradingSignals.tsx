@@ -305,6 +305,7 @@ export default function TradingSignals() {
   const handleSubmit = (values: z.infer<typeof signalFormSchema>) => {
     console.log("Form submitted with values:", values);
     console.log("Editing signal:", editingSignal);
+    console.log("Form errors:", form.formState.errors);
     
     // First check if user is logged in
     if (!user) {
