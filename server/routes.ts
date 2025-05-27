@@ -1563,6 +1563,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/trading-signals/:id", async (req: any, res) => {
     try {
       console.log("Delete request - Session ID:", req.sessionID);
+      console.log("Delete request - Session:", req.session);
+      console.log("Delete request - Cookies:", req.headers.cookie);
       console.log("Delete request - isAuthenticated:", req.isAuthenticated());
       console.log("Delete request - user:", req.user);
       

@@ -39,7 +39,7 @@ export function setupAuth(app: Express) {
     cookie: {
       secure: false, // set to true in production with HTTPS
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
-      httpOnly: true,
+      httpOnly: false, // Allow JavaScript access for debugging
       path: '/',
       sameSite: 'lax'
     }
