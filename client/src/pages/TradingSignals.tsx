@@ -303,6 +303,9 @@ export default function TradingSignals() {
   };
 
   const handleSubmit = (values: z.infer<typeof signalFormSchema>) => {
+    console.log("Form submitted with values:", values);
+    console.log("Editing signal:", editingSignal);
+    
     // First check if user is logged in
     if (!user) {
       toast({
@@ -316,6 +319,7 @@ export default function TradingSignals() {
     
     // Check if we're editing or creating
     if (editingSignal) {
+      console.log("Updating signal with ID:", editingSignal.id);
       // Update existing signal
       updateSignalMutation.mutate({
         signalId: editingSignal.id,
