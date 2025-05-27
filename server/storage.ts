@@ -1,6 +1,6 @@
 import { analysis, namedAnalysis, users, referrals, assetLists, analysisUsage, tradingSignals, signalSubscriptions, signalPayouts, providerEarnings, userRatings, marketAlerts, watchlists, economicEvents, riskProfiles, adminActions, type Analysis, type NamedAnalysis, type InsertAnalysis, type InsertNamedAnalysis, type User, type InsertUser, type InsertReferral, type Referral, type AssetList, type InsertAssetList, type AnalysisUsage, type InsertAnalysisUsage, type TradingSignal, type InsertTradingSignal, type SignalSubscription, type InsertSignalSubscription, type SignalPayout, type InsertSignalPayout, type ProviderEarnings, type InsertProviderEarnings, type UserRating, type InsertUserRating, type MarketAlert, type InsertMarketAlert, type Watchlist, type InsertWatchlist, type EconomicEvent, type RiskProfile, type InsertRiskProfile } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, inArray, gte, lte } from "drizzle-orm";
+import { eq, desc, and, inArray, gte, lte, sql } from "drizzle-orm";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { pool } from "./db";
@@ -1274,15 +1274,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateUserAdminStatus(userId: number, isAdmin: boolean, permissions: string[]): Promise<User> {
-    const [updated] = await db
-      .update(users)
-      .set({ 
-        isAdmin, 
-        adminPermissions: isAdmin && permissions.length > 0 ? permissions : null 
-      })
-      .where(eq(users.id, userId))
-      .returning();
-    return updated;
+    // Use direct PostgreSQL query to properly handle arrays
+    const permissionsArray = isAdmin && permissions.length > 0 
+      ? `ARRAY[${permissions.map(p => `'${p.replace(/'/g, "''")}'`).join(',')}]` 
+      : 'NULL';
+    
+    const query = `
+      UPDATE users 
+      SET is_admin = $1, admin_permissions = ${permissionsArray}
+      WHERE id = $2
+      RETURNING *
+    `;
+    
+    const result = await pool.query(query, [isAdmin, userId]);
+    return result.rows[0] as User;
   }
 
   async logAdminAction(
