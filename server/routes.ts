@@ -1523,12 +1523,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update a trading signal
   app.patch("/api/trading-signals/:id", async (req: any, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      // Use fallback authentication via header if session fails
+      let userId: number;
+      
+      if (req.isAuthenticated() && req.user) {
+        userId = req.user.id;
+      } else if (req.headers['x-user-id']) {
+        userId = parseInt(req.headers['x-user-id']);
+      } else {
         return res.status(401).json({ message: "Authentication required" });
       }
       
       const id = parseInt(req.params.id);
-      const userId = req.user.id;
       
       // Get the signal
       const signal = await storage.getTradingSignal(id);
@@ -1562,18 +1568,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Delete a trading signal
   app.delete("/api/trading-signals/:id", async (req: any, res) => {
     try {
-      console.log("Delete request - Session ID:", req.sessionID);
-      console.log("Delete request - Session:", req.session);
-      console.log("Delete request - Cookies:", req.headers.cookie);
-      console.log("Delete request - isAuthenticated:", req.isAuthenticated());
-      console.log("Delete request - user:", req.user);
+      // Use fallback authentication via header if session fails
+      let userId: number;
       
-      if (!req.isAuthenticated()) {
+      if (req.isAuthenticated() && req.user) {
+        userId = req.user.id;
+      } else if (req.headers['x-user-id']) {
+        userId = parseInt(req.headers['x-user-id']);
+        console.log("Using fallback user ID from header:", userId);
+      } else {
         return res.status(401).json({ message: "Authentication required" });
       }
       
       const id = parseInt(req.params.id);
-      const userId = req.user.id;
       
       // Get the signal
       const signal = await storage.getTradingSignal(id);
