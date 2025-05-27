@@ -108,6 +108,7 @@ export default function TradingSignals() {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [selectedSignalId, setSelectedSignalId] = useState<number | null>(null);
   const [subscribing, setSubscribing] = useState(false);
+  const [editingSignal, setEditingSignal] = useState<any>(null);
   const [, navigate] = useLocation();
   
   // Get the current user ID for API calls (for development)
@@ -217,6 +218,51 @@ export default function TradingSignals() {
     }
   });
 
+  // Update signal mutation
+  const updateSignalMutation = useMutation({
+    mutationFn: ({ signalId, signalData }: { signalId: number; signalData: any }) => {
+      return updateTradingSignal(signalId, signalData);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Signal Updated",
+        description: "Your trading signal has been updated successfully.",
+      });
+      setEditingSignal(null);
+      setShowNewSignalDialog(false);
+      form.reset();
+      queryClient.invalidateQueries({ queryKey: ['/api/trading-signals/free'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/trading-signals/premium'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Update failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    },
+  });
+
+  // Delete signal mutation
+  const deleteSignalMutation = useMutation({
+    mutationFn: (signalId: number) => deleteTradingSignal(signalId),
+    onSuccess: () => {
+      toast({
+        title: "Signal Deleted",
+        description: "Your trading signal has been deleted successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/trading-signals/free'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/trading-signals/premium'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Delete failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    },
+  });
+
   // Watch values to calculate risk-reward ratio
   const entryPrice = form.watch("entryPrice");
   const stopLoss = form.watch("stopLoss");
@@ -268,13 +314,25 @@ export default function TradingSignals() {
       return;
     }
     
-    // Validate price for premium signals
-    if (values.isPremium && !values.price) {
-      form.setError("price", { 
-        type: "manual", 
-        message: "Price is required for premium signals" 
+    // Check if we're editing or creating
+    if (editingSignal) {
+      // Update existing signal
+      updateSignalMutation.mutate({
+        signalId: editingSignal.id,
+        signalData: values
       });
-      return;
+    } else {
+      // Create new signal - validate price for premium signals
+      if (values.isPremium && !values.price) {
+        form.setError("price", { 
+          type: "manual", 
+          message: "Price is required for premium signals" 
+        });
+        return;
+      }
+      
+      // Create the signal
+      createSignalMutation.mutate(values);
     }
     
     const signalData = {
