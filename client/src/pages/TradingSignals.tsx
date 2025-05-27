@@ -832,7 +832,10 @@ function SignalCard({ signal, onViewDetails, onSubscribe, isSubscribing, onEdit,
         <div className="flex justify-between items-start">
           <div>
             <div className="flex items-center space-x-2 mb-1">
-              <CardTitle className="text-lg">{signal.title || signal.asset}</CardTitle>
+              <CardTitle className="text-lg">{signal.title}</CardTitle>
+              <Badge variant="outline" className="text-sm font-mono">
+                {signal.asset}
+              </Badge>
               {signal.isEdited && (
                 <Badge variant="outline" className="text-xs text-muted-foreground">
                   (edited)
