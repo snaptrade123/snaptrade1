@@ -1592,39 +1592,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete a trading signal
-  app.delete("/api/trading-signals/:id", async (req, res) => {
-    try {
-      if (!req.isAuthenticated()) {
-        return res.status(401).json({ message: "Authentication required to delete signals" });
-      }
-      
-      const id = parseInt(req.params.id);
-      const userId = req.user.id;
-      
-      // Get the signal
-      const signal = await storage.getTradingSignal(id);
-      
-      if (!signal) {
-        return res.status(404).json({ message: "Trading signal not found" });
-      }
-      
-      // Check if user owns the signal
-      if (userId !== signal.providerId) {
-        return res.status(403).json({ message: "You can only delete your own signals" });
-      }
-      
-      // Delete the signal
-      await storage.deleteTradingSignal(id);
-      res.sendStatus(204);
-    } catch (error) {
-      console.error("Error deleting trading signal:", error);
-      res.status(500).json({ 
-        message: error instanceof Error ? error.message : "An unknown error occurred" 
-      });
-    }
-  });
-
   // Subscribe to a provider's signals
   app.post("/api/signal-subscriptions", async (req, res) => {
     try {
