@@ -70,53 +70,39 @@ const Header = () => {
           </div>
         </Link>
         
-        <div className="flex items-center space-x-1 md:space-x-4">
-          <Link href="/">
-            <Button variant="ghost" size="sm" className="hidden md:flex">
-              <Home className="h-4 w-4 mr-2" />
-              Home
-            </Button>
-          </Link>
-          
+        <div className="flex items-center space-x-1 md:space-x-2">
           <Link href="/features">
             <Button variant="ghost" size="sm">
-              <BarChart className="h-4 w-4 mr-2 md:mr-1" />
-              <span className="hidden md:inline">Features</span>
-            </Button>
-          </Link>
-          
-          <Link href="/pattern-guide">
-            <Button variant="ghost" size="sm">
-              <BookOpen className="h-4 w-4 mr-2 md:mr-1" />
-              <span className="hidden md:inline">Patterns</span>
+              <BarChart className="h-4 w-4 mr-1" />
+              <span className="hidden lg:inline">Features</span>
             </Button>
           </Link>
           
           <Link href="/trading-signals">
             <Button variant="ghost" size="sm">
-              <TrendingUp className="h-4 w-4 mr-2 md:mr-1" />
-              <span className="hidden md:inline">Signals</span>
+              <TrendingUp className="h-4 w-4 mr-1" />
+              <span className="hidden lg:inline">Signals</span>
             </Button>
           </Link>
           
           <Link href="/pricing">
             <Button variant="ghost" size="sm">
-              <CreditCard className="h-4 w-4 mr-2 md:mr-1" />
-              <span className="hidden md:inline">Pricing</span>
+              <CreditCard className="h-4 w-4 mr-1" />
+              <span className="hidden lg:inline">Pricing</span>
             </Button>
           </Link>
           
           <Link href="/about">
             <Button variant="ghost" size="sm">
-              <Info className="h-4 w-4 mr-2 md:mr-1" />
-              <span className="hidden md:inline">About</span>
+              <BookOpen className="h-4 w-4 mr-1" />
+              <span className="hidden lg:inline">About</span>
             </Button>
           </Link>
           
           <Link href="/contact">
             <Button variant="ghost" size="sm">
-              <Mail className="h-4 w-4 mr-2 md:mr-1" />
-              <span className="hidden md:inline">Contact</span>
+              <User className="h-4 w-4 mr-1" />
+              <span className="hidden lg:inline">Contact</span>
             </Button>
           </Link>
           
