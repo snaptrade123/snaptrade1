@@ -716,8 +716,26 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getFreeTradingSignals(options?: { limit?: number }): Promise<TradingSignal[]> {
-    const query = db.select()
+    const query = db.select({
+      id: tradingSignals.id,
+      providerId: tradingSignals.providerId,
+      title: tradingSignals.title,
+      asset: tradingSignals.asset,
+      direction: tradingSignals.direction,
+      timeframe: tradingSignals.timeframe,
+      entryPrice: tradingSignals.entryPrice,
+      stopLoss: tradingSignals.stopLoss,
+      takeProfit: tradingSignals.takeProfit,
+      analysis: tradingSignals.analysis,
+      isPremium: tradingSignals.isPremium,
+      price: tradingSignals.price,
+      isEdited: tradingSignals.isEdited,
+      createdAt: tradingSignals.createdAt,
+      updatedAt: tradingSignals.updatedAt,
+      providerName: users.username
+    })
       .from(tradingSignals)
+      .leftJoin(users, eq(tradingSignals.providerId, users.id))
       .where(eq(tradingSignals.isPremium, false))
       .orderBy(desc(tradingSignals.createdAt));
     
