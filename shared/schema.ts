@@ -183,6 +183,7 @@ export const tradingSignals = pgTable("trading_signals", {
   status: text("status"),
   outcome: text("outcome"),
   actualPips: integer("actualPips"),
+  isEdited: boolean("isEdited").default(false),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });

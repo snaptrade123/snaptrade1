@@ -1538,11 +1538,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "You can only update your own signals" });
       }
       
+      // Add edited flag to updates
+      const updates = {
+        ...req.body,
+        isEdited: true
+      };
+      
       // Update the signal
-      const updatedSignal = await storage.updateTradingSignal(id, req.body);
+      const updatedSignal = await storage.updateTradingSignal(id, updates);
       res.json(updatedSignal);
     } catch (error) {
       console.error("Error updating trading signal:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Delete a trading signal
+  app.delete("/api/trading-signals/:id", authOrIdHeader, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = req.userId;
+      
+      // Get the signal
+      const signal = await storage.getTradingSignal(id);
+      
+      if (!signal) {
+        return res.status(404).json({ message: "Trading signal not found" });
+      }
+      
+      // Check if user owns the signal
+      if (userId !== signal.providerId) {
+        return res.status(403).json({ message: "You can only delete your own signals" });
+      }
+      
+      // Delete the signal
+      await storage.deleteTradingSignal(id);
+      res.json({ message: "Signal deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting trading signal:", error);
       res.status(500).json({ 
         message: error instanceof Error ? error.message : "An unknown error occurred" 
       });

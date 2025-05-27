@@ -54,13 +54,24 @@ import {
   ThumbsUp,
   ThumbsDown,
   User,
+  Edit,
+  Trash2,
+  MoreVertical,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   getFreeTradingSignals,
   getPremiumTradingSignals,
   getTradingSignal,
   getProviderSignals,
   createTradingSignal as createSignalApi,
+  updateTradingSignal,
+  deleteTradingSignal,
   subscribeToProvider
 } from "@/lib/api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";

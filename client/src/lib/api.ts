@@ -119,6 +119,24 @@ export async function createTradingSignal(signalData: any) {
   return response.json();
 }
 
+export async function updateTradingSignal(signalId: number, signalData: any) {
+  const response = await apiRequest("PATCH", `/api/trading-signals/${signalId}`, signalData);
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to update signal: ${errorText}`);
+  }
+  return response.json();
+}
+
+export async function deleteTradingSignal(signalId: number) {
+  const response = await apiRequest("DELETE", `/api/trading-signals/${signalId}`);
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to delete signal: ${errorText}`);
+  }
+  return response.json();
+}
+
 export async function getProviderSignals(providerId: number) {
   const response = await apiRequest("GET", `/api/trading-signals/provider/${providerId}`);
   const data = await response.json();
