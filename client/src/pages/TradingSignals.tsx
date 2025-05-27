@@ -88,7 +88,9 @@ const signalFormSchema = z.object({
   analysis: z.string().min(10, "Please provide some analysis").max(1000, "Analysis too long"),
   imageUrl: z.string().optional(),
   isPremium: z.boolean().default(false),
-  price: z.coerce.number().min(5, "Minimum price is £5").max(100, "Maximum price is £100").optional()
+  price: z.coerce.number().min(0, "Price must be 0 for free signals or minimum £5 for premium").max(100, "Maximum price is £100").optional().refine((val) => val === 0 || val >= 5, {
+    message: "Price must be 0 for free signals or minimum £5 for premium signals"
+  })
 });
 
 // Helper function to calculate risk-reward ratio
