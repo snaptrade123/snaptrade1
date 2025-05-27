@@ -165,17 +165,8 @@ export default function TradingSignals() {
       }
       
       // Make the API call with proper error handling
-      try {
-        const response = await createSignalApi(signalData);
-        if (!response.ok) {
-          const errorData = await response.text();
-          throw new Error(errorData || "Failed to create signal");
-        }
-        return response.json();
-      } catch (error) {
-        console.error("Signal creation error:", error);
-        throw error instanceof Error ? error : new Error("Unknown error creating signal");
-      }
+      const response = await createSignalApi(signalData);
+      return response;
     },
     onSuccess: () => {
       toast({
