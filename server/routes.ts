@@ -1562,6 +1562,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Delete a trading signal
   app.delete("/api/trading-signals/:id", async (req: any, res) => {
     try {
+      console.log("Delete request - Session ID:", req.sessionID);
+      console.log("Delete request - isAuthenticated:", req.isAuthenticated());
+      console.log("Delete request - user:", req.user);
+      
       if (!req.isAuthenticated()) {
         return res.status(401).json({ message: "Authentication required" });
       }
