@@ -118,6 +118,10 @@ export default function AssetListManager() {
   
   return (
     <div className="container mx-auto py-6">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">Asset List Manager</h1>
+        <p className="text-muted-foreground">Create and manage custom asset lists for quick access during analysis. Choose from {MARKET_CATEGORIES.length} different market categories.</p>
+      </div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Your Asset Lists</h1>
         <Button onClick={() => setShowCreateDialog(true)}>
@@ -249,62 +253,45 @@ export default function AssetListManager() {
               </div>
               
               <Tabs defaultValue="forex" value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="mb-4">
-                  <TabsTrigger value="forex">Forex</TabsTrigger>
-                  <TabsTrigger value="stocks">Stocks</TabsTrigger>
-                  <TabsTrigger value="crypto">Crypto</TabsTrigger>
+                <TabsList className="grid grid-cols-4 lg:grid-cols-6 xl:grid-cols-12 mb-4 h-auto">
+                  {MARKET_CATEGORIES.map(category => (
+                    <TabsTrigger 
+                      key={category.value} 
+                      value={category.value}
+                      className="flex flex-col items-center space-y-1 p-3 h-auto"
+                    >
+                      <span className="text-lg">{category.icon}</span>
+                      <span className="text-xs font-medium">{category.label}</span>
+                    </TabsTrigger>
+                  ))}
                 </TabsList>
                 
-                <TabsContent value="forex" className="max-h-[40vh] overflow-y-auto">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {filteredAssets('forex').map(asset => (
-                      <div key={asset.value} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`asset-${asset.value}`}
-                          checked={isAssetSelected({ ...asset, type: 'forex' })}
-                          onCheckedChange={() => toggleAsset({ ...asset, type: 'forex' })}
-                        />
-                        <Label htmlFor={`asset-${asset.value}`} className="cursor-pointer text-sm">
-                          {asset.label}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="stocks" className="max-h-[40vh] overflow-y-auto">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {filteredAssets('stocks').map(asset => (
-                      <div key={asset.value} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`asset-${asset.value}`}
-                          checked={isAssetSelected({ ...asset, type: 'stocks' })}
-                          onCheckedChange={() => toggleAsset({ ...asset, type: 'stocks' })}
-                        />
-                        <Label htmlFor={`asset-${asset.value}`} className="cursor-pointer text-sm">
-                          {asset.label}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="crypto" className="max-h-[40vh] overflow-y-auto">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {filteredAssets('crypto').map(asset => (
-                      <div key={asset.value} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`asset-${asset.value}`}
-                          checked={isAssetSelected({ ...asset, type: 'crypto' })}
-                          onCheckedChange={() => toggleAsset({ ...asset, type: 'crypto' })}
-                        />
-                        <Label htmlFor={`asset-${asset.value}`} className="cursor-pointer text-sm">
-                          {asset.label}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                </TabsContent>
+                {MARKET_CATEGORIES.map(category => (
+                  <TabsContent key={category.value} value={category.value} className="max-h-[40vh] overflow-y-auto">
+                    <div className="mb-3">
+                      <h4 className="font-medium text-sm text-muted-foreground mb-1">
+                        {category.description}
+                      </h4>
+                      <p className="text-xs text-muted-foreground">
+                        {filteredAssets(category.value).length} assets available
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                      {filteredAssets(category.value).map(asset => (
+                        <div key={asset.value} className="flex items-center space-x-2 p-2 rounded-md hover:bg-muted/50 transition-colors">
+                          <Checkbox
+                            id={`asset-${category.value}-${asset.value}`}
+                            checked={isAssetSelected({ ...asset, type: category.value })}
+                            onCheckedChange={() => toggleAsset({ ...asset, type: category.value })}
+                          />
+                          <Label htmlFor={`asset-${category.value}-${asset.value}`} className="cursor-pointer text-sm flex-1">
+                            {asset.label}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </TabsContent>
+                ))}
               </Tabs>
             </div>
           </div>
@@ -313,10 +300,7 @@ export default function AssetListManager() {
             <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleCreateList} 
-              disabled={!listName || selectedAssets.length === 0}
-            >
+            <Button onClick={handleCreateList} disabled={!listName || selectedAssets.length === 0}>
               Create List
             </Button>
           </DialogFooter>
