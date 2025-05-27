@@ -263,6 +263,8 @@ export default function AdminPanel() {
                       <TableHead>User</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Account Type</TableHead>
+                      <TableHead>Referrals</TableHead>
+                      <TableHead>Provider Info</TableHead>
                       <TableHead>Joined</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -270,13 +272,13 @@ export default function AdminPanel() {
                   <TableBody>
                     {usersLoading ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8">
+                        <TableCell colSpan={7} className="text-center py-8">
                           Loading users...
                         </TableCell>
                       </TableRow>
                     ) : filteredUsers.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8">
+                        <TableCell colSpan={7} className="text-center py-8">
                           No users found
                         </TableCell>
                       </TableRow>
@@ -310,6 +312,32 @@ export default function AdminPanel() {
                               <Badge variant="default">Active Subscriber</Badge>
                             ) : (
                               <Badge variant="outline">Free User</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium">Balance:</span>
+                                <Badge variant="secondary">£{user.referralBonusBalance}</Badge>
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Code: {user.referralCustomName || user.referralCode || 'None'}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {user.isProvider ? (
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-medium">Fee:</span>
+                                  <Badge variant="default">£{user.signalFee}</Badge>
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {user.thumbsUp}👍 {user.thumbsDown}👎
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-sm text-muted-foreground">Not a provider</span>
                             )}
                           </TableCell>
                           <TableCell>
@@ -415,6 +443,69 @@ export default function AdminPanel() {
                   )}
                 </CardContent>
               </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Referral Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label className="text-sm font-medium">Referral Code</Label>
+                    <p className="text-sm font-mono bg-muted px-2 py-1 rounded">
+                      {userDetails.user.referralCustomName || userDetails.user.referralCode || 'Not set'}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Current Balance</Label>
+                    <p className="text-lg font-semibold text-green-600">
+                      £{userDetails.user.referralBonusBalance}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Status</Label>
+                    <Badge variant={userDetails.user.referralBonusBalance > 0 ? "default" : "outline"}>
+                      {userDetails.user.referralBonusBalance > 0 ? "Active Referrer" : "No Referral Activity"}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {userDetails.user.isProvider && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Signal Provider Details</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label className="text-sm font-medium">Display Name</Label>
+                      <p className="text-sm">{userDetails.user.providerDisplayName || 'Not set'}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Signal Fee</Label>
+                      <p className="text-lg font-semibold">£{userDetails.user.signalFee}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Provider Rating</Label>
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1">
+                          <span className="text-green-600">👍</span>
+                          <span className="font-medium">{userDetails.user.thumbsUp}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-red-600">👎</span>
+                          <span className="font-medium">{userDetails.user.thumbsDown}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Bio</Label>
+                      <p className="text-sm bg-muted p-2 rounded">
+                        {userDetails.user.bio || 'No bio provided'}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               <Card>
                 <CardHeader>
