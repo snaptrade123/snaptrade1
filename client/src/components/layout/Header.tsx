@@ -13,6 +13,7 @@ import {
   BookOpen,
   BarChart,
   TrendingUp,
+  Bell,
   BarChart3,
   DollarSign,
   Info,
@@ -82,6 +83,13 @@ const Header = () => {
             <Button variant="ghost" size="sm">
               <TrendingUp className="h-4 w-4 mr-1" />
               <span className="hidden lg:inline">Signals</span>
+            </Button>
+          </Link>
+          
+          <Link href="/market-alerts">
+            <Button variant="ghost" size="sm">
+              <Bell className="h-4 w-4 mr-1" />
+              <span className="hidden lg:inline">Alerts</span>
             </Button>
           </Link>
           

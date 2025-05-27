@@ -2171,6 +2171,191 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Market Alerts API Endpoints
+  
+  // Get user's market alerts
+  app.get("/api/market-alerts", requireAuth, async (req, res) => {
+    try {
+      const userId = req.user!.id;
+      const alerts = await storage.getMarketAlerts(userId);
+      return res.status(200).json(alerts);
+    } catch (error) {
+      console.error("Error in /api/market-alerts:", error);
+      return res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Create a new market alert
+  app.post("/api/market-alerts", requireAuth, async (req, res) => {
+    try {
+      const userId = req.user!.id;
+      const alertData = { ...req.body, userId };
+      
+      const alert = await storage.createMarketAlert(alertData);
+      return res.status(201).json(alert);
+    } catch (error) {
+      console.error("Error in /api/market-alerts POST:", error);
+      return res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Update a market alert
+  app.patch("/api/market-alerts/:id", requireAuth, async (req, res) => {
+    try {
+      const userId = req.user!.id;
+      const alertId = parseInt(req.params.id);
+      
+      if (isNaN(alertId)) {
+        return res.status(400).json({ message: "Invalid alert ID" });
+      }
+
+      const alert = await storage.updateMarketAlert(alertId, userId, req.body);
+      return res.status(200).json(alert);
+    } catch (error) {
+      console.error("Error in /api/market-alerts PATCH:", error);
+      return res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Delete a market alert
+  app.delete("/api/market-alerts/:id", requireAuth, async (req, res) => {
+    try {
+      const userId = req.user!.id;
+      const alertId = parseInt(req.params.id);
+      
+      if (isNaN(alertId)) {
+        return res.status(400).json({ message: "Invalid alert ID" });
+      }
+
+      await storage.deleteMarketAlert(alertId, userId);
+      return res.status(200).json({ message: "Alert deleted successfully" });
+    } catch (error) {
+      console.error("Error in /api/market-alerts DELETE:", error);
+      return res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Watchlists API Endpoints
+  
+  // Get user's watchlists
+  app.get("/api/watchlists", requireAuth, async (req, res) => {
+    try {
+      const userId = req.user!.id;
+      const watchlists = await storage.getWatchlists(userId);
+      return res.status(200).json(watchlists);
+    } catch (error) {
+      console.error("Error in /api/watchlists:", error);
+      return res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Create a new watchlist
+  app.post("/api/watchlists", requireAuth, async (req, res) => {
+    try {
+      const userId = req.user!.id;
+      const watchlistData = { ...req.body, userId };
+      
+      const watchlist = await storage.createWatchlist(watchlistData);
+      return res.status(201).json(watchlist);
+    } catch (error) {
+      console.error("Error in /api/watchlists POST:", error);
+      return res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Economic Calendar API Endpoints
+  
+  // Get economic events
+  app.get("/api/economic-events", async (req, res) => {
+    try {
+      const { startDate, endDate, impact } = req.query;
+      const events = await storage.getEconomicEvents({
+        startDate: startDate as string,
+        endDate: endDate as string,
+        impact: impact as string,
+      });
+      return res.status(200).json(events);
+    } catch (error) {
+      console.error("Error in /api/economic-events:", error);
+      return res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Risk Profile API Endpoints
+  
+  // Get user's risk profile
+  app.get("/api/risk-profile", requireAuth, async (req, res) => {
+    try {
+      const userId = req.user!.id;
+      const riskProfile = await storage.getRiskProfile(userId);
+      return res.status(200).json(riskProfile);
+    } catch (error) {
+      console.error("Error in /api/risk-profile:", error);
+      return res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Create or update risk profile
+  app.post("/api/risk-profile", requireAuth, async (req, res) => {
+    try {
+      const userId = req.user!.id;
+      const profileData = { ...req.body, userId };
+      
+      const riskProfile = await storage.createOrUpdateRiskProfile(profileData);
+      return res.status(200).json(riskProfile);
+    } catch (error) {
+      console.error("Error in /api/risk-profile POST:", error);
+      return res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Risk Calculator Endpoint
+  app.post("/api/calculate-position-size", requireAuth, async (req, res) => {
+    try {
+      const userId = req.user!.id;
+      const { entryPrice, stopLoss, accountSize, riskPercentage } = req.body;
+      
+      if (!entryPrice || !stopLoss || !accountSize || !riskPercentage) {
+        return res.status(400).json({ 
+          message: "Missing required parameters: entryPrice, stopLoss, accountSize, riskPercentage" 
+        });
+      }
+
+      const calculation = await storage.calculatePositionSize({
+        userId,
+        entryPrice: parseFloat(entryPrice),
+        stopLoss: parseFloat(stopLoss),
+        accountSize: parseFloat(accountSize),
+        riskPercentage: parseFloat(riskPercentage),
+      });
+
+      return res.status(200).json(calculation);
+    } catch (error) {
+      console.error("Error in /api/calculate-position-size:", error);
+      return res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
