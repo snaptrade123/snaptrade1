@@ -14,7 +14,9 @@ import {
   BarChart,
   TrendingUp,
   BarChart3,
-  DollarSign
+  DollarSign,
+  Info,
+  Mail
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/hooks/use-auth";
@@ -101,6 +103,20 @@ const Header = () => {
             <Button variant="ghost" size="sm">
               <CreditCard className="h-4 w-4 mr-2 md:mr-1" />
               <span className="hidden md:inline">Pricing</span>
+            </Button>
+          </Link>
+          
+          <Link href="/about">
+            <Button variant="ghost" size="sm">
+              <Info className="h-4 w-4 mr-2 md:mr-1" />
+              <span className="hidden md:inline">About</span>
+            </Button>
+          </Link>
+          
+          <Link href="/contact">
+            <Button variant="ghost" size="sm">
+              <Mail className="h-4 w-4 mr-2 md:mr-1" />
+              <span className="hidden md:inline">Contact</span>
             </Button>
           </Link>
           
