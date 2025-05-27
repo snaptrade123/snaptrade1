@@ -221,7 +221,7 @@ export default function TradingSignals() {
   // Update signal mutation
   const updateSignalMutation = useMutation({
     mutationFn: ({ signalId, signalData }: { signalId: number; signalData: any }) => {
-      return updateTradingSignal(signalId, signalData);
+      return updateTradingSignal(signalId, signalData, user?.id);
     },
     onSuccess: () => {
       toast({
@@ -245,7 +245,7 @@ export default function TradingSignals() {
 
   // Delete signal mutation
   const deleteSignalMutation = useMutation({
-    mutationFn: (signalId: number) => deleteTradingSignal(signalId),
+    mutationFn: (signalId: number) => deleteTradingSignal(signalId, user?.id),
     onSuccess: () => {
       toast({
         title: "Signal Deleted",

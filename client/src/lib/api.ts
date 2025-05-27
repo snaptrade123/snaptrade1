@@ -119,8 +119,10 @@ export async function createTradingSignal(signalData: any) {
   return response.json();
 }
 
-export async function updateTradingSignal(signalId: number, signalData: any) {
-  const response = await apiRequest("PATCH", `/api/trading-signals/${signalId}`, signalData);
+export async function updateTradingSignal(signalId: number, signalData: any, userId?: number) {
+  const response = await apiRequest("PATCH", `/api/trading-signals/${signalId}`, signalData, {
+    headers: userId ? { 'x-user-id': userId.toString() } : {}
+  });
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(`Failed to update signal: ${errorText}`);
@@ -128,8 +130,10 @@ export async function updateTradingSignal(signalId: number, signalData: any) {
   return response.json();
 }
 
-export async function deleteTradingSignal(signalId: number) {
-  const response = await apiRequest("DELETE", `/api/trading-signals/${signalId}`);
+export async function deleteTradingSignal(signalId: number, userId?: number) {
+  const response = await apiRequest("DELETE", `/api/trading-signals/${signalId}`, undefined, {
+    headers: userId ? { 'x-user-id': userId.toString() } : {}
+  });
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(`Failed to delete signal: ${errorText}`);
