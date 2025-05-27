@@ -1,6 +1,6 @@
-import { analysis, namedAnalysis, users, referrals, assetLists, analysisUsage, tradingSignals, signalSubscriptions, signalPayouts, providerEarnings, userRatings, type Analysis, type NamedAnalysis, type InsertAnalysis, type InsertNamedAnalysis, type User, type InsertUser, type InsertReferral, type Referral, type AssetList, type InsertAssetList, type AnalysisUsage, type InsertAnalysisUsage, type TradingSignal, type InsertTradingSignal, type SignalSubscription, type InsertSignalSubscription, type SignalPayout, type InsertSignalPayout, type ProviderEarnings, type InsertProviderEarnings, type UserRating, type InsertUserRating } from "@shared/schema";
+import { analysis, namedAnalysis, users, referrals, assetLists, analysisUsage, tradingSignals, signalSubscriptions, signalPayouts, providerEarnings, userRatings, marketAlerts, watchlists, economicEvents, riskProfiles, type Analysis, type NamedAnalysis, type InsertAnalysis, type InsertNamedAnalysis, type User, type InsertUser, type InsertReferral, type Referral, type AssetList, type InsertAssetList, type AnalysisUsage, type InsertAnalysisUsage, type TradingSignal, type InsertTradingSignal, type SignalSubscription, type InsertSignalSubscription, type SignalPayout, type InsertSignalPayout, type ProviderEarnings, type InsertProviderEarnings, type UserRating, type InsertUserRating, type MarketAlert, type InsertMarketAlert, type Watchlist, type InsertWatchlist, type EconomicEvent, type RiskProfile, type InsertRiskProfile } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, inArray } from "drizzle-orm";
+import { eq, desc, and, inArray, gte, lte } from "drizzle-orm";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { pool } from "./db";
@@ -99,6 +99,26 @@ export interface IStorage {
   getProviderPayouts(providerId: number): Promise<SignalPayout[]>;
   updateSignalPayout(id: number, updates: Partial<InsertSignalPayout>): Promise<SignalPayout>;
   requestPayout(providerId: number, amount: number): Promise<SignalPayout>;
+  
+  // Market Alert methods
+  getMarketAlerts(userId: number): Promise<MarketAlert[]>;
+  createMarketAlert(alert: InsertMarketAlert): Promise<MarketAlert>;
+  updateMarketAlert(id: number, updates: Partial<InsertMarketAlert>): Promise<MarketAlert>;
+  deleteMarketAlert(id: number): Promise<void>;
+  
+  // Watchlist methods
+  getWatchlists(userId: number): Promise<Watchlist[]>;
+  createWatchlist(watchlist: InsertWatchlist): Promise<Watchlist>;
+  
+  // Economic Events methods
+  getEconomicEvents(startDate?: Date, endDate?: Date): Promise<EconomicEvent[]>;
+  
+  // Risk Profile methods
+  getRiskProfile(userId: number): Promise<RiskProfile | undefined>;
+  createOrUpdateRiskProfile(userId: number, profile: Partial<InsertRiskProfile>): Promise<RiskProfile>;
+  
+  // Risk Calculator methods
+  calculatePositionSize(accountSize: number, riskPercentage: number, entryPrice: number, stopLoss: number): Promise<{ positionSize: number; riskAmount: number }>;
   
   // Session store
   sessionStore: session.Store;
@@ -1125,6 +1145,114 @@ export class DatabaseStorage implements IStorage {
         thumbsDown: thumbsDownResults.length
       })
       .where(eq(users.id, providerId));
+  }
+
+  // Market Alert methods
+  async getMarketAlerts(userId: number): Promise<MarketAlert[]> {
+    return await db
+      .select()
+      .from(marketAlerts)
+      .where(eq(marketAlerts.userId, userId))
+      .orderBy(desc(marketAlerts.createdAt));
+  }
+
+  async createMarketAlert(alert: InsertMarketAlert): Promise<MarketAlert> {
+    const [newAlert] = await db
+      .insert(marketAlerts)
+      .values(alert)
+      .returning();
+    return newAlert;
+  }
+
+  async updateMarketAlert(id: number, updates: Partial<InsertMarketAlert>): Promise<MarketAlert> {
+    const [updatedAlert] = await db
+      .update(marketAlerts)
+      .set(updates)
+      .where(eq(marketAlerts.id, id))
+      .returning();
+    return updatedAlert;
+  }
+
+  async deleteMarketAlert(id: number): Promise<void> {
+    await db
+      .delete(marketAlerts)
+      .where(eq(marketAlerts.id, id));
+  }
+
+  // Watchlist methods
+  async getWatchlists(userId: number): Promise<Watchlist[]> {
+    return await db
+      .select()
+      .from(watchlists)
+      .where(eq(watchlists.userId, userId))
+      .orderBy(desc(watchlists.createdAt));
+  }
+
+  async createWatchlist(watchlist: InsertWatchlist): Promise<Watchlist> {
+    const [newWatchlist] = await db
+      .insert(watchlists)
+      .values(watchlist)
+      .returning();
+    return newWatchlist;
+  }
+
+  // Economic Events methods
+  async getEconomicEvents(startDate?: Date, endDate?: Date): Promise<EconomicEvent[]> {
+    let query = db.select().from(economicEvents);
+    
+    if (startDate && endDate) {
+      query = query.where(and(
+        gte(economicEvents.eventDate, startDate),
+        lte(economicEvents.eventDate, endDate)
+      ));
+    }
+    
+    return await query.orderBy(economicEvents.eventDate);
+  }
+
+  // Risk Profile methods
+  async getRiskProfile(userId: number): Promise<RiskProfile | undefined> {
+    const [profile] = await db
+      .select()
+      .from(riskProfiles)
+      .where(eq(riskProfiles.userId, userId));
+    return profile;
+  }
+
+  async createOrUpdateRiskProfile(userId: number, profile: Partial<InsertRiskProfile>): Promise<RiskProfile> {
+    const existing = await this.getRiskProfile(userId);
+    
+    if (existing) {
+      const [updated] = await db
+        .update(riskProfiles)
+        .set(profile)
+        .where(eq(riskProfiles.userId, userId))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(riskProfiles)
+        .values({ ...profile, userId })
+        .returning();
+      return created;
+    }
+  }
+
+  // Risk Calculator methods
+  async calculatePositionSize(
+    accountSize: number, 
+    riskPercentage: number, 
+    entryPrice: number, 
+    stopLoss: number
+  ): Promise<{ positionSize: number; riskAmount: number }> {
+    const riskAmount = accountSize * (riskPercentage / 100);
+    const riskPerUnit = Math.abs(entryPrice - stopLoss);
+    const positionSize = riskPerUnit > 0 ? riskAmount / riskPerUnit : 0;
+    
+    return {
+      positionSize: Math.round(positionSize * 100) / 100,
+      riskAmount: Math.round(riskAmount * 100) / 100
+    };
   }
 }
 
