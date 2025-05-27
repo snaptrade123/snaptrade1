@@ -1490,17 +1490,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Map to match the actual database schema fields
+      // Map to match the actual database schema fields (based on SQL query result)
       const signal = {
         providerId: userId,
-        pair: req.body.asset || "XAU/USD", // asset maps to pair
+        title: req.body.title || "Trading Signal",
+        asset: req.body.asset || "XAU/USD",
         direction: req.body.direction || "buy",
-        entry: (req.body.entryPrice || 0).toString(), // entryPrice maps to entry (string)
-        stopLoss: (req.body.stopLoss || 0).toString(), // stopLoss (string)
-        takeProfit1: (req.body.takeProfit || 0).toString(), // takeProfit maps to takeProfit1 (string)
+        entryPrice: parseInt(req.body.entryPrice || 0),
+        stopLoss: parseInt(req.body.stopLoss || 0),
+        takeProfit: parseInt(req.body.takeProfit || 0),
         timeframe: req.body.timeframe || "1h",
-        notes: req.body.analysis || "", // analysis maps to notes
+        analysis: req.body.analysis || "",
+        riskRewardRatio: parseInt(req.body.riskRewardRatio || 1),
         isPremium: req.body.isPremium === true,
+        status: 'active',
         price: req.body.isPremium ? (req.body.signalFee || 0) : null
       };
       

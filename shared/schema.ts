@@ -163,23 +163,28 @@ export const insertAnalysisUsageSchema = createInsertSchema(analysisUsage).omit(
 export type InsertAnalysisUsage = z.infer<typeof insertAnalysisUsageSchema>;
 export type AnalysisUsage = typeof analysisUsage.$inferSelect;
 
-// Trading Signals
+// Trading Signals - Updated to match actual database structure
 export const tradingSignals = pgTable("trading_signals", {
   id: serial("id").primaryKey(),
-  providerId: integer("provider_id").notNull().references(() => users.id),
-  pair: text("pair").notNull(),
-  direction: text("direction").notNull(), // 'buy' or 'sell'
-  entry: text("entry").notNull(),
-  stopLoss: text("stop_loss").notNull(),
-  takeProfit1: text("take_profit_1").notNull(),
-  takeProfit2: text("take_profit_2"),
-  takeProfit3: text("take_profit_3"),
+  providerId: integer("providerId").notNull().references(() => users.id),
+  title: text("title"),
+  asset: text("asset"),
   timeframe: text("timeframe").notNull(),
-  notes: text("notes"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  isPremium: boolean("is_premium").default(false).notNull(),
+  direction: text("direction").notNull(), // 'buy' or 'sell'
+  entryPrice: integer("entryPrice"),
+  stopLoss: integer("stopLoss"),
+  takeProfit: integer("takeProfit"),
+  riskRewardRatio: integer("riskRewardRatio"),
+  analysis: text("analysis"),
+  imageUrl: text("imageUrl"),
+  isPremium: boolean("isPremium").default(false).notNull(),
   price: integer("price"), // Monthly subscription price in pence/cents
+  expiresAt: timestamp("expiresAt"),
+  status: text("status"),
+  outcome: text("outcome"),
+  actualPips: integer("actualPips"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export const insertTradingSignalSchema = createInsertSchema(tradingSignals).omit({
