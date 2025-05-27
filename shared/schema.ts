@@ -282,3 +282,104 @@ export const insertUserRatingSchema = createInsertSchema(userRatings).omit({
 
 export type InsertUserRating = z.infer<typeof insertUserRatingSchema>;
 export type UserRating = typeof userRatings.$inferSelect;
+
+// Market alerts and watchlists
+export const marketAlerts = pgTable("market_alerts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  asset: text("asset").notNull(), // e.g., "BTC/USD", "AAPL", "EUR/USD"
+  assetType: text("asset_type").notNull(), // forex, stocks, crypto, etc.
+  alertType: text("alert_type").notNull(), // price, technical, volume, news
+  condition: text("condition").notNull(), // above, below, crosses, pattern_formed
+  targetValue: text("target_value"), // price level, pattern name, etc.
+  currentValue: text("current_value"), // last known value
+  message: text("message"), // custom alert message
+  isActive: boolean("is_active").default(true).notNull(),
+  isTriggered: boolean("is_triggered").default(false).notNull(),
+  triggeredAt: timestamp("triggered_at"),
+  expiresAt: timestamp("expires_at"), // optional expiration
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const watchlists = pgTable("watchlists", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  name: text("name").notNull(),
+  assets: jsonb("assets").notNull().$type<Array<{
+    value: string;
+    label: string;
+    type: string;
+  }>>(),
+  alertsEnabled: boolean("alerts_enabled").default(true).notNull(),
+  isDefault: boolean("is_default").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Economic calendar events
+export const economicEvents = pgTable("economic_events", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  country: text("country").notNull(),
+  currency: text("currency"), // affected currency
+  impact: text("impact").notNull(), // low, medium, high
+  eventTime: timestamp("event_time").notNull(),
+  forecast: text("forecast"), // expected value
+  previous: text("previous"), // previous value
+  actual: text("actual"), // actual value when released
+  description: text("description"),
+  category: text("category"), // employment, inflation, gdp, etc.
+  source: text("source"), // data provider
+  affectedAssets: jsonb("affected_assets").$type<string[]>(), // assets that might be impacted
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Risk calculations and settings
+export const riskProfiles = pgTable("risk_profiles", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  accountSize: text("account_size").notNull(), // encrypted account balance
+  riskPercentage: integer("risk_percentage").default(2).notNull(), // % of account to risk per trade
+  maxDailyLoss: integer("max_daily_loss_percentage").default(5).notNull(),
+  maxPositions: integer("max_positions").default(3).notNull(),
+  preferredTimeframes: jsonb("preferred_timeframes").$type<string[]>(),
+  tradingStyle: text("trading_style"), // scalping, day_trading, swing, position
+  experienceLevel: text("experience_level"), // beginner, intermediate, advanced, expert
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertMarketAlertSchema = createInsertSchema(marketAlerts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertWatchlistSchema = createInsertSchema(watchlists).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertEconomicEventSchema = createInsertSchema(economicEvents).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertRiskProfileSchema = createInsertSchema(riskProfiles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertMarketAlert = z.infer<typeof insertMarketAlertSchema>;
+export type MarketAlert = typeof marketAlerts.$inferSelect;
+export type InsertWatchlist = z.infer<typeof insertWatchlistSchema>;
+export type Watchlist = typeof watchlists.$inferSelect;
+export type InsertEconomicEvent = z.infer<typeof insertEconomicEventSchema>;
+export type EconomicEvent = typeof economicEvents.$inferSelect;
+export type InsertRiskProfile = z.infer<typeof insertRiskProfileSchema>;
+export type RiskProfile = typeof riskProfiles.$inferSelect;
