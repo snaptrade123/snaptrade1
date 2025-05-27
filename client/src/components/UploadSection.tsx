@@ -145,19 +145,19 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onUpload, isLoading }) =>
               <SelectGroup>
                 <SelectLabel>Forex</SelectLabel>
                 {ASSETS.forex.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+                  <SelectItem key={`forex-${item.value}`} value={item.value}>{item.label}</SelectItem>
                 ))}
               </SelectGroup>
               <SelectGroup>
                 <SelectLabel>Stocks</SelectLabel>
                 {ASSETS.stocks.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+                  <SelectItem key={`stocks-${item.value}`} value={item.value}>{item.label}</SelectItem>
                 ))}
               </SelectGroup>
               <SelectGroup>
                 <SelectLabel>Crypto</SelectLabel>
                 {ASSETS.crypto.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+                  <SelectItem key={`crypto-${item.value}`} value={item.value}>{item.label}</SelectItem>
                 ))}
               </SelectGroup>
             </SelectContent>

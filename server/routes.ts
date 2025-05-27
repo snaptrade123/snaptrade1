@@ -2193,7 +2193,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create a new market alert
   app.post("/api/market-alerts", authOrIdHeader, async (req, res) => {
     try {
-      const userId = req.user!.id;
+      const userId = req.isAuthenticated() ? req.user!.id : req.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
       const alertData = { ...req.body, userId };
       
       const alert = await storage.createMarketAlert(alertData);
