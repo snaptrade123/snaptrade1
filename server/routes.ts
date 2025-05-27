@@ -2412,6 +2412,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin Control Panel Routes
+  // Middleware to check admin permissions
+  const requireAdminAuth = (req: Request, res: Response, next: NextFunction) => {
+    if (!req.isAuthenticated() || !req.user) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+    
+    next();
+  };
+
+  // Get all users (admin only)
+  app.get("/api/admin/users", requireAdminAuth, async (req, res) => {
+    try {
+      const { limit = 50, offset = 0 } = req.query;
+      const users = await storage.getAllUsers(Number(limit), Number(offset));
+      
+      // Log admin action
+      await storage.logAdminAction(req.user!.id, "viewed_all_users", "user", undefined, {
+        limit: Number(limit),
+        offset: Number(offset)
+      });
+      
+      return res.status(200).json(users);
+    } catch (error) {
+      console.error("Error in /api/admin/users:", error);
+      return res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Get specific user details (admin only)
+  app.get("/api/admin/users/:id", requireAdminAuth, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+
+      const userDetails = await storage.getUserDetails(userId);
+      
+      // Log admin action
+      await storage.logAdminAction(req.user!.id, "viewed_user_details", "user", userId);
+      
+      return res.status(200).json(userDetails);
+    } catch (error) {
+      console.error("Error in /api/admin/users/:id:", error);
+      return res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Update user admin status (admin only)
+  app.patch("/api/admin/users/:id/admin-status", requireAdminAuth, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { isAdmin, permissions } = req.body;
+      
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+
+      // Check if admin has permission to manage admin roles
+      if (!req.user!.adminPermissions?.includes('manage_admins')) {
+        return res.status(403).json({ message: "Insufficient permissions to manage admin roles" });
+      }
+
+      const updatedUser = await storage.updateUserAdminStatus(userId, isAdmin, permissions);
+      
+      // Log admin action
+      await storage.logAdminAction(req.user!.id, "updated_admin_status", "user", userId, {
+        isAdmin,
+        permissions
+      });
+      
+      return res.status(200).json(updatedUser);
+    } catch (error) {
+      console.error("Error in /api/admin/users/:id/admin-status:", error);
+      return res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
+  // Get admin action logs (admin only)
+  app.get("/api/admin/action-logs", requireAdminAuth, async (req, res) => {
+    try {
+      const { adminId, limit = 100 } = req.query;
+      const logs = await storage.getAdminActionLogs(
+        adminId ? Number(adminId) : undefined, 
+        Number(limit)
+      );
+      
+      return res.status(200).json(logs);
+    } catch (error) {
+      console.error("Error in /api/admin/action-logs:", error);
+      return res.status(500).json({ 
+        message: error instanceof Error ? error.message : "An unknown error occurred" 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

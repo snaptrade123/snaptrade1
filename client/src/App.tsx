@@ -31,6 +31,7 @@ import MarketPredictions from "./pages/features/MarketPredictions";
 import FeatureTradingSignals from "./pages/features/TradingSignals";
 import TradingSignals from "./pages/TradingSignals";
 import MarketAlerts from "./pages/MarketAlerts";
+import AdminPanel from "./pages/AdminPanel";
 import DebugLogin from "./pages/DebugLogin";
 import AboutUs from "./pages/AboutUs";
 import Contact from "./pages/Contact";

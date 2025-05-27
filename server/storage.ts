@@ -1,4 +1,4 @@
-import { analysis, namedAnalysis, users, referrals, assetLists, analysisUsage, tradingSignals, signalSubscriptions, signalPayouts, providerEarnings, userRatings, marketAlerts, watchlists, economicEvents, riskProfiles, type Analysis, type NamedAnalysis, type InsertAnalysis, type InsertNamedAnalysis, type User, type InsertUser, type InsertReferral, type Referral, type AssetList, type InsertAssetList, type AnalysisUsage, type InsertAnalysisUsage, type TradingSignal, type InsertTradingSignal, type SignalSubscription, type InsertSignalSubscription, type SignalPayout, type InsertSignalPayout, type ProviderEarnings, type InsertProviderEarnings, type UserRating, type InsertUserRating, type MarketAlert, type InsertMarketAlert, type Watchlist, type InsertWatchlist, type EconomicEvent, type RiskProfile, type InsertRiskProfile } from "@shared/schema";
+import { analysis, namedAnalysis, users, referrals, assetLists, analysisUsage, tradingSignals, signalSubscriptions, signalPayouts, providerEarnings, userRatings, marketAlerts, watchlists, economicEvents, riskProfiles, adminActions, type Analysis, type NamedAnalysis, type InsertAnalysis, type InsertNamedAnalysis, type User, type InsertUser, type InsertReferral, type Referral, type AssetList, type InsertAssetList, type AnalysisUsage, type InsertAnalysisUsage, type TradingSignal, type InsertTradingSignal, type SignalSubscription, type InsertSignalSubscription, type SignalPayout, type InsertSignalPayout, type ProviderEarnings, type InsertProviderEarnings, type UserRating, type InsertUserRating, type MarketAlert, type InsertMarketAlert, type Watchlist, type InsertWatchlist, type EconomicEvent, type RiskProfile, type InsertRiskProfile } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, inArray, gte, lte } from "drizzle-orm";
 import session from "express-session";
@@ -119,6 +119,19 @@ export interface IStorage {
   
   // Risk Calculator methods
   calculatePositionSize(accountSize: number, riskPercentage: number, entryPrice: number, stopLoss: number): Promise<{ positionSize: number; riskAmount: number }>;
+  
+  // Admin methods
+  getAllUsers(limit?: number, offset?: number): Promise<User[]>;
+  updateUserAdminStatus(userId: number, isAdmin: boolean, permissions: string[]): Promise<User>;
+  logAdminAction(adminId: number, action: string, targetType: string, targetId?: number, details?: Record<string, any>): Promise<void>;
+  getAdminActionLogs(adminId?: number, limit?: number): Promise<any[]>;
+  getUserDetails(userId: number): Promise<{
+    user: User | undefined;
+    subscriptionStatus: any;
+    tradingSignals: any[];
+    marketAlerts: any[];
+    analysisUsage: number;
+  }>;
   
   // Session store
   sessionStore: session.Store;
@@ -1252,6 +1265,81 @@ export class DatabaseStorage implements IStorage {
     return {
       positionSize: Math.round(positionSize * 100) / 100,
       riskAmount: Math.round(riskAmount * 100) / 100
+    };
+  }
+
+  // Admin methods
+  async getAllUsers(limit: number = 50, offset: number = 0): Promise<User[]> {
+    return await db.select().from(users).limit(limit).offset(offset).orderBy(desc(users.createdAt));
+  }
+
+  async updateUserAdminStatus(userId: number, isAdmin: boolean, permissions: string[]): Promise<User> {
+    const [updated] = await db
+      .update(users)
+      .set({ isAdmin, adminPermissions: permissions })
+      .where(eq(users.id, userId))
+      .returning();
+    return updated;
+  }
+
+  async logAdminAction(
+    adminId: number, 
+    action: string, 
+    targetType: string, 
+    targetId?: number, 
+    details?: Record<string, any>
+  ): Promise<void> {
+    await db.insert(adminActions).values({
+      adminId,
+      action,
+      targetType,
+      targetId,
+      details
+    });
+  }
+
+  async getAdminActionLogs(adminId?: number, limit: number = 100): Promise<any[]> {
+    let query = db
+      .select({
+        id: adminActions.id,
+        action: adminActions.action,
+        targetType: adminActions.targetType,
+        targetId: adminActions.targetId,
+        details: adminActions.details,
+        createdAt: adminActions.createdAt,
+        adminUsername: users.username
+      })
+      .from(adminActions)
+      .leftJoin(users, eq(adminActions.adminId, users.id))
+      .orderBy(desc(adminActions.createdAt))
+      .limit(limit);
+
+    if (adminId) {
+      query = query.where(eq(adminActions.adminId, adminId));
+    }
+
+    return await query;
+  }
+
+  async getUserDetails(userId: number): Promise<{
+    user: User | undefined;
+    subscriptionStatus: any;
+    tradingSignals: any[];
+    marketAlerts: any[];
+    analysisUsage: number;
+  }> {
+    const user = await this.getUser(userId);
+    const subscriptionStatus = user ? await this.getUserSubscriptionStatus(userId) : null;
+    const userSignals = user ? await this.getUserTradingSignals(userId) : [];
+    const userAlerts = user ? await this.getMarketAlerts(userId) : [];
+    const dailyUsage = user ? await this.getDailyAnalysisUsage(userId) : 0;
+
+    return {
+      user,
+      subscriptionStatus,
+      tradingSignals: userSignals,
+      marketAlerts: userAlerts,
+      analysisUsage: dailyUsage
     };
   }
 }
