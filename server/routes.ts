@@ -2174,9 +2174,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Market Alerts API Endpoints
   
   // Get user's market alerts
-  app.get("/api/market-alerts", requireAuth, async (req, res) => {
+  app.get("/api/market-alerts", authOrIdHeader, async (req, res) => {
     try {
-      const userId = req.user!.id;
+      const userId = req.isAuthenticated() ? req.user!.id : req.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
       const alerts = await storage.getMarketAlerts(userId);
       return res.status(200).json(alerts);
     } catch (error) {
@@ -2188,9 +2191,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create a new market alert
-  app.post("/api/market-alerts", requireAuth, async (req, res) => {
+  app.post("/api/market-alerts", authOrIdHeader, async (req, res) => {
     try {
-      const userId = req.user!.id;
+      const userId = req.isAuthenticated() ? req.user!.id : req.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
       const alertData = { ...req.body, userId };
       
       const alert = await storage.createMarketAlert(alertData);
@@ -2204,16 +2210,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update a market alert
-  app.patch("/api/market-alerts/:id", requireAuth, async (req, res) => {
+  app.patch("/api/market-alerts/:id", authOrIdHeader, async (req, res) => {
     try {
-      const userId = req.user!.id;
+      const userId = req.isAuthenticated() ? req.user!.id : req.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
       const alertId = parseInt(req.params.id);
       
       if (isNaN(alertId)) {
         return res.status(400).json({ message: "Invalid alert ID" });
       }
 
-      const alert = await storage.updateMarketAlert(alertId, userId, req.body);
+      const alert = await storage.updateMarketAlert(alertId, req.body);
       return res.status(200).json(alert);
     } catch (error) {
       console.error("Error in /api/market-alerts PATCH:", error);
@@ -2224,16 +2233,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete a market alert
-  app.delete("/api/market-alerts/:id", requireAuth, async (req, res) => {
+  app.delete("/api/market-alerts/:id", authOrIdHeader, async (req, res) => {
     try {
-      const userId = req.user!.id;
+      const userId = req.isAuthenticated() ? req.user!.id : req.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
       const alertId = parseInt(req.params.id);
       
       if (isNaN(alertId)) {
         return res.status(400).json({ message: "Invalid alert ID" });
       }
 
-      await storage.deleteMarketAlert(alertId, userId);
+      await storage.deleteMarketAlert(alertId);
       return res.status(200).json({ message: "Alert deleted successfully" });
     } catch (error) {
       console.error("Error in /api/market-alerts DELETE:", error);
