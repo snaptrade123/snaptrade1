@@ -659,6 +659,9 @@ export default function TradingSignals() {
                   key={signal.id} 
                   signal={signal} 
                   onViewDetails={() => openSignalDetails(signal.id)}
+                  onEdit={handleEditSignal}
+                  onDelete={handleDeleteSignal}
+                  currentUserId={userId}
                 />
               ))}
               
@@ -689,6 +692,9 @@ export default function TradingSignals() {
                   onViewDetails={() => openSignalDetails(signal.id)}
                   onSubscribe={() => handleSubscribe(signal.providerId)}
                   isSubscribing={subscribing}
+                  onEdit={handleEditSignal}
+                  onDelete={handleDeleteSignal}
+                  currentUserId={userId}
                 />
               ))}
               
