@@ -7,7 +7,7 @@ import Stripe from "stripe";
 import { setupAuth } from "./auth";
 import { setupAuthCheckEndpoint } from "./check-auth";
 import { db } from "./db";
-import { users, referrals } from "@shared/schema";
+import { users, referrals, tradingSignals, signalSubscriptions } from "@shared/schema";
 import * as schema from "@shared/schema";
 import { eq, desc, and } from "drizzle-orm";
 
@@ -1490,20 +1490,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Map exactly to match actual database columns (queried via SQL)
+      // Map to match the actual database schema fields
       const signal = {
         providerId: userId,
-        title: req.body.title || "Trading Signal",
-        asset: req.body.asset || req.body.pair || "XAU/USD",
+        pair: req.body.asset || "XAU/USD", // asset maps to pair
         direction: req.body.direction || "buy",
-        entryPrice: parseFloat(req.body.entryPrice || req.body.entry || 0),
-        stopLoss: parseFloat(req.body.stopLoss || 0),
-        takeProfit: parseFloat(req.body.takeProfit || req.body.takeProfit1 || 0),
+        entry: (req.body.entryPrice || 0).toString(), // entryPrice maps to entry (string)
+        stopLoss: (req.body.stopLoss || 0).toString(), // stopLoss (string)
+        takeProfit1: (req.body.takeProfit || 0).toString(), // takeProfit maps to takeProfit1 (string)
         timeframe: req.body.timeframe || "1h",
-        analysis: req.body.analysis || req.body.notes || "",
-        riskRewardRatio: parseFloat(req.body.riskRewardRatio || 1),
+        notes: req.body.analysis || "", // analysis maps to notes
         isPremium: req.body.isPremium === true,
-        status: 'active'
+        price: req.body.isPremium ? (req.body.signalFee || 0) : null
       };
       
       console.log("Creating trading signal with data:", signal);
