@@ -1278,7 +1278,7 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ 
         isAdmin, 
-        adminPermissions: permissions.length > 0 ? permissions : null 
+        adminPermissions: isAdmin && permissions.length > 0 ? permissions : null 
       })
       .where(eq(users.id, userId))
       .returning();
