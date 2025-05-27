@@ -30,6 +30,7 @@ import SentimentAnalysis from "./pages/features/SentimentAnalysis";
 import MarketPredictions from "./pages/features/MarketPredictions";
 import FeatureTradingSignals from "./pages/features/TradingSignals";
 import TradingSignals from "./pages/TradingSignals";
+import MarketAlerts from "./pages/MarketAlerts";
 import DebugLogin from "./pages/DebugLogin";
 import AboutUs from "./pages/AboutUs";
 import Contact from "./pages/Contact";
@@ -65,6 +66,8 @@ function Router() {
       <Route path="/debug-login" component={DebugLogin} />
       
       <ProtectedRoute path="/trading-signals" component={TradingSignals} />
+      
+      <ProtectedRoute path="/market-alerts" component={MarketAlerts} />
       
       <ProtectedRoute path="/profile" component={UserProfile} />
       

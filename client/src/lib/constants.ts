@@ -632,6 +632,9 @@ export const ASSETS = {
   ]
 };
 
+// Export both ASSETS and MARKET_ASSETS for compatibility
+export const MARKET_ASSETS = ASSETS;
+
 export const MARKET_CATEGORIES = [
   { value: 'forex', label: 'Forex', icon: '💱', description: 'Currency pairs and foreign exchange markets' },
   { value: 'stocks', label: 'Stocks', icon: '📈', description: 'Individual company stocks and equities' },
