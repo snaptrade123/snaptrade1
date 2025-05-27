@@ -334,18 +334,37 @@ export default function TradingSignals() {
       // Create the signal
       createSignalMutation.mutate(values);
     }
-    
-    const signalData = {
-      ...values,
-      riskRewardRatio,
-      // Default to active status
-      status: 'active' as const
-    };
-    
-    // Log to help with debugging
-    console.log("Creating signal with data:", signalData);
-    
-    createSignalMutation.mutate(signalData);
+  };
+
+  // Handler functions for edit/delete
+  const handleEditSignal = (signal: any) => {
+    setEditingSignal(signal);
+    // Pre-fill form with existing signal data
+    form.reset({
+      title: signal.title,
+      asset: signal.asset,
+      direction: signal.direction,
+      timeframe: signal.timeframe,
+      entryPrice: signal.entryPrice,
+      stopLoss: signal.stopLoss,
+      takeProfit: signal.takeProfit,
+      analysis: signal.analysis,
+      isPremium: signal.isPremium,
+      price: signal.price
+    });
+    setShowNewSignalDialog(true);
+  };
+
+  const handleDeleteSignal = (signalId: number) => {
+    if (confirm('Are you sure you want to delete this signal? This action cannot be undone.')) {
+      deleteSignalMutation.mutate(signalId);
+    }
+  };
+
+  const handleCloseDialog = () => {
+    setShowNewSignalDialog(false);
+    setEditingSignal(null);
+    form.reset();
   };
   
   // Function to open signal details
@@ -779,11 +798,15 @@ interface SignalCardProps {
   onViewDetails?: () => void;
   onSubscribe?: () => void;
   isSubscribing?: boolean;
+  onEdit?: (signal: any) => void;
+  onDelete?: (signalId: number) => void;
+  currentUserId?: number;
 }
 
-function SignalCard({ signal, onViewDetails, onSubscribe, isSubscribing }: SignalCardProps) {
+function SignalCard({ signal, onViewDetails, onSubscribe, isSubscribing, onEdit, onDelete, currentUserId }: SignalCardProps) {
   const directionColor = signal.direction === "buy" ? "text-emerald-500" : "text-rose-500";
   const directionBg = signal.direction === "buy" ? "bg-emerald-500/10" : "bg-rose-500/10";
+  const isOwner = currentUserId === signal.providerId;
   
   return (
     <Card>
@@ -792,6 +815,11 @@ function SignalCard({ signal, onViewDetails, onSubscribe, isSubscribing }: Signa
           <div>
             <div className="flex items-center space-x-2 mb-1">
               <CardTitle className="text-lg">{signal.title || signal.asset}</CardTitle>
+              {signal.isEdited && (
+                <Badge variant="outline" className="text-xs text-muted-foreground">
+                  (edited)
+                </Badge>
+              )}
               <Badge className={`uppercase ${directionBg} ${directionColor}`}>
                 {signal.direction}
               </Badge>
@@ -828,7 +856,31 @@ function SignalCard({ signal, onViewDetails, onSubscribe, isSubscribing }: Signa
               )}
             </CardDescription>
           </div>
-          <Badge variant="outline">{signal.timeframe}</Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline">{signal.timeframe}</Badge>
+            {isOwner && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => onEdit?.(signal)}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Signal
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => onDelete?.(signal.id)}
+                    className="text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Signal
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
         </div>
       </CardHeader>
       
