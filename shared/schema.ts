@@ -98,6 +98,8 @@ export const users = pgTable("users", {
   isProvider: boolean("is_provider").default(false),
   providerDisplayName: text("provider_display_name"),
   signalFee: integer("signal_fee"), // Monthly subscription fee in pence/cents
+  isAdmin: boolean("is_admin").default(false),
+  adminPermissions: jsonb("admin_permissions").$type<string[]>().default([]),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -383,3 +385,22 @@ export type InsertEconomicEvent = z.infer<typeof insertEconomicEventSchema>;
 export type EconomicEvent = typeof economicEvents.$inferSelect;
 export type InsertRiskProfile = z.infer<typeof insertRiskProfileSchema>;
 export type RiskProfile = typeof riskProfiles.$inferSelect;
+
+// Admin Actions Log
+export const adminActions = pgTable("admin_actions", {
+  id: serial("id").primaryKey(),
+  adminId: integer("admin_id").notNull().references(() => users.id),
+  action: text("action").notNull(), // e.g., "viewed_user", "updated_subscription", "deleted_signal"
+  targetType: text("target_type").notNull(), // e.g., "user", "trading_signal", "subscription"
+  targetId: integer("target_id"), // ID of the affected entity
+  details: jsonb("details").$type<Record<string, any>>(), // Additional context
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertAdminActionSchema = createInsertSchema(adminActions).omit({ 
+  id: true, 
+  createdAt: true 
+});
+
+export type InsertAdminAction = z.infer<typeof insertAdminActionSchema>;
+export type AdminAction = typeof adminActions.$inferSelect;
