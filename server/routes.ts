@@ -1521,10 +1521,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update a trading signal
-  app.patch("/api/trading-signals/:id", authOrIdHeader, async (req: any, res) => {
+  app.patch("/api/trading-signals/:id", async (req: any, res) => {
     try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
       const id = parseInt(req.params.id);
-      const userId = req.userId;
+      const userId = req.user.id;
       
       // Get the signal
       const signal = await storage.getTradingSignal(id);
@@ -1556,10 +1560,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete a trading signal
-  app.delete("/api/trading-signals/:id", authOrIdHeader, async (req: any, res) => {
+  app.delete("/api/trading-signals/:id", async (req: any, res) => {
     try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
       const id = parseInt(req.params.id);
-      const userId = req.userId;
+      const userId = req.user.id;
       
       // Get the signal
       const signal = await storage.getTradingSignal(id);
