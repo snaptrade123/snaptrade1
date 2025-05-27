@@ -348,9 +348,301 @@ export const ASSETS = {
     { value: 'XTZ/USD', label: 'Tezos (XTZ/USD)' },
     { value: 'SAND/USD', label: 'The Sandbox (SAND/USD)' },
     { value: 'MANA/USD', label: 'Decentraland (MANA/USD)' },
+    { value: 'FLOW/USD', label: 'Flow (FLOW/USD)' },
+    { value: 'ICP/USD', label: 'Internet Computer (ICP/USD)' },
     { value: 'HBAR/USD', label: 'Hedera (HBAR/USD)' },
-    { value: 'EGLD/USD', label: 'MultiversX (EGLD/USD)' },
+    { value: 'THETA/USD', label: 'Theta Network (THETA/USD)' },
     { value: 'APE/USD', label: 'ApeCoin (APE/USD)' },
-    { value: 'AAVE/USD', label: 'Aave (AAVE/USD)' }
+    { value: 'CRO/USD', label: 'Cronos (CRO/USD)' },
+    { value: 'QNT/USD', label: 'Quant (QNT/USD)' }
+  ],
+  commodities: [
+    // Precious Metals
+    { value: 'XAU/USD', label: 'Gold (XAU/USD)' },
+    { value: 'XAG/USD', label: 'Silver (XAG/USD)' },
+    { value: 'XPT/USD', label: 'Platinum (XPT/USD)' },
+    { value: 'XPD/USD', label: 'Palladium (XPD/USD)' },
+    
+    // Energy
+    { value: 'CL/USD', label: 'Crude Oil WTI (CL/USD)' },
+    { value: 'BZ/USD', label: 'Brent Crude Oil (BZ/USD)' },
+    { value: 'NG/USD', label: 'Natural Gas (NG/USD)' },
+    { value: 'HO/USD', label: 'Heating Oil (HO/USD)' },
+    { value: 'RB/USD', label: 'Gasoline (RB/USD)' },
+    
+    // Agricultural
+    { value: 'ZS/USD', label: 'Soybeans (ZS/USD)' },
+    { value: 'ZC/USD', label: 'Corn (ZC/USD)' },
+    { value: 'ZW/USD', label: 'Wheat (ZW/USD)' },
+    { value: 'KC/USD', label: 'Coffee (KC/USD)' },
+    { value: 'SB/USD', label: 'Sugar (SB/USD)' },
+    { value: 'CC/USD', label: 'Cocoa (CC/USD)' },
+    { value: 'CT/USD', label: 'Cotton (CT/USD)' },
+    { value: 'LC/USD', label: 'Live Cattle (LC/USD)' },
+    { value: 'LH/USD', label: 'Lean Hogs (LH/USD)' },
+    
+    // Industrial Metals
+    { value: 'HG/USD', label: 'Copper (HG/USD)' },
+    { value: 'ZN/USD', label: 'Zinc (ZN/USD)' },
+    { value: 'AL/USD', label: 'Aluminum (AL/USD)' },
+    { value: 'NI/USD', label: 'Nickel (NI/USD)' },
+    { value: 'PB/USD', label: 'Lead (PB/USD)' }
+  ],
+  indices: [
+    // US Indices
+    { value: 'SPX500', label: 'S&P 500 (SPX500)' },
+    { value: 'NAS100', label: 'NASDAQ 100 (NAS100)' },
+    { value: 'DJI30', label: 'Dow Jones Industrial Average (DJI30)' },
+    { value: 'RUT2000', label: 'Russell 2000 (RUT2000)' },
+    { value: 'VIX', label: 'VIX Volatility Index (VIX)' },
+    
+    // European Indices
+    { value: 'FTSE100', label: 'FTSE 100 (FTSE100)' },
+    { value: 'DAX40', label: 'DAX 40 (DAX40)' },
+    { value: 'CAC40', label: 'CAC 40 (CAC40)' },
+    { value: 'SMI20', label: 'SMI 20 (SMI20)' },
+    { value: 'IBEX35', label: 'IBEX 35 (IBEX35)' },
+    { value: 'MIB40', label: 'FTSE MIB (MIB40)' },
+    { value: 'AEX25', label: 'AEX 25 (AEX25)' },
+    { value: 'BEL20', label: 'BEL 20 (BEL20)' },
+    { value: 'OMXS30', label: 'OMX Stockholm 30 (OMXS30)' },
+    { value: 'OBX25', label: 'OBX 25 (OBX25)' },
+    
+    // Asian Indices
+    { value: 'N225', label: 'Nikkei 225 (N225)' },
+    { value: 'HSI', label: 'Hang Seng Index (HSI)' },
+    { value: 'CSI300', label: 'CSI 300 (CSI300)' },
+    { value: 'ASX200', label: 'ASX 200 (ASX200)' },
+    { value: 'KOSPI', label: 'KOSPI (KOSPI)' },
+    { value: 'SET50', label: 'SET 50 (SET50)' },
+    { value: 'SENSEX', label: 'BSE Sensex (SENSEX)' },
+    { value: 'NIFTY50', label: 'Nifty 50 (NIFTY50)' },
+    
+    // Other Regional Indices
+    { value: 'BOVESPA', label: 'Bovespa (BOVESPA)' },
+    { value: 'MEX35', label: 'IPC Mexico (MEX35)' },
+    { value: 'TSX60', label: 'S&P/TSX 60 (TSX60)' },
+    { value: 'JSE40', label: 'FTSE/JSE Top 40 (JSE40)' }
+  ],
+  bonds: [
+    // US Government Bonds
+    { value: 'US02Y', label: 'US 2-Year Treasury Note (US02Y)' },
+    { value: 'US05Y', label: 'US 5-Year Treasury Note (US05Y)' },
+    { value: 'US10Y', label: 'US 10-Year Treasury Note (US10Y)' },
+    { value: 'US30Y', label: 'US 30-Year Treasury Bond (US30Y)' },
+    
+    // European Government Bonds
+    { value: 'DE02Y', label: 'German 2-Year Bund (DE02Y)' },
+    { value: 'DE10Y', label: 'German 10-Year Bund (DE10Y)' },
+    { value: 'DE30Y', label: 'German 30-Year Bund (DE30Y)' },
+    { value: 'UK02Y', label: 'UK 2-Year Gilt (UK02Y)' },
+    { value: 'UK10Y', label: 'UK 10-Year Gilt (UK10Y)' },
+    { value: 'UK30Y', label: 'UK 30-Year Gilt (UK30Y)' },
+    { value: 'FR10Y', label: 'French 10-Year OAT (FR10Y)' },
+    { value: 'IT10Y', label: 'Italian 10-Year BTP (IT10Y)' },
+    { value: 'ES10Y', label: 'Spanish 10-Year Bond (ES10Y)' },
+    
+    // Other Government Bonds
+    { value: 'JP02Y', label: 'Japan 2-Year Bond (JP02Y)' },
+    { value: 'JP10Y', label: 'Japan 10-Year Bond (JP10Y)' },
+    { value: 'AU02Y', label: 'Australia 2-Year Bond (AU02Y)' },
+    { value: 'AU10Y', label: 'Australia 10-Year Bond (AU10Y)' },
+    { value: 'CA02Y', label: 'Canada 2-Year Bond (CA02Y)' },
+    { value: 'CA10Y', label: 'Canada 10-Year Bond (CA10Y)' }
+  ],
+  etfs: [
+    // Broad Market ETFs
+    { value: 'SPY', label: 'SPDR S&P 500 ETF (SPY)' },
+    { value: 'QQQ', label: 'Invesco QQQ Trust (QQQ)' },
+    { value: 'IWM', label: 'iShares Russell 2000 ETF (IWM)' },
+    { value: 'VTI', label: 'Vanguard Total Stock Market ETF (VTI)' },
+    { value: 'VOO', label: 'Vanguard S&P 500 ETF (VOO)' },
+    
+    // Sector ETFs
+    { value: 'XLF', label: 'Financial Select Sector SPDR Fund (XLF)' },
+    { value: 'XLK', label: 'Technology Select Sector SPDR Fund (XLK)' },
+    { value: 'XLE', label: 'Energy Select Sector SPDR Fund (XLE)' },
+    { value: 'XLV', label: 'Health Care Select Sector SPDR Fund (XLV)' },
+    { value: 'XLI', label: 'Industrial Select Sector SPDR Fund (XLI)' },
+    { value: 'XLP', label: 'Consumer Staples Select Sector SPDR Fund (XLP)' },
+    { value: 'XLY', label: 'Consumer Discretionary Select Sector SPDR Fund (XLY)' },
+    { value: 'XLU', label: 'Utilities Select Sector SPDR Fund (XLU)' },
+    { value: 'XLB', label: 'Materials Select Sector SPDR Fund (XLB)' },
+    { value: 'XLRE', label: 'Real Estate Select Sector SPDR Fund (XLRE)' },
+    
+    // International ETFs
+    { value: 'EFA', label: 'iShares MSCI EAFE ETF (EFA)' },
+    { value: 'EEM', label: 'iShares MSCI Emerging Markets ETF (EEM)' },
+    { value: 'VEA', label: 'Vanguard FTSE Developed Markets ETF (VEA)' },
+    { value: 'VWO', label: 'Vanguard FTSE Emerging Markets ETF (VWO)' },
+    { value: 'FXI', label: 'iShares China Large-Cap ETF (FXI)' },
+    { value: 'EWJ', label: 'iShares MSCI Japan ETF (EWJ)' },
+    { value: 'EWZ', label: 'iShares MSCI Brazil ETF (EWZ)' },
+    { value: 'INDA', label: 'iShares MSCI India ETF (INDA)' },
+    
+    // Bond ETFs
+    { value: 'TLT', label: 'iShares 20+ Year Treasury Bond ETF (TLT)' },
+    { value: 'IEF', label: 'iShares 7-10 Year Treasury Bond ETF (IEF)' },
+    { value: 'AGG', label: 'iShares Core US Aggregate Bond ETF (AGG)' },
+    { value: 'BND', label: 'Vanguard Total Bond Market ETF (BND)' },
+    { value: 'HYG', label: 'iShares iBoxx High Yield Corporate Bond ETF (HYG)' },
+    { value: 'LQD', label: 'iShares iBoxx Investment Grade Corporate Bond ETF (LQD)' },
+    
+    // Commodity ETFs
+    { value: 'GLD', label: 'SPDR Gold Shares (GLD)' },
+    { value: 'SLV', label: 'iShares Silver Trust (SLV)' },
+    { value: 'USO', label: 'United States Oil Fund (USO)' },
+    { value: 'UNG', label: 'United States Natural Gas Fund (UNG)' },
+    { value: 'DBA', label: 'Invesco DB Agriculture Fund (DBA)' },
+    
+    // Currency ETFs
+    { value: 'UUP', label: 'Invesco DB US Dollar Index Bullish Fund (UUP)' },
+    { value: 'FXE', label: 'Invesco CurrencyShares Euro Trust (FXE)' },
+    { value: 'FXY', label: 'Invesco CurrencyShares Japanese Yen Trust (FXY)' },
+    { value: 'FXB', label: 'Invesco CurrencyShares British Pound Sterling Trust (FXB)' }
+  ],
+  futures: [
+    // Equity Index Futures
+    { value: 'ES', label: 'E-mini S&P 500 (ES)' },
+    { value: 'NQ', label: 'E-mini NASDAQ-100 (NQ)' },
+    { value: 'YM', label: 'E-mini Dow Jones (YM)' },
+    { value: 'RTY', label: 'E-mini Russell 2000 (RTY)' },
+    
+    // Currency Futures
+    { value: '6E', label: 'Euro FX (6E)' },
+    { value: '6B', label: 'British Pound (6B)' },
+    { value: '6J', label: 'Japanese Yen (6J)' },
+    { value: '6A', label: 'Australian Dollar (6A)' },
+    { value: '6C', label: 'Canadian Dollar (6C)' },
+    { value: '6S', label: 'Swiss Franc (6S)' },
+    
+    // Interest Rate Futures
+    { value: 'ZN', label: '10-Year T-Note (ZN)' },
+    { value: 'ZB', label: '30-Year T-Bond (ZB)' },
+    { value: 'ZF', label: '5-Year T-Note (ZF)' },
+    { value: 'ZT', label: '2-Year T-Note (ZT)' },
+    
+    // Energy Futures
+    { value: 'CL', label: 'Crude Oil (CL)' },
+    { value: 'NG', label: 'Natural Gas (NG)' },
+    { value: 'HO', label: 'Heating Oil (HO)' },
+    { value: 'RB', label: 'RBOB Gasoline (RB)' },
+    
+    // Metal Futures
+    { value: 'GC', label: 'Gold (GC)' },
+    { value: 'SI', label: 'Silver (SI)' },
+    { value: 'HG', label: 'Copper (HG)' },
+    { value: 'PL', label: 'Platinum (PL)' },
+    { value: 'PA', label: 'Palladium (PA)' },
+    
+    // Agricultural Futures
+    { value: 'ZS', label: 'Soybeans (ZS)' },
+    { value: 'ZC', label: 'Corn (ZC)' },
+    { value: 'ZW', label: 'Wheat (ZW)' },
+    { value: 'KC', label: 'Coffee (KC)' },
+    { value: 'SB', label: 'Sugar #11 (SB)' },
+    { value: 'CC', label: 'Cocoa (CC)' },
+    { value: 'CT', label: 'Cotton (CT)' },
+    { value: 'LC', label: 'Live Cattle (LC)' },
+    { value: 'LH', label: 'Lean Hogs (LH)' }
+  ],
+  options: [
+    // Major Stock Options
+    { value: 'AAPL_OPTIONS', label: 'Apple Options (AAPL)' },
+    { value: 'MSFT_OPTIONS', label: 'Microsoft Options (MSFT)' },
+    { value: 'TSLA_OPTIONS', label: 'Tesla Options (TSLA)' },
+    { value: 'NVDA_OPTIONS', label: 'NVIDIA Options (NVDA)' },
+    { value: 'SPY_OPTIONS', label: 'SPDR S&P 500 ETF Options (SPY)' },
+    { value: 'QQQ_OPTIONS', label: 'Invesco QQQ Trust Options (QQQ)' },
+    { value: 'IWM_OPTIONS', label: 'iShares Russell 2000 ETF Options (IWM)' },
+    
+    // Index Options
+    { value: 'SPX_OPTIONS', label: 'S&P 500 Index Options (SPX)' },
+    { value: 'NDX_OPTIONS', label: 'NASDAQ-100 Index Options (NDX)' },
+    { value: 'RUT_OPTIONS', label: 'Russell 2000 Index Options (RUT)' },
+    { value: 'VIX_OPTIONS', label: 'VIX Options (VIX)' }
+  ],
+  reits: [
+    // Retail REITs
+    { value: 'SPG', label: 'Simon Property Group (SPG)' },
+    { value: 'O', label: 'Realty Income Corporation (O)' },
+    { value: 'REG', label: 'Regency Centers Corporation (REG)' },
+    { value: 'FRT', label: 'Federal Realty Investment Trust (FRT)' },
+    
+    // Residential REITs
+    { value: 'EXR', label: 'Extended Stay America (EXR)' },
+    { value: 'AVB', label: 'AvalonBay Communities (AVB)' },
+    { value: 'EQR', label: 'Equity Residential (EQR)' },
+    { value: 'UDR', label: 'UDR Inc. (UDR)' },
+    
+    // Healthcare REITs
+    { value: 'WELL', label: 'Welltower Inc. (WELL)' },
+    { value: 'VTR', label: 'Ventas Inc. (VTR)' },
+    { value: 'HCP', label: 'Healthpeak Properties (HCP)' },
+    
+    // Office REITs
+    { value: 'BXP', label: 'Boston Properties (BXP)' },
+    { value: 'VNO', label: 'Vornado Realty Trust (VNO)' },
+    { value: 'SLG', label: 'SL Green Realty Corp. (SLG)' }
+  ],
+  alternatives: [
+    // Private Equity & Venture Capital
+    { value: 'BX', label: 'Blackstone Inc. (BX)' },
+    { value: 'KKR', label: 'KKR & Co. Inc. (KKR)' },
+    { value: 'APO', label: 'Apollo Global Management (APO)' },
+    { value: 'CG', label: 'Carlyle Group (CG)' },
+    
+    // Hedge Fund Proxies
+    { value: 'GBTC', label: 'Grayscale Bitcoin Trust (GBTC)' },
+    { value: 'ETHE', label: 'Grayscale Ethereum Trust (ETHE)' },
+    
+    // Infrastructure & Utilities
+    { value: 'AMT', label: 'American Tower Corporation (AMT)' },
+    { value: 'CCI', label: 'Crown Castle International (CCI)' },
+    { value: 'SBAC', label: 'SBA Communications (SBAC)' },
+    
+    // Collectibles & Art (Tokenized)
+    { value: 'MASTERWORKS', label: 'Masterworks Art Investment' },
+    { value: 'RALLY', label: 'Rally Alternative Assets' }
+  ],
+  emerging: [
+    // NFTs & Digital Assets
+    { value: 'NFT_INDEX', label: 'NFT Index' },
+    { value: 'METAVERSE_INDEX', label: 'Metaverse Index' },
+    
+    // DeFi Tokens
+    { value: 'COMP/USD', label: 'Compound (COMP/USD)' },
+    { value: 'AAVE/USD', label: 'Aave (AAVE/USD)' },
+    { value: 'MKR/USD', label: 'Maker (MKR/USD)' },
+    { value: 'CRV/USD', label: 'Curve DAO Token (CRV/USD)' },
+    { value: 'SUSHI/USD', label: 'SushiSwap (SUSHI/USD)' },
+    
+    // Layer 2 & Infrastructure
+    { value: 'LRC/USD', label: 'Loopring (LRC/USD)' },
+    { value: 'IMX/USD', label: 'Immutable X (IMX/USD)' },
+    { value: 'RNDR/USD', label: 'Render Token (RNDR/USD)' },
+    
+    // Carbon Credits & ESG
+    { value: 'CARBON_CREDITS', label: 'Carbon Credits Index' },
+    { value: 'ESG_INDEX', label: 'ESG Investment Index' },
+    
+    // Prediction Markets
+    { value: 'AUGUR', label: 'Augur Prediction Markets' },
+    { value: 'POLYMARKET', label: 'Polymarket' }
   ]
 };
+
+export const MARKET_CATEGORIES = [
+  { value: 'forex', label: 'Forex', icon: '💱', description: 'Currency pairs and foreign exchange markets' },
+  { value: 'stocks', label: 'Stocks', icon: '📈', description: 'Individual company stocks and equities' },
+  { value: 'crypto', label: 'Cryptocurrency', icon: '₿', description: 'Digital currencies and crypto assets' },
+  { value: 'commodities', label: 'Commodities', icon: '🛢️', description: 'Precious metals, energy, and agricultural products' },
+  { value: 'indices', label: 'Indices', icon: '📊', description: 'Stock market indices and benchmarks' },
+  { value: 'bonds', label: 'Bonds', icon: '🏛️', description: 'Government and corporate bonds' },
+  { value: 'etfs', label: 'ETFs', icon: '🗂️', description: 'Exchange-traded funds' },
+  { value: 'futures', label: 'Futures', icon: '⏳', description: 'Futures contracts and derivatives' },
+  { value: 'options', label: 'Options', icon: '🎯', description: 'Options contracts and derivatives' },
+  { value: 'reits', label: 'REITs', icon: '🏢', description: 'Real Estate Investment Trusts' },
+  { value: 'alternatives', label: 'Alternatives', icon: '🔮', description: 'Alternative investments and assets' },
+  { value: 'emerging', label: 'Emerging Markets', icon: '🌱', description: 'New and emerging asset classes' }
+];

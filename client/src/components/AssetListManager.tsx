@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useAssetLists, AssetItem, AssetList } from '@/hooks/use-asset-lists';
-import { ASSETS } from '@/lib/constants';
+import { ASSETS, MARKET_CATEGORIES } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Check, Edit, Plus, Star, StarOff, Trash } from 'lucide-react';
+import { Check, Edit, Plus, Star, StarOff, Trash, Search, Filter } from 'lucide-react';
 
 export default function AssetListManager() {
   const { user } = useAuth();
